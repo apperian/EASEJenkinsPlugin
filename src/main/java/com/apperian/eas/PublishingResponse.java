@@ -49,5 +49,15 @@ public class PublishingResponse {
                     ", data=" + data +
                     '}';
         }
+
+        public boolean checkError(int errorCode) {
+            return getCode() == errorCode
+                    && getData() != null
+                    && getData().containsKey(APIConstants.ERROR_FIELD_DETAILED_MESSAGE);
+        }
+
+        public String getDetailedMessage() {
+            return (String) getData().get(APIConstants.ERROR_FIELD_DETAILED_MESSAGE);
+        }
     }
 }

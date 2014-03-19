@@ -12,7 +12,8 @@ import org.apache.http.util.EntityUtils;
 import java.io.IOException;
 
 public class PublishingAPI {
-    public static final String REQUEST_CHARSET = "UTF-8";
+
+
     private CloseableHttpClient httpClient = HttpClients.createDefault();
     private ObjectMapper mapper = new ObjectMapper();
 
@@ -44,7 +45,7 @@ public class PublishingAPI {
         HttpPost post = new HttpPost(url);
         try {
             String requestStr = mapper.writeValueAsString(request);
-            post.setEntity(new StringEntity(requestStr, REQUEST_CHARSET));
+            post.setEntity(new StringEntity(requestStr, APIConstants.REQUEST_CHARSET));
         } catch(Exception ex) {
             throw new RuntimeException("Request marshaling error", ex);
         }

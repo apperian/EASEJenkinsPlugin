@@ -3,12 +3,11 @@ package com.apperian.eas;
 import java.io.IOException;
 
 public class AuthenticateUserRequest extends PublishingRequest {
-    public static final String METHOD = "com.apperian.eas.user.authenticateuser";
 
     public final Params params;
 
     public AuthenticateUserRequest(String email, String password) {
-        super(METHOD);
+        super(APIConstants.AUTHENTICATE_USER_METHOD);
         this.params = new Params();
         this.params.email = email;
         this.params.password = password;
