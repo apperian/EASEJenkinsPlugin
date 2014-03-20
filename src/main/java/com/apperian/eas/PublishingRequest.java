@@ -31,5 +31,5 @@ public abstract class PublishingRequest {
         return method;
     }
 
-    public abstract PublishingResponse call(PublishingAPI api) throws IOException;
+    public abstract PublishingResponse call(PublishingEndpoint endpoint) throws IOException;
 }

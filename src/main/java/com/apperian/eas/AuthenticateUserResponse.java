@@ -1,19 +1,17 @@
 package com.apperian.eas;
 
-import com.apperian.eas.PublishingResponse;
-
 public class AuthenticateUserResponse extends PublishingResponse {
-    String token;
+    public Result result;
 
-    public String getToken() {
-        return token;
+    public static class Result {
+        public String token;
     }
 
     @Override
     public String toString() {
         return "AuthenticateUserResponse{" +
-                "token='" + token + '\'' +
-                ", error='" + getError() + '\'' +
+                "token='" + result.token + '\'' +
+                (hasError() ? ", error='" + getError() + '\'' : "") +
                 '}';
     }
 }

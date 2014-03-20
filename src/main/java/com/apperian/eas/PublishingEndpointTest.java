@@ -4,13 +4,13 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class PublishingAPITest {
+public class PublishingEndpointTest {
 
-    private PublishingAPI api;
+    private PublishingEndpoint api;
 
     @Before
     public void setUp() {
-        api = new PublishingAPI("https://easesvc.apperian.com/ease.interface.php");
+        api = new PublishingEndpoint("https://easesvc.apperian.com/ease.interface.php");
     }
 
     @Test

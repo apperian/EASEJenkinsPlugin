@@ -2,5 +2,7 @@
   Description of a plugin in installed plugins page.
 -->
 <div>
-  TODO Pluging for pushing apps to EASE apperian repository
+  The EASE publishing plugin allows customers to programmatically
+  add new applications and update existing applications for their EASE organization,
+  without using the EASE Portal user interface.
 </div>

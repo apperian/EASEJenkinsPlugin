@@ -1,5 +1,7 @@
 package com.apperian.eas;
 
+import hudson.util.FormValidation;
+
 import java.util.Map;
 
 public class PublishingResponse {
@@ -22,6 +24,24 @@ public class PublishingResponse {
 
     public JsonRpcError getError() {
         return error;
+    }
+
+    public boolean hasError() {
+        return error != null;
+    }
+
+    public String getErrorMessage() {
+        if (error == null) {
+            return null;
+        }
+
+        if (error.checkError(APIConstants.ERROR_CODE_GENERIC)) {
+            return error.getDetailedMessage();
+        } else if (error.checkError(APIConstants.ERROR_CODE_SESSION_EXPIRED)) {
+            return error.getDetailedMessage();
+        } else {
+            return "JSON RPC error: " + error;
+        }
     }
 
     public static class JsonRpcError {

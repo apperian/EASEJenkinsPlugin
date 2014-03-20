@@ -18,8 +18,8 @@ public class AuthenticateUserRequest extends PublishingRequest {
     }
 
     @Override
-    public AuthenticateUserResponse call(PublishingAPI api) throws IOException {
-        return api.doJsonRpc(this, AuthenticateUserResponse.class);
+    public AuthenticateUserResponse call(PublishingEndpoint endpoint) throws IOException {
+        return endpoint.doJsonRpc(this, AuthenticateUserResponse.class);
     }
 
     static class Params {
