@@ -3,7 +3,6 @@ package com.apperian.eas;
 import java.io.IOException;
 
 public class AuthenticateUserRequest extends PublishingRequest {
-
     public final Params params;
 
     public AuthenticateUserRequest(String email, String password) {
@@ -11,10 +10,6 @@ public class AuthenticateUserRequest extends PublishingRequest {
         this.params = new Params();
         this.params.email = email;
         this.params.password = password;
-    }
-
-    public Params getParams() {
-        return params;
     }
 
     @Override

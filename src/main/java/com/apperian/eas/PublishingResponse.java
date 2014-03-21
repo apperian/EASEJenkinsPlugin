@@ -1,7 +1,5 @@
 package com.apperian.eas;
 
-import hudson.util.FormValidation;
-
 import java.util.Map;
 
 public class PublishingResponse {
@@ -38,7 +36,9 @@ public class PublishingResponse {
         if (error.checkError(APIConstants.ERROR_CODE_GENERIC)) {
             return error.getDetailedMessage();
         } else if (error.checkError(APIConstants.ERROR_CODE_SESSION_EXPIRED)) {
-            return error.getDetailedMessage();
+            return "Session epxired: " + error;
+        } else if (error.checkError(APIConstants.ERROR_CODE_MISSING_PARAMETER)) {
+            return "Bad JSON RPC call: " + error;
         } else {
             return "JSON RPC error: " + error;
         }

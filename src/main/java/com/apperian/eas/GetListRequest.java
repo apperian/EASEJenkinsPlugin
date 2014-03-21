@@ -3,13 +3,13 @@ package com.apperian.eas;
 import java.io.IOException;
 
 public class GetListRequest extends PublishingRequest {
+    public final Params params;
+
     public GetListRequest(String token) {
         super(APIConstants.GET_LIST_METHOD);
         this.params = new Params();
         this.params.token = token;
     }
-
-    public final Params params;
 
         @Override
     public GetListResponse call(PublishingEndpoint endpoint) throws IOException {

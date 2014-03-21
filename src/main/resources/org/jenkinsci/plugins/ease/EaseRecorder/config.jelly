@@ -4,15 +4,23 @@
   -->
 
     <f:entry title="${%Ease API URL}" field="url">
-        <f:textbox />
+        <f:textbox default="https://easesvc.apperian.___/ease.interface.php" />
     </f:entry>
-    <f:entry title="${%Username ID(email)}" field="username">
-        <f:textbox />
+    <f:entry title="${%Username ID/email}" field="username">
+        <f:textbox default="" />
     </f:entry>
     <f:entry title="${%Password}" field="password">
         <f:password />
     </f:entry>
     <f:validateButton
-            title="${%Test Connection}" progress="${%Testing...}"
+            title="${%Test connection &amp; get IDs}" progress="${%Testing...}"
             method="testConnection" with="url,username,password" />
+
+    <f:entry title="${%Application ID}" field="appId">
+        <f:textbox />
+    </f:entry>
+
+    <f:entry title="${%Filename}" field="filename">
+        <f:textbox default="target/file.apk" />
+    </f:entry>
 </j:jelly>
