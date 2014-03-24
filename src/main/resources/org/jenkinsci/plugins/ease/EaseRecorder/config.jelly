@@ -21,6 +21,6 @@
     </f:entry>
 
     <f:entry title="${%Filename}" field="filename">
-        <f:textbox default="target/file.apk" />
+        <f:textbox default="**/*.ipa,**/*.apk,**/*.zip" />
     </f:entry>
 </j:jelly>

@@ -1,11 +1,16 @@
 package org.jenkinsci.plugins.ease;
+
 import com.apperian.eas.*;
-import hudson.Launcher;
 import hudson.Extension;
-import hudson.tasks.*;
+import hudson.FilePath;
+import hudson.Launcher;
 import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
 import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.Publisher;
+import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -13,7 +18,6 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.ServletException;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.*;
@@ -73,20 +77,33 @@ public class EaseRecorder extends Recorder {
             logger.println("One of configuration options is not filled");
             return false;
         }
-        File file = new File(filename.trim());
-        if (!file.exists()) {
-            logger.println("File not found: " + filename);
-            return false;
-        }
 
         PublishingEndpoint endpoint = new PublishingEndpoint(url);
         try {
-            if (!uploadFile(logger, file, endpoint)) {
+
+            String pattern = filename.trim();
+            FilePath[] paths = build.getWorkspace().list(pattern);
+            if (paths.length != 1) {
+                logger.println("Found " + (paths.length == 0 ? "no files" : " ambiguous list " + Arrays.asList(paths)) +
+                        " as candidates for '" + pattern + "'");
                 return false;
             }
+
+            FilePath file = paths[0];
+
+            return file.act(
+                    new PublishFileCallable(logger, endpoint,
+                        url.trim(),
+                        appId.trim(),
+                        username.trim(),
+                        password.trim()));
+
         } catch (IOException e) {
-            logger.println("Connectivity problem");
+            logger.println("Connectivity or IO problem");
             e.printStackTrace(logger);
+            return false;
+        } catch (InterruptedException e) {
+            logger.println("Execution stopped");
             return false;
         } catch (Exception e) {
             logger.println("General plugin problem");
@@ -100,59 +117,6 @@ public class EaseRecorder extends Recorder {
                 e.printStackTrace(logger);
             }
         }
-
-        return true;
-    }
-
-    private boolean uploadFile(PrintStream logger, File file, PublishingEndpoint endpoint) throws IOException {
-        logger.println("Publishing " + file + " to EASE");
-        AuthenticateUserResponse auth = PublishingAPI.authenticateUser(username.trim(), password.trim())
-                .call(endpoint);
-        if (auth.hasError()) {
-            String errorMessage = auth.getErrorMessage();
-            logger.println(errorMessage);
-            return true;
-        }
-
-        UpdateResponse update = PublishingAPI.update(auth.result.token, appId.trim())
-                .call(endpoint);
-
-        if (update.hasError()) {
-            String errorMessage = auth.getErrorMessage();
-            logger.println(errorMessage);
-            return true;
-        }
-
-        UploadResult upload = endpoint.uploadFile(update.result.fileUploadURL, file);
-        if (upload.hasError()) {
-            String errorMessage = upload.errorMessage;
-            logger.println(errorMessage);
-            return true;
-        }
-
-        if (upload.fileID == null) {
-            logger.println("Upload file ID is null. Publish transaction not finished");
-            return true;
-        }
-
-        PublishResponse publish = PublishingAPI.publish(
-                auth.result.token,
-                update.result.transactionID,
-                update.result.EASEmetadata,
-                upload.fileID).call(endpoint);
-        if (publish.hasError()) {
-            String errorMessage = publish.getErrorMessage();
-            logger.println(errorMessage);
-            return true;
-        }
-
-        if (!appId.equals(publish.result.appID)) {
-            logger.println("File uploaded but confirmational appId is wrong");
-            return false;
-        }
-
-        logger.println("DONE! Uploaded " + file.getName() + " to " + url + " for appId=" + appId);
-        return true;
     }
 
     private static boolean isEmptyString(String str) {
@@ -252,5 +216,6 @@ public class EaseRecorder extends Recorder {
         }
 
     }
+
 }
 
