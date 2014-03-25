@@ -30,19 +30,22 @@ public class EaseRecorder extends Recorder {
     public static final String PLUGIN_NAME = "EASE publishing plugin";
 
     private static final Logger logger = Logger.getLogger(EaseRecorder.class.getName());
-    private String url;
-    private String username;
-    private String password;
-    private String appId;
-    private String filename;
+
+    private final EaseUpload[] additionalUploads;
+    private final String url;
+    private final String username;
+    private final String password;
+    private final String appId;
+    private final String filename;
 
     @DataBoundConstructor
-    public EaseRecorder(String url, String username, String password, String appId, String filename) {
+    public EaseRecorder(String url, String username, String password, String appId, String filename, EaseUpload[] additionalUploads) {
         this.url = url;
         this.username = username;
         this.password = password;
         this.appId = appId;
         this.filename = filename;
+        this.additionalUploads = additionalUploads;
     }
 
     public String getUrl() {
@@ -65,39 +68,59 @@ public class EaseRecorder extends Recorder {
         return filename;
     }
 
+    public EaseUpload[] getAdditionalUploads() { return additionalUploads; }
+
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
         PrintStream logger = listener.getLogger();
 
-        if (isEmptyString(appId)
-                || isEmptyString(url)
-                || isEmptyString(username)
-                || isEmptyString(password)
-                || isEmptyString(filename)) {
-            logger.println("One of configuration options is not filled");
+        EaseUpload prototypeUpload = new EaseUpload(url, username, password, appId, filename);
+        if (!prototypeUpload.checkOk()) {
+            logger.println("One of required configuration options is not set");
             return false;
         }
 
-        PublishingEndpoint endpoint = new PublishingEndpoint(url);
         try {
+            List<EaseUpload> allUploads = gatherAllUploads(prototypeUpload);
 
-            String pattern = filename.trim();
-            FilePath[] paths = build.getWorkspace().list(pattern);
-            if (paths.length != 1) {
-                logger.println("Found " + (paths.length == 0 ? "no files" : " ambiguous list " + Arrays.asList(paths)) +
-                        " as candidates for '" + pattern + "'");
+            for (Iterator<EaseUpload> iterator = allUploads.iterator(); iterator.hasNext(); ) {
+                EaseUpload upload = iterator.next();
+                if (!upload.checkOk()) {
+                    logger.println("Additional upload skipped: '" + upload.getFilename() + "' -> " + upload.getAppId());
+                    iterator.remove();
+                }
+            }
+
+            boolean error = false;
+            for (EaseUpload upload : allUploads) {
+                String filename = upload.getFilename();
+
+                FilePath[] paths = build.getWorkspace().list(filename);
+                if (paths.length != 1) {
+                    logger.println("Found " + (paths.length == 0 ? "no files" : " ambiguous list " + Arrays.asList(paths)) +
+                            " as candidates for pattern '" + filename + "'");
+                    error = true;
+                    continue;
+                }
+
+                upload.setFilePath(paths[0]);
+            }
+
+            if (error) {
                 return false;
             }
 
-            FilePath file = paths[0];
+            for (EaseUpload upload : allUploads) {
+                if (!upload.checkOk()) {
+                    continue;
+                }
 
-            return file.act(
-                    new PublishFileCallable(logger, endpoint,
-                        url.trim(),
-                        appId.trim(),
-                        username.trim(),
-                        password.trim()));
-
+                if (!upload.getFilePath().act(
+                        new PublishFileCallable(logger, upload))) {
+                    error = true;
+                }
+            }
+            return !error;
         } catch (IOException e) {
             logger.println("Connectivity or IO problem");
             e.printStackTrace(logger);
@@ -109,14 +132,18 @@ public class EaseRecorder extends Recorder {
             logger.println("General plugin problem");
             e.printStackTrace(logger);
             return false;
-        } finally {
-            try {
-                endpoint.close();
-            } catch (IOException e) {
-                logger.println("Connectivity problem");
-                e.printStackTrace(logger);
+        }
+    }
+
+    private List<EaseUpload> gatherAllUploads(EaseUpload prototypeUpload) {
+        List<EaseUpload> allUploads = new ArrayList<EaseUpload>();
+        allUploads.add(prototypeUpload);
+        if (additionalUploads != null) {
+            for (EaseUpload additionalUpload : additionalUploads) {
+                allUploads.add(prototypeUpload.derive(additionalUpload));
             }
         }
+        return allUploads;
     }
 
     private static boolean isEmptyString(String str) {

@@ -23,4 +23,34 @@
     <f:entry title="${%Filename}" field="filename">
         <f:textbox default="**/*.ipa,**/*.apk,**/*.zip" />
     </f:entry>
+
+    <f:entry title="${%Additional Uploads}">
+        <f:repeatable name="additionalUploads" var="additionalUpload" items="${instance.additionalUploads}">
+            <table width="100%">
+                <f:entry title="${%Application ID}" field="_appId">
+                    <f:textbox default="" value="${additionalUpload.appId}"/>
+                </f:entry>
+
+                <f:entry title="${%Filename}" field="_filename">
+                    <f:textbox default="" value="${additionalUpload.filename}"/>
+                </f:entry>
+
+                <f:entry title="${%Username ID/email} (optional)" field="_username">
+                    <f:textbox default="" value="${additionalUpload.username}"/>
+                </f:entry>
+                <f:entry title="${%Password} (optional)" field="_password">
+                    <f:password value="${additionalUpload.password}"/>
+                </f:entry>
+                <f:entry title="${%Ease API URL} (optional)" field="_url">
+                    <f:textbox default="" value="${additionalUpload.url}"/>
+                </f:entry>
+
+                <f:entry title="">
+                    <div align="right">
+                        <f:repeatableDeleteButton/>
+                    </div>
+                </f:entry>
+            </table>
+        </f:repeatable>
+    </f:entry>
 </j:jelly>
