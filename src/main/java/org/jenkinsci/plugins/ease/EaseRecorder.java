@@ -74,14 +74,14 @@ public class EaseRecorder extends Recorder {
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
         PrintStream logger = listener.getLogger();
 
-        EaseUpload prototypeUpload = new EaseUpload(url, username, password, appId, filename);
-        if (!prototypeUpload.checkOk()) {
+        EaseUpload mainUpload = new EaseUpload(url, username, password, appId, filename);
+        if (!mainUpload.checkOk()) {
             logger.println("One of required configuration options is not set");
             return false;
         }
 
         try {
-            List<EaseUpload> allUploads = gatherAllUploads(prototypeUpload);
+            List<EaseUpload> allUploads = gatherAllUploads(mainUpload);
 
             for (Iterator<EaseUpload> iterator = allUploads.iterator(); iterator.hasNext(); ) {
                 EaseUpload upload = iterator.next();
@@ -175,9 +175,6 @@ public class EaseRecorder extends Recorder {
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-//            easeAPIURL = formData.getString("easeAPIURL");
-//            username = formData.getString("username");
-//            password = formData.getString("password");
             save();
             return super.configure(req,formData);
         }
@@ -186,10 +183,8 @@ public class EaseRecorder extends Recorder {
                                                @QueryParameter("username") final String username,
                                                @QueryParameter("password") final String password)
                 throws IOException, ServletException {
-            if (isEmptyString(url)
-                    || isEmptyString(username)
-                    || isEmptyString(password)) {
-                return FormValidation.error("API URL, username and password should not be empty");
+            if (isEmptyString(url)) {
+                return FormValidation.error("API URL should not be empty");
             }
 
             if (url.contains("___")) {
@@ -208,18 +203,24 @@ public class EaseRecorder extends Recorder {
         }
 
         private FormValidation checkConnectivity(String url, String username, String password) throws IOException {
-            PublishingEndpoint api = new PublishingEndpoint(url);
+            PublishingEndpoint endpoint = new PublishingEndpoint(url);
 
-            AuthenticateUserResponse authResponse = PublishingAPI.authenticateUser(username, password)
-                    .call(api);
+            EaseCredentials credentials = new EaseCredentials(url, username, password);
+            credentials.lookupStoredCredentials();
 
+            if (!credentials.checkOk()) {
+                return FormValidation.error("Username/password are not set and there is no stored credentials found");
+            }
+
+
+            AuthenticateUserResponse authResponse = credentials.authenticate(endpoint);
             if (authResponse.hasError()) {
                 String errorMessage = authResponse.getErrorMessage();
                 return FormValidation.error(errorMessage);
             }
 
             GetListResponse getListResponse = PublishingAPI.getList(authResponse.result.token)
-                    .call(api);
+                    .call(endpoint);
 
             if (getListResponse.hasError()) {
                 String errorMessage = authResponse.getErrorMessage();

@@ -13,19 +13,18 @@ public class EaseUpload {
 
     @DataBoundConstructor
     public EaseUpload(String _url, String _username, String _password, String _appId, String _filename) {
-        this.url = trim(_url);
-        this.username = trim(_username);
-        this.password = trim(_password);
-        this.appId = trim(_appId);
-        this.filename = trim(_filename);
+        this.url = Utils.trim(_url);
+        this.username = Utils.trim(_username);
+        this.password = _password;
+        this.appId = Utils.trim(_appId);
+        this.filename = Utils.trim(_filename);
     }
-
 
     public EaseUpload derive(EaseUpload additionalUpload) {
         return new EaseUpload(
-                override(additionalUpload.url, url),
-                override(additionalUpload.username, username),
-                override(additionalUpload.password, password),
+                Utils.override(additionalUpload.url, url),
+                Utils.override(additionalUpload.username, username),
+                Utils.override(additionalUpload.password, password),
                 additionalUpload.getAppId(),
                 additionalUpload.getFilename());
     }
@@ -58,21 +57,9 @@ public class EaseUpload {
         return password;
     }
 
-    private static String trim(String url) {
-        return url == null ? "" : url.trim();
-    }
-    private static String override(String v1, String v2) {
-        return !v1.isEmpty() ? v1 : v2;
-    }
-    private static boolean isEmptyString(String val) {
-        return val.isEmpty();
-    }
-
     public boolean checkOk() {
-        return !(isEmptyString(appId)
-                || isEmptyString(url)
-                || isEmptyString(username)
-                || isEmptyString(password)
-                || isEmptyString(filename));
+        return !(Utils.isEmptyString(appId)
+                || Utils.isEmptyString(url)
+                || Utils.isEmptyString(filename));
     }
 }

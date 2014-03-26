@@ -79,5 +79,22 @@ public class PublishingResponse {
         public String getDetailedMessage() {
             return (String) getData().get(APIConstants.ERROR_FIELD_DETAILED_MESSAGE);
         }
+
+        public void appendDetailedMessage(String message) {
+            Object val = getData().get(APIConstants.ERROR_FIELD_DETAILED_MESSAGE);
+            if (val == null) {
+                val = "";
+            }
+            String msg = val.toString();
+            msg += message;
+            getData().put(APIConstants.ERROR_FIELD_DETAILED_MESSAGE, msg);
+        }
     }
+
+    public void appendError(String message) {
+        if (error != null) {
+            error.appendDetailedMessage(message);
+        }
+    }
+
 }

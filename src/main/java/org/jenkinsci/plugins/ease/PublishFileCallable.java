@@ -29,11 +29,18 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         PublishingEndpoint endpoint = new PublishingEndpoint(url);
         try {
             logger.println("Publishing " + f + " to EASE");
-            AuthenticateUserResponse auth = PublishingAPI.authenticateUser(username, password)
-                    .call(endpoint);
+
+            EaseCredentials credentials = new EaseCredentials(url, username, password);
+            credentials.lookupStoredCredentials();
+            if (!credentials.checkOk()) {
+                logger.println("Error: username/password are not set and there is no stored credentials found");
+                return false;
+            }
+
+            AuthenticateUserResponse auth = credentials.authenticate(endpoint);
             if (auth.hasError()) {
                 String errorMessage = auth.getErrorMessage();
-                logger.println("Error: " + errorMessage + " url=" + url + " , username=" + username);
+                logger.println("Error: " + errorMessage + ", url=" + url);
                 return false;
             }
 
@@ -76,6 +83,9 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
             logger.println("DONE! Uploaded " + f.getName() + " to " + url + " for appId=" + appId);
             return true;
+        } catch (Exception ex) {
+            logger.println("General plugin problem: " + ex);
+            return false;
         } finally {
             endpoint.close();
         }
