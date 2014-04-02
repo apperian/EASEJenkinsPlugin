@@ -12,6 +12,23 @@
     <version>1.2</version>
     <packaging>hpi</packaging>
 
+    <url>http://wiki.jenkins-ci.org/display/JENKINS/EASEJenkinsPlugin</url>
+
+    <developers>
+        <developer>
+            <id>oleksiyp</id>
+            <name>Oleksiy Pylypenko</name>
+            <email>oleksiy.pylypenko@gmail.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:ssh://github.com/jenkinsci/EASEJenkinsPlugin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/EASEJenkinsPlugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/EASEJenkinsPlugin</url>
+    </scm>
+
+
     <!-- get every artifact through repo.jenkins-ci.org, which proxies all the artifacts that we need -->
     <repositories>
         <repository>
@@ -26,6 +43,24 @@
             <url>http://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
+
+    <distributionManagement>
+        <repository>
+            <id>maven.jenkins-ci.org</id>
+            <url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url>
+        </repository>
+    </distributionManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <golas>deploy</golas>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <dependency>
