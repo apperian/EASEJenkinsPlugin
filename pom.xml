@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>ease-publishing</artifactId>
-    <version>1.2</version>
+    <version>1.2.1</version>
     <packaging>hpi</packaging>
 
     <url>http://wiki.jenkins-ci.org/display/JENKINS/EASEJenkinsPlugin</url>
