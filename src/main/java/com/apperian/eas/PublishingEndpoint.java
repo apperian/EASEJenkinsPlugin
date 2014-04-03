@@ -1,6 +1,7 @@
 package com.apperian.eas;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -23,8 +24,7 @@ public class PublishingEndpoint implements Closeable {
 
     private ObjectMapper mapper = new ObjectMapper();
     {
-        // TODO for compatibility
-        //mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     public final String url;
