@@ -22,6 +22,13 @@
         </developer>
     </developers>
 
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
     <scm>
         <connection>scm:git:ssh://github.com/jenkinsci/EASEJenkinsPlugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/EASEJenkinsPlugin.git</developerConnection>
