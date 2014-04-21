@@ -8,7 +8,7 @@
         <!-- which version of Jenkins is this plugin built against? -->
     </parent>
 
-    <artifactId>ease-publishing</artifactId>
+    <artifactId>ease-plugin</artifactId>
     <version>1.2.1-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
