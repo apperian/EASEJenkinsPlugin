@@ -11,7 +11,7 @@
     <version>1.2.2-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
-    <url>http://wiki.jenkins-ci.org/display/JENKINS/EASEJenkinsPlugin</url>
+    <url>https://wiki.jenkins-ci.org/display/JENKINS/EASE+Plugin</url>
 
     <developers>
         <developer>
