@@ -8,6 +8,14 @@ public class AuthenticateUserResponse extends PublishingResponse {
     }
 
     @Override
+    public String getErrorMessage() {
+        if (result != null && result.token == null) {
+            return "No access";
+        }
+        return super.getErrorMessage();
+    }
+
+    @Override
     public String toString() {
         return "AuthenticateUserResponse{" +
                 "token='" + result.token + '\'' +
