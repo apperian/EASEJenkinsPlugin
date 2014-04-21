@@ -30,9 +30,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:ssh://github.com/jenkinsci/EASEJenkinsPlugin.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/EASEJenkinsPlugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/EASEJenkinsPlugin</url>
+        <connection>scm:git:ssh://github.com/jenkinsci/ease-plugin.git</connection>
+        <developerConnection>scm:git:ssh://github.com/jenkinsci/ease-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/ease-plugin</url>
     </scm>
 
 
