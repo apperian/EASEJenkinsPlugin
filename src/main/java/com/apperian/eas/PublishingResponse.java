@@ -25,7 +25,7 @@ public class PublishingResponse {
     }
 
     public boolean hasError() {
-        return error != null;
+        return getErrorMessage() != null;
     }
 
     public String getErrorMessage() {

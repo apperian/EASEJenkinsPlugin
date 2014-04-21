@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 import static com.apperian.eas.GetListResponse.Application;
 
 public class EaseRecorder extends Recorder {
-    public static final String PLUGIN_NAME = "EASE publishing plugin";
+    public static final String PLUGIN_NAME = "EASE Plugin";
 
     private static final Logger logger = Logger.getLogger(EaseRecorder.class.getName());
 

@@ -12,14 +12,17 @@ import hudson.security.ACL;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class EaseCredentials {
     private final String url;
     private final List<EaseUser> credentials;
+
+    private static final Logger logger = Logger.getLogger(EaseCredentials.class.getName());
 
     public EaseCredentials(String url, String username, String password) {
         this.url = Utils.trim(url);
@@ -68,29 +71,40 @@ public class EaseCredentials {
         }
     }
 
-    public AuthenticateUserResponse authenticate(PublishingEndpoint endpoint)
-            throws IOException {
+    public AuthenticateUserResponse authenticate(final PublishingEndpoint endpoint) {
         AuthenticateUserResponse authResponse = null;
-        IOException ex = null;
         for (EaseUser user : credentials) {
             try {
-                ex = null;
                 authResponse = PublishingAPI.authenticateUser(
                         user.getUsername(),
                         user.getPassword().getPlainText())
                         .call(endpoint);
-            } catch (IOException e) {
-                ex = e;
-                continue;
+            } catch (Exception e) {
+                String errMsg = "Failed to do request to '" + endpoint.url +
+                        "', lastCredentials=" + user.getDescription() +
+                        ", error='" + e.getMessage() + "'";
+                authResponse = new ErrorAuthenticateUserResponse(errMsg);
+                logger.log(Level.WARNING, errMsg, e);
+                break;
             }
             if (!authResponse.hasError()) {
                 break;
             }
             authResponse.appendError(", lastCredentials=" + user.getDescription());
         }
-        if (ex != null) {
-            throw ex;
-        }
         return authResponse;
+    }
+
+    private static class ErrorAuthenticateUserResponse extends AuthenticateUserResponse {
+        private final String errMsg;
+
+        public ErrorAuthenticateUserResponse(String errMsg) {
+            this.errMsg = errMsg;
+        }
+
+        @Override
+        public String getErrorMessage() {
+            return errMsg;
+        }
     }
 }
