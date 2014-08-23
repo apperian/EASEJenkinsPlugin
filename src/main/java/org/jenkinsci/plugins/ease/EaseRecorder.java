@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.ease;
 
 import com.apperian.eas.*;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -12,6 +13,7 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
+import hudson.util.Function1;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -71,8 +73,8 @@ public class EaseRecorder extends Recorder {
     public EaseUpload[] getAdditionalUploads() { return additionalUploads; }
 
     @Override
-    public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
-        PrintStream logger = listener.getLogger();
+    public boolean perform(final AbstractBuild build, Launcher launcher, final BuildListener listener) {
+        final PrintStream logger = listener.getLogger();
 
         EaseUpload mainUpload = new EaseUpload(url, username, password, appId, filename);
         if (!mainUpload.checkOk()) {
@@ -82,6 +84,12 @@ public class EaseRecorder extends Recorder {
 
         try {
             List<EaseUpload> allUploads = gatherAllUploads(mainUpload);
+
+            Function1<String, String> expandVarFunctions;
+            expandVarFunctions = new ExpandVariablesFunction(build, listener, logger);
+            for (EaseUpload upload : allUploads) {
+                upload.expand(expandVarFunctions);
+            }
 
             for (Iterator<EaseUpload> iterator = allUploads.iterator(); iterator.hasNext(); ) {
                 EaseUpload upload = iterator.next();
@@ -245,5 +253,28 @@ public class EaseRecorder extends Recorder {
 
     }
 
+    private static class ExpandVariablesFunction implements Function1<String, String> {
+        private final AbstractBuild build;
+        private final BuildListener listener;
+        private final PrintStream logger;
+
+        public ExpandVariablesFunction(AbstractBuild build, BuildListener listener, PrintStream logger) {
+            this.build = build;
+            this.listener = listener;
+            this.logger = logger;
+        }
+
+        public String call(String value) {
+            try {
+                EnvVars environment = build.getEnvironment(listener);
+                return environment.expand(value);
+            } catch (IOException e) {
+                logger.println("Environment expand error: " + e);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return value;
+        }
+    }
 }
 

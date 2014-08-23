@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.ease;
 
 import hudson.FilePath;
+import hudson.util.Function1;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class EaseUpload {
@@ -61,5 +62,12 @@ public class EaseUpload {
         return !(Utils.isEmptyString(appId)
                 || Utils.isEmptyString(url)
                 || Utils.isEmptyString(filename));
+    }
+
+    public void expand(Function1<String, String> expandVars) {
+        url = expandVars.call(url);
+        appId = expandVars.call(appId);
+        filename = expandVars.call(filename);
+        username = expandVars.call(username);
     }
 }
