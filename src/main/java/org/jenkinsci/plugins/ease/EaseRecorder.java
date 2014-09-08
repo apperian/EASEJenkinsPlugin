@@ -124,7 +124,7 @@ public class EaseRecorder extends Recorder {
                 }
 
                 if (!upload.getFilePath().act(
-                        new PublishFileCallable(logger, upload))) {
+                        new PublishFileCallable(upload, listener))) {
                     error = true;
                 }
             }
