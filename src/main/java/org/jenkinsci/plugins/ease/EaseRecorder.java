@@ -15,6 +15,8 @@ import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
 import hudson.util.Function1;
 import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -244,11 +246,29 @@ public class EaseRecorder extends Recorder {
             });
 
             StringBuilder sb = new StringBuilder();
-            for (Application app : list) {
-                sb.append("'").append(app.name).append("'->").append(app.ID).append(' ');
+            sb.append("Connection OK!");
+            if (list.isEmpty()) {
+                sb.append(" No applications found in account");
+            } else {
+                sb.append(" Application IDs (just copy/paste to below field): \n");
+                for (Application app : list) {
+                    sb.append(" ")
+                      .append(app.ID)
+                      .append(" \u2190 ")
+                      .append(app.name)
+                      .append(" ")
+                      .append(app.version);
+
+                    if (!StringUtils.isEmpty(app.shortdescription)) {
+                        sb.append(" (description: ")
+                          .append(app.shortdescription)
+                          .append(")");
+                    }
+                    sb.append("\n");
+                }
             }
 
-            return FormValidation.ok("Connection OK! AppIds: " + sb);
+            return FormValidation.ok(sb.toString());
         }
 
     }
