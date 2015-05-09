@@ -4,13 +4,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.Map;
 
 import com.apperian.eas.AuthenticateUserResponse;
+import com.apperian.eas.Metadata;
 import com.apperian.eas.PublishResponse;
 import com.apperian.eas.PublishingAPI;
 import com.apperian.eas.PublishingEndpoint;
 import com.apperian.eas.UpdateResponse;
 import com.apperian.eas.UploadResult;
+import com.apperian.eas.metadata.MetadataExtractor;
+import com.google.common.base.Splitter;
 
 import hudson.FilePath;
 import hudson.model.BuildListener;
@@ -22,6 +26,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
     private final String username;
     private final String password;
     private final String url;
+    private final String metadataAssignment;
 
     public PublishFileCallable(EaseUpload upload, BuildListener listener) {
         this.listener = listener;
@@ -30,6 +35,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         this.username = upload.getUsername();
         this.password = upload.getPassword();
         this.appId = upload.getAppId();
+        this.metadataAssignment = upload.getMetadataAssignment();
     }
 
     public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
@@ -37,7 +43,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         try {
             return publishFileToEndpoint(f, endpoint);
         } catch (Exception ex) {
-            report("General plugin problem: " + ex);
+            report("General plugin problem: %s", ex);
             return false;
         } finally {
             endpoint.close();
@@ -45,8 +51,6 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
     }
 
     private Boolean publishFileToEndpoint(File f, PublishingEndpoint endpoint) throws IOException {
-        report("Publishing " + f + " to EASE");
-
         EaseCredentials credentials = new EaseCredentials(url, username, password);
         credentials.lookupStoredCredentials();
         if (!credentials.checkOk()) {
@@ -57,7 +61,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         AuthenticateUserResponse auth = credentials.authenticate(endpoint);
         if (auth.hasError()) {
             String errorMessage = auth.getErrorMessage();
-            report("Error: " + errorMessage + ", url=" + url);
+            report("Error: %s, url=%s", errorMessage, url);
             return false;
         }
 
@@ -66,14 +70,24 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
 
         if (update.hasError()) {
             String errorMessage = update.getErrorMessage();
-            report("Error: " + errorMessage + ", appId=" + appId);
+            report("Error: %s, appId=%s", errorMessage, appId);
             return false;
         }
 
+        Metadata metadata = update.result.EASEmetadata;
+
+        report("Metadata from server: %s", metadata);
+
+        extractMetadataFromFile(metadata, f);
+        extractMetadataFromAssignment(metadata, metadataAssignment);
+
+        report("New metadata: %s", metadata);
+
+        report("Publishing %s to EASE", f);
         UploadResult upload = endpoint.uploadFile(update.result.fileUploadURL, f);
         if (upload.hasError()) {
             String errorMessage = upload.errorMessage;
-            report("Error: " + errorMessage);
+            report("Error: %s", errorMessage);
             return false;
         }
 
@@ -82,10 +96,11 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
             return false;
         }
 
+
         PublishResponse publish = PublishingAPI.publish(
                 auth.result.token,
                 update.result.transactionID,
-                update.result.EASEmetadata,
+                metadata,
                 upload.fileID).call(endpoint);
         if (publish.hasError()) {
             String errorMessage = publish.getErrorMessage();
@@ -98,8 +113,38 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
             return false;
         }
 
-        report("DONE! Uploaded " + f.getName() + " to " + url + " for appId=" + appId);
+        report("DONE! Uploaded %s to %s for appId=%s", f.getName(), url, appId);
         return true;
+    }
+
+    private void extractMetadataFromAssignment(Metadata metadata, String metadataAssignment) {
+        Map<String, String> map = Splitter.on(";")
+                                            .trimResults()
+                                            .withKeyValueSeparator("=")
+                                            .split(metadataAssignment);
+
+        report("Extracting from user provided metadata assignment");
+        for (String name : map.keySet()) {
+            String value = map.get(name);
+
+            report("Extracted %s = '%s'", name, value);
+            metadata.getValues().put(name, value);
+        }
+    }
+
+    private void extractMetadataFromFile(Metadata metadata, File file) {
+        report("Extracting from dist archive '%s'", file.getName());
+
+        boolean extracted = false;
+        for (MetadataExtractor extractor : MetadataExtractor.ofFile(file, getLogger())) {
+            if (extractor.extractTo(metadata)) {
+                extracted = true;
+                break;
+            }
+        }
+        if (!extracted) {
+            report("Couldn't find metadata extractor for '%s'", file.getName());
+        }
     }
 
     public String getAppId() {
@@ -122,8 +167,8 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         return listener.getLogger();
     }
 
-    private void report(String message) {
-        getLogger().println(message);
+    private void report(String message, Object ...args) {
+        getLogger().println(String.format(message, args));
     }
 
 }

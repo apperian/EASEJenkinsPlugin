@@ -1,7 +1,9 @@
 package com.apperian.eas;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.DeserializationFeature;
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -13,9 +15,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class PublishingEndpoint implements Closeable {
     private CloseableHttpClient httpClient = HttpClients
@@ -34,7 +35,7 @@ public class PublishingEndpoint implements Closeable {
     }
 
     <T extends PublishingResponse> T doJsonRpc(PublishingRequest request,
-                                                              Class<T> responseClass) throws IOException {
+                                               Class<T> responseClass) throws IOException {
 
         HttpPost post = buildJsonRpcPost(request);
         CloseableHttpResponse response = httpClient.execute(post);

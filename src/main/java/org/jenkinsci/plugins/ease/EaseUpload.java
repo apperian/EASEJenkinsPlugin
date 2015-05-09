@@ -1,8 +1,9 @@
 package org.jenkinsci.plugins.ease;
 
+import org.kohsuke.stapler.DataBoundConstructor;
+
 import hudson.FilePath;
 import hudson.util.Function1;
-import org.kohsuke.stapler.DataBoundConstructor;
 
 public class EaseUpload {
     private String url;
@@ -10,15 +11,22 @@ public class EaseUpload {
     private String filename;
     private String username;
     private String password;
+    private String metadataAssignment;
     private transient  FilePath filePath;
 
     @DataBoundConstructor
-    public EaseUpload(String _url, String _username, String _password, String _appId, String _filename) {
+    public EaseUpload(String _url,
+                      String _username,
+                      String _password,
+                      String _appId,
+                      String _filename,
+                      String _metadataAssignment) {
         this.url = Utils.trim(_url);
         this.username = Utils.trim(_username);
         this.password = _password;
         this.appId = Utils.trim(_appId);
         this.filename = Utils.trim(_filename);
+        this.metadataAssignment = Utils.trim(_metadataAssignment);
     }
 
     public EaseUpload derive(EaseUpload additionalUpload) {
@@ -27,7 +35,8 @@ public class EaseUpload {
                 Utils.override(additionalUpload.username, username),
                 Utils.override(additionalUpload.password, password),
                 additionalUpload.getAppId(),
-                additionalUpload.getFilename());
+                additionalUpload.getFilename(),
+                Utils.override(additionalUpload.metadataAssignment, metadataAssignment));
     }
 
     public void setFilePath(FilePath filePath) {
@@ -58,6 +67,10 @@ public class EaseUpload {
         return password;
     }
 
+    public String getMetadataAssignment() {
+        return metadataAssignment;
+    }
+
     public boolean checkOk() {
         return !(Utils.isEmptyString(appId)
                 || Utils.isEmptyString(url)
@@ -69,5 +82,6 @@ public class EaseUpload {
         appId = expandVars.call(appId);
         filename = expandVars.call(filename);
         username = expandVars.call(username);
+        metadataAssignment = expandVars.call(metadataAssignment);
     }
 }

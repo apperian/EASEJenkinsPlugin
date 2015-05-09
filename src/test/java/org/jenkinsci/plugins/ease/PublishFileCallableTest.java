@@ -7,7 +7,6 @@ import java.io.ObjectOutputStream;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.MockSettings;
 import org.mockito.Mockito;
 
 import hudson.model.BuildListener;
@@ -17,7 +16,8 @@ import static org.mockito.Mockito.withSettings;
 
 public class PublishFileCallableTest {
 
-    public static final EaseUpload EASE_UPLOAD1 = new EaseUpload("url1", "user1", "pass1", "app1", "file1");
+    public static final EaseUpload EASE_UPLOAD1 = new EaseUpload("url1", "user1", "pass1", "app1", "file1",
+                                                                 "");
 
     @Test
     public void testSerialization() throws Exception {

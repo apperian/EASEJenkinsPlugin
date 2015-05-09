@@ -1,5 +1,9 @@
 package com.apperian.eas;
 
+/**
+ * API described at:
+ * https://help.apperian.com/display/pub/EASE+Publishing+API+Guide
+ */
 public class PublishingAPI {
     public static AuthenticateUserRequest authenticateUser(String username, String password) {
         return new AuthenticateUserRequest(username, password);

@@ -1,6 +1,27 @@
 package org.jenkinsci.plugins.ease;
 
-import com.apperian.eas.*;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.ServletException;
+
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+
+import com.apperian.eas.AuthenticateUserResponse;
+import com.apperian.eas.GetListResponse;
+import com.apperian.eas.PublishingAPI;
+import com.apperian.eas.PublishingEndpoint;
+
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -16,18 +37,6 @@ import hudson.util.FormValidation;
 import hudson.util.Function1;
 import net.sf.json.JSONObject;
 
-import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import static com.apperian.eas.GetListResponse.Application;
 
 public class EaseRecorder extends Recorder {
@@ -41,15 +50,23 @@ public class EaseRecorder extends Recorder {
     private final String password;
     private final String appId;
     private final String filename;
+    private final String metadataAssignment;
 
     @DataBoundConstructor
-    public EaseRecorder(String url, String username, String password, String appId, String filename, EaseUpload[] additionalUploads) {
+    public EaseRecorder(String url,
+                        String username,
+                        String password,
+                        String appId,
+                        String filename,
+                        String metadataAssignment,
+                        EaseUpload[] additionalUploads) {
         this.url = url;
         this.username = username;
         this.password = password;
         this.appId = appId;
         this.filename = filename;
         this.additionalUploads = additionalUploads;
+        this.metadataAssignment = metadataAssignment;
     }
 
     public String getUrl() {
@@ -72,13 +89,22 @@ public class EaseRecorder extends Recorder {
         return filename;
     }
 
+    public String getMetadataAssignment() {
+        return metadataAssignment;
+    }
+
     public EaseUpload[] getAdditionalUploads() { return additionalUploads; }
 
     @Override
     public boolean perform(final AbstractBuild build, Launcher launcher, final BuildListener listener) {
         final PrintStream logger = listener.getLogger();
 
-        EaseUpload mainUpload = new EaseUpload(url, username, password, appId, filename);
+        EaseUpload mainUpload = new EaseUpload(url,
+                                               username,
+                                               password,
+                                               appId,
+                                               filename,
+                                               metadataAssignment);
         if (!mainUpload.checkOk()) {
             logger.println("One of required configuration options is not set");
             return false;
