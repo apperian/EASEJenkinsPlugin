@@ -2,47 +2,60 @@ package com.apperian.eas.metadata;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 
 import com.apperian.eas.Metadata;
 
-import static java.util.Arrays.asList;
+public abstract class MetadataExtractor implements Comparable<MetadataExtractor> {
+    protected static final Logger logger = Logger.getLogger(MetadataExtractor.class.getName());
 
-public abstract class MetadataExtractor {
-    private String errorMessage;
-    private PrintStream logger;
+    protected PrintStream jenkinsLogger;
+    protected int scoreValue;
 
-    protected MetadataExtractor(PrintStream logger) {
-        this.logger = logger;
+    protected MetadataExtractor() {
+
     }
 
-    public static List<MetadataExtractor> ofFile(File file, PrintStream logger) {
-        String name = file.getName();
-        if (name.endsWith(".apk")) {
-            return asList(android(file, logger),
-                          ios(file, logger));
-        } else if (name.endsWith(".ipa") || name.endsWith(".app")) {
-            return asList(ios(file, logger),
-                          android(file, logger));
+    public static List<MetadataExtractor> allExtractors(File file) {
+        List<MetadataExtractor> extractors = new ArrayList<>();
+
+        addExtractorByClass(extractors, file,
+                            "com.apperian.eas.metadata.AndroidMetadataExtractor");
+        addExtractorByClass(extractors, file,
+                            "com.apperian.eas.metadata.IOSMetadataExtractor");
+
+        Collections.sort(extractors);
+
+        return extractors;
+    }
+
+    private static void addExtractorByClass(List<MetadataExtractor> extractors,
+                                            File file,
+                                            String clsName) {
+        try {
+            Class<?> cls = Class.forName(clsName);
+            MetadataExtractor extractor = (MetadataExtractor)cls.newInstance();
+            if (!extractor.checkFileAcceptable(file)) {
+                return;
+            }
+            extractors.add(extractor);
+        } catch (Exception e) {
+            logger.throwing("MetadataExtractor", "addExtractorByClass", e);
         }
-
-        return asList(android(file, logger),
-                      ios(file, logger));
     }
 
-    public static MetadataExtractor ios(File file, PrintStream logger) {
-        return new IOSMetadataExtractor(file, logger);
+    protected boolean checkFileAcceptable(File file) {
+        return true;
     }
 
-    public static MetadataExtractor android(File file, PrintStream logger) {
-        return new AndroidMetadataExtractor(file, logger);
-    }
-
-    public abstract boolean extractTo(Metadata metadata);
+    public abstract boolean extractTo(Metadata metadata, File file, PrintStream logger);
 
     protected void report(String msg, Object ...args) {
-        if (logger != null) {
-            logger.println(String.format(msg, args));
+        if (jenkinsLogger != null) {
+            jenkinsLogger.println(String.format(msg, args));
         }
     }
 
@@ -52,5 +65,13 @@ public abstract class MetadataExtractor {
         }
         report("Extracted %s = '%s'", name, value);
         metadata.getValues().put(name, value);
+    }
+
+    @Override public int compareTo(MetadataExtractor o) {
+        return -Integer.compare(score(), o.score());
+    }
+
+    protected int score() {
+        return scoreValue;
     }
 }

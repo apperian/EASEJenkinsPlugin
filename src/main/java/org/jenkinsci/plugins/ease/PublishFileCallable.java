@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import com.apperian.eas.AuthenticateUserResponse;
 import com.apperian.eas.Metadata;
@@ -21,6 +22,8 @@ import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
 
 public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Serializable {
+    private final static Logger logger = Logger.getLogger(PublishFileCallable.class.getName());
+
     private final BuildListener listener;
     private final String appId;
     private final String username;
@@ -43,6 +46,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         try {
             return publishFileToEndpoint(f, endpoint);
         } catch (Exception ex) {
+            logger.throwing("PublishFileCallable", "invoke", ex);
             report("General plugin problem: %s", ex);
             return false;
         } finally {
@@ -86,8 +90,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         report("Publishing %s to EASE", f);
         UploadResult upload = endpoint.uploadFile(update.result.fileUploadURL, f);
         if (upload.hasError()) {
-            String errorMessage = upload.errorMessage;
-            report("Error: %s", errorMessage);
+            report("Error: %s", upload.errorMessage);
             return false;
         }
 
@@ -136,8 +139,8 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         report("Extracting from dist archive '%s'", file.getName());
 
         boolean extracted = false;
-        for (MetadataExtractor extractor : MetadataExtractor.ofFile(file, getLogger())) {
-            if (extractor.extractTo(metadata)) {
+        for (MetadataExtractor extractor : MetadataExtractor.allExtractors(file)) {
+            if (extractor.extractTo(metadata, file, getLogger())) {
                 extracted = true;
                 break;
             }

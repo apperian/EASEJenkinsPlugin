@@ -11,15 +11,12 @@ import net.dongliu.apk.parser.ApkParser;
 import net.dongliu.apk.parser.bean.ApkMeta;
 
 public class AndroidMetadataExtractor extends MetadataExtractor {
-    private File file;
-
-    public AndroidMetadataExtractor(File file, PrintStream logger) {
-        super(logger);
-        this.file = file;
+    public AndroidMetadataExtractor() {
     }
 
     @Override
-    public boolean extractTo(Metadata metadata) {
+    public boolean extractTo(Metadata metadata, File file, PrintStream logger) {
+        this.jenkinsLogger = logger;
         try {
             try(ApkParser apkParser = new ApkParser(file)) {
                 extractApkMeta(metadata, apkParser);
@@ -38,4 +35,11 @@ public class AndroidMetadataExtractor extends MetadataExtractor {
         setAndLog(metadata, KnownFields.VERSION, apkMeta.getVersionName());
     }
 
+    @Override
+    protected boolean checkFileAcceptable(File file) {
+        if (file.getName().endsWith(".apk")) {
+            scoreValue += 5;
+        }
+        return true;
+    }
 }

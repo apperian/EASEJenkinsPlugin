@@ -13,15 +13,12 @@ import com.dd.plist.NSObject;
 import com.dd.plist.PropertyListParser;
 
 public class IOSMetadataExtractor extends MetadataExtractor {
-    private File file;
-
-    public IOSMetadataExtractor(File file, PrintStream logger) {
-        super(logger);
-        this.file = file;
+    public IOSMetadataExtractor() {
     }
 
     @Override
-    public boolean extractTo(Metadata metadata) {
+    public boolean extractTo(Metadata metadata, File file, PrintStream logger) {
+        this.jenkinsLogger = logger;
         try (ZipFile zip = new ZipFile(file)) {
             ZipEntry entry = zip.getEntry("iTunesMetadata.plist");
             if (entry == null) {
@@ -57,5 +54,14 @@ public class IOSMetadataExtractor extends MetadataExtractor {
             }
         }
         return null;
+    }
+
+    @Override
+    protected boolean checkFileAcceptable(File file) {
+        String name = file.getName();
+        if (name.endsWith(".app") || name.endsWith(".ipa")) {
+            scoreValue += 5;
+        }
+        return true;
     }
 }
