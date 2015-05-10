@@ -43,7 +43,6 @@ public class UploadTest {
 
     @Test
     public void testAndroid() throws Exception {
-
         if (PWD.isEmpty()) {
             return;
         }
@@ -53,7 +52,6 @@ public class UploadTest {
 
     @Test
     public void testIOS() throws Exception {
-
         if (PWD.isEmpty()) {
             return;
         }
