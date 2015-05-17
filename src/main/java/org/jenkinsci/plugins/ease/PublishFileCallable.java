@@ -15,7 +15,6 @@ import com.apperian.eas.PublishingEndpoint;
 import com.apperian.eas.UpdateResponse;
 import com.apperian.eas.UploadResult;
 import com.apperian.eas.metadata.MetadataExtractor;
-import com.google.common.base.Splitter;
 
 import hudson.FilePath;
 import hudson.model.BuildListener;
@@ -29,7 +28,8 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
     private final String username;
     private final String password;
     private final String url;
-    private final String metadataAssignment;
+
+    private final Map<String, String> metadataAssignment;
 
     public PublishFileCallable(EaseUpload upload, BuildListener listener) {
         this.listener = listener;
@@ -38,7 +38,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         this.username = upload.getUsername();
         this.password = upload.getPassword();
         this.appId = upload.getAppId();
-        this.metadataAssignment = upload.getMetadataAssignment();
+        this.metadataAssignment = Utils.parseAssignmentMap(upload.getMetadataAssignment());
     }
 
     public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
@@ -47,7 +47,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
             return publishFileToEndpoint(f, endpoint);
         } catch (Exception ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
-            report("General plugin problem: %s", ex);
+            report("General plugin problem : %s", ex);
             return false;
         } finally {
             endpoint.close();
@@ -82,8 +82,9 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
 
         report("Metadata from server: %s", metadata);
 
+        assignAuthor(metadata);
         extractMetadataFromFile(metadata, f);
-        extractMetadataFromAssignment(metadata, metadataAssignment);
+        assignUserSetVars(metadata, metadataAssignment);
 
         report("New metadata: %s", metadata);
 
@@ -120,17 +121,17 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         return true;
     }
 
-    private void extractMetadataFromAssignment(Metadata metadata, String metadataAssignment) {
-        Map<String, String> map = Splitter.on(";")
-                                            .trimResults()
-                                            .withKeyValueSeparator("=")
-                                            .split(metadataAssignment);
+    private void assignAuthor(Metadata metadata) {
+        report("Using 'username' for author property in metadata");
+        metadata.setAuthor(getUsername());
+    }
 
-        report("Extracting from user provided metadata assignment");
+    private void assignUserSetVars(Metadata metadata, Map<String, String> map) {
+        report("Taking from user provided metadata assignment");
         for (String name : map.keySet()) {
             String value = map.get(name);
 
-            report("Extracted %s = '%s'", name, value);
+            report("Assigning %s = '%s'", name, value);
             metadata.getValues().put(name, value);
         }
     }
@@ -164,6 +165,10 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
 
     public String getUrl() {
         return url;
+    }
+
+    public Map<String, String> getMetadataAssignment() {
+        return metadataAssignment;
     }
 
     public PrintStream getLogger() {

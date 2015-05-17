@@ -1,5 +1,8 @@
 package org.jenkinsci.plugins.ease;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.FilePath;
@@ -82,6 +85,20 @@ public class EaseUpload {
         appId = expandVars.call(appId);
         filename = expandVars.call(filename);
         username = expandVars.call(username);
-        metadataAssignment = expandVars.call(metadataAssignment);
+        Map<String, String> map = Utils.parseAssignmentMap(metadataAssignment);
+        map = expandValuesOnly(map, expandVars);
+        metadataAssignment = Utils.outAssignmentMap(map);
+    }
+
+    private Map<String, String> expandValuesOnly(Map<String, String> map,
+                                                 Function1<String, String> expandVars) {
+        Map<String, String> resultMap = new LinkedHashMap<>(map.size());
+        for (String key : map.keySet()) {
+            String val = map.get(key);
+            String expandedVal = expandVars.call(val);
+            resultMap.put(key, expandedVal);
+        }
+
+        return resultMap;
     }
 }

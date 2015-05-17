@@ -26,6 +26,10 @@ public abstract class MetadataExtractor implements Comparable<MetadataExtractor>
                             "com.apperian.eas.metadata.AndroidMetadataExtractor");
         addExtractorByClass(extractors, file,
                             "com.apperian.eas.metadata.IOSMetadataExtractor");
+        addExtractorByClass(extractors, file,
+                            "com.apperian.eas.metadata.WinPhoneAppxMetadataExtractor");
+        addExtractorByClass(extractors, file,
+                            "com.apperian.eas.metadata.BlackberryMetadataExtractor");
 
         Collections.sort(extractors);
 

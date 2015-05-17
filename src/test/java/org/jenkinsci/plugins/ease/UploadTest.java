@@ -21,13 +21,17 @@ import hudson.model.BuildListener;
 public class UploadTest {
     public static final String URL = "https://easesvc.apperian.eu/ease.interface.php";
     public static final String USER = "oleksiyp@railsreactor.com";
-    public static final String PWD = "ubuntu.os";
+    public static final String PWD = "";
 
     @ClassRule
     public static JenkinsRule j = new JenkinsRule();
 
     @Test
     public void testListApps() throws Exception {
+        if (PWD.isEmpty()) {
+            return;
+        }
+
         PublishingEndpoint endpoint = new PublishingEndpoint(URL);
 
         String token = PublishingAPI.authenticateUser(USER, PWD)
@@ -59,6 +63,23 @@ public class UploadTest {
         upload("1EhXFWxikr6erSk1RVHMlw", "ios.ipa");
     }
 
+    @Test
+    public void testWinPhoneAppx() throws Exception {
+        if (PWD.isEmpty()) {
+            return;
+        }
+
+        upload("1EhXFWxikr6erSk1RVHMlw", "winphone.appx");
+    }
+
+    @Test
+    public void testBlackberry() throws Exception {
+        if (PWD.isEmpty()) {
+            return;
+        }
+
+        upload("1EhXFWxikr6erSk1RVHMlw", "blackberry.zip");
+    }
 
     private void upload(String appId, String filename) throws IOException, InterruptedException {
         EaseUpload upload;
@@ -85,6 +106,8 @@ public class UploadTest {
         PublishFileCallable callable = new PublishFileCallable(upload,
                                                                listener);
         Assert.assertTrue("upload succeeds", callable.invoke(tmpFile, null));
-        tmpFile.delete();
+        if (res != null) {
+            tmpFile.delete();
+        }
     }
 }

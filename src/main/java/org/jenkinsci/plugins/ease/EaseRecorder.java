@@ -99,6 +99,7 @@ public class EaseRecorder extends Recorder {
     public boolean perform(final AbstractBuild build, Launcher launcher, final BuildListener listener) {
         final PrintStream logger = listener.getLogger();
 
+
         EaseUpload mainUpload = new EaseUpload(url,
                                                username,
                                                password,
@@ -122,7 +123,7 @@ public class EaseRecorder extends Recorder {
             for (Iterator<EaseUpload> iterator = allUploads.iterator(); iterator.hasNext(); ) {
                 EaseUpload upload = iterator.next();
                 if (!upload.checkOk()) {
-                    logger.println("Additional upload skipped: '" + upload.getFilename() + "' -> " + upload.getAppId());
+                    logger.println("Additional upload skipped: '" + upload.getFilename() + "' -> appId='" + upload.getAppId() + "', specify appId, filename or url");
                     iterator.remove();
                 }
             }

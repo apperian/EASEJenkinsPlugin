@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Collections;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -17,7 +18,7 @@ import static org.mockito.Mockito.withSettings;
 public class PublishFileCallableTest {
 
     public static final EaseUpload EASE_UPLOAD1 = new EaseUpload("url1", "user1", "pass1", "app1", "file1",
-                                                                 "");
+                                                                 "abc=ghi");
 
     @Test
     public void testSerialization() throws Exception {
@@ -43,6 +44,7 @@ public class PublishFileCallableTest {
         Assert.assertEquals("user1", deserializedCallable.getUsername());
         Assert.assertEquals("pass1", deserializedCallable.getPassword());
         Assert.assertEquals("app1", deserializedCallable.getAppId());
+        Assert.assertEquals(Collections.singletonMap("abc", "ghi"), deserializedCallable.getMetadataAssignment());
 
     }
 }
