@@ -243,7 +243,11 @@ public class EaseRecorder extends Recorder {
             PublishingEndpoint endpoint = new PublishingEndpoint(url);
 
             EaseCredentials credentials = new EaseCredentials(url, username, password);
-            credentials.lookupStoredCredentials();
+            try {
+                credentials.lookupStoredCredentials();
+            } catch (Exception ex) {
+                // skip
+            }
 
             if (!credentials.checkOk()) {
                 return FormValidation.error("Username/password are not set and there is no stored credentials found");

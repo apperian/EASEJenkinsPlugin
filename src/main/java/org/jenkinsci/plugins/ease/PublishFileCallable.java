@@ -56,7 +56,15 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
 
     private Boolean publishFileToEndpoint(File f, PublishingEndpoint endpoint) throws IOException {
         EaseCredentials credentials = new EaseCredentials(url, username, password);
-        credentials.lookupStoredCredentials();
+        try {
+            credentials.lookupStoredCredentials();
+        } catch (Exception ex) {
+            logger.throwing(PublishFileCallable.class.getName(),
+                            "publishFileToEndpoint",
+                            ex);
+            // but pass-through
+        }
+
         if (!credentials.checkOk()) {
             report("Error: username/password are not set and there is no stored credentials found");
             return false;
