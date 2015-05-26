@@ -25,13 +25,13 @@ public class EaseCredentials {
 
     private static final Logger logger = Logger.getLogger(EaseCredentials.class.getName());
 
-    public EaseCredentials(String url, String username, String password) {
+    public EaseCredentials(String url, String username, Secret password) {
         this.url = Utils.trim(url);
         credentials = new ArrayList<EaseUser>();
         if (!Utils.isEmptyString(username)) {
             credentials.add(new EaseUser(
                     Utils.trim(username),
-                    Secret.fromString(password),
+                    password,
                     "form username/password"));
         }
     }

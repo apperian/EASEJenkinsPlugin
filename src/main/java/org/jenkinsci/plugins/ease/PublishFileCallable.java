@@ -19,6 +19,7 @@ import com.apperian.eas.metadata.MetadataExtractor;
 import hudson.FilePath;
 import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
+import hudson.util.Secret;
 
 public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Serializable {
     private final static Logger logger = Logger.getLogger(PublishFileCallable.class.getName());
@@ -26,7 +27,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
     private final BuildListener listener;
     private final String appId;
     private final String username;
-    private final String password;
+    private final Secret password;
     private final String url;
 
     private final Map<String, String> metadataAssignment;
@@ -36,7 +37,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
 
         this.url = upload.getUrl();
         this.username = upload.getUsername();
-        this.password = upload.getPassword();
+        this.password = Secret.fromString(upload.getPassword());
         this.appId = upload.getAppId();
         this.metadataAssignment = Utils.parseAssignmentMap(upload.getMetadataAssignment());
     }
@@ -48,6 +49,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         } catch (Exception ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
             report("General plugin problem : %s", ex);
+            ex.printStackTrace(getLogger());
             return false;
         } finally {
             endpoint.close();
@@ -167,7 +169,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         return username;
     }
 
-    public String getPassword() {
+    public Secret getPassword() {
         return password;
     }
 

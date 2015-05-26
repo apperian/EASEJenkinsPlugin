@@ -46,7 +46,7 @@ public abstract class MetadataExtractor implements Comparable<MetadataExtractor>
                 return;
             }
             extractors.add(extractor);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.throwing("MetadataExtractor", "addExtractorByClass", e);
         }
     }
@@ -55,7 +55,16 @@ public abstract class MetadataExtractor implements Comparable<MetadataExtractor>
         return true;
     }
 
-    public abstract boolean extractTo(Metadata metadata, File file, PrintStream logger);
+    public boolean extractTo(Metadata metadata, File file, PrintStream logger) {
+        try {
+            return tryExtractTo(metadata, file, logger);
+        } catch (Throwable e) {
+            this.logger.throwing("MetadataExtractor", "addExtractorByClass", e);
+            return false;
+        }
+    }
+
+    protected abstract boolean tryExtractTo(Metadata metadata, File file, PrintStream logger);
 
     protected void report(String msg, Object ...args) {
         if (jenkinsLogger != null) {

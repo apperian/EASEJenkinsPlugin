@@ -35,6 +35,7 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
 import hudson.util.Function1;
+import hudson.util.Secret;
 import net.sf.json.JSONObject;
 
 import static com.apperian.eas.GetListResponse.Application;
@@ -242,7 +243,7 @@ public class EaseRecorder extends Recorder {
         private FormValidation checkConnectivity(String url, String username, String password) throws IOException {
             PublishingEndpoint endpoint = new PublishingEndpoint(url);
 
-            EaseCredentials credentials = new EaseCredentials(url, username, password);
+            EaseCredentials credentials = new EaseCredentials(url, username, Secret.fromString(password));
             try {
                 credentials.lookupStoredCredentials();
             } catch (Exception ex) {

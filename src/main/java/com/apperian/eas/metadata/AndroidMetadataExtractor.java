@@ -15,7 +15,7 @@ public class AndroidMetadataExtractor extends MetadataExtractor {
     }
 
     @Override
-    public boolean extractTo(Metadata metadata, File file, PrintStream logger) {
+    public boolean tryExtractTo(Metadata metadata, File file, PrintStream logger) {
         this.jenkinsLogger = logger;
         try {
             try(ApkParser apkParser = new ApkParser(file)) {
