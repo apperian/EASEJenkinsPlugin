@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class PublishingEndpoint implements Closeable {
     private CloseableHttpClient httpClient = HttpClients
             .custom()
+            .useSystemProperties()
             .build();
 
     private ObjectMapper mapper = new ObjectMapper();
