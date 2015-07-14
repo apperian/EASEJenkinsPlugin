@@ -74,7 +74,7 @@ public class Utils {
         }
 
         Proxy proxy = proxyConfig.createProxy(null);
-        if (proxy == null || proxy.type() == Type.HTTP) {
+        if (proxy == null || proxy.type() != Type.HTTP) {
             return builder;
         }
 
