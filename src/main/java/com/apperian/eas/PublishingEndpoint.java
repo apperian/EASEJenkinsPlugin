@@ -14,14 +14,15 @@ import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.jenkinsci.plugins.ease.Utils;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class PublishingEndpoint implements Closeable {
-    private CloseableHttpClient httpClient = HttpClients
-            .custom()
-            .build();
+    private CloseableHttpClient httpClient =
+            Utils.configureProxy(HttpClients.custom())
+                 .build();
 
     private ObjectMapper mapper = new ObjectMapper();
     {
