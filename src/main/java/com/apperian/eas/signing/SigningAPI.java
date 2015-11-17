@@ -1,7 +1,5 @@
 package com.apperian.eas.signing;
 
-import com.apperian.eas.*;
-
 /**
  * API described at:
  * https://help.apperian.com/display/pub/Signing+API
