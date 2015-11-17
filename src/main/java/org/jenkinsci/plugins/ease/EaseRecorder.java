@@ -289,7 +289,9 @@ public class EaseRecorder extends Recorder {
                       .append(" \u2190 ")
                       .append(app.name)
                       .append(" ")
-                      .append(app.version);
+                      .append(app.version)
+                      .append(" ")
+                      .append(app.type);                      
 
                     if (!StringUtils.isEmpty(app.shortdescription)) {
                         sb.append(" (description: ")
