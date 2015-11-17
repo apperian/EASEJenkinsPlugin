@@ -18,6 +18,7 @@ public class UsersAPITest {
                         .call(endpoint);
 
 
+        System.out.println(authResponse);
 
     }
 }

@@ -1,5 +1,15 @@
 package com.apperian.eas;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.util.EntityUtils;
+
 import java.io.IOException;
 
 public abstract class AperianRequest {
@@ -39,5 +49,44 @@ public abstract class AperianRequest {
                                                       AperianRequest request,
                                                       Class<T> responseClass) throws IOException {
         return endpoint.doJsonRpc(request, responseClass);
+    }
+
+
+    protected Object takeRequestJsonObject() {
+        return this;
+    }
+
+    protected Header[] takeHttpHeaders() {
+        return new Header[0];
+    }
+
+    public HttpUriRequest buildHttpRequest(String endpointUrl, ObjectMapper mapper) {
+        HttpEntityEnclosingRequestBase post = null;
+        switch (type) {
+            case POST:
+                post = new HttpPost(endpointUrl + apiPath);
+                break;
+        }
+        if (post == null) {
+            throw new UnsupportedOperationException("type=" + type);
+        }
+        try {
+            String requestAsString = mapper.writeValueAsString(takeRequestJsonObject());
+            post.setEntity(new StringEntity(requestAsString, APIConstants.REQUEST_CHARSET));
+            Header[] headers = takeHttpHeaders();
+            if (headers != null) {
+                post.setHeaders(headers);
+            }
+        } catch(Exception ex) {
+            throw new RuntimeException("Request marshaling error", ex);
+        }
+        return post;
+    }
+
+    public <T extends AperianResponse> T buildResponseObject(ObjectMapper mapper, Class<T> responseClass, CloseableHttpResponse response) throws IOException {
+        HttpEntity entity = response.getEntity();
+        String responseString = EntityUtils.toString(entity);
+        System.out.println(responseString); // FIXME
+        return mapper.readValue(responseString, responseClass);
     }
 }

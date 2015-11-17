@@ -2,8 +2,13 @@ package com.apperian.eas;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.jenkinsci.plugins.ease.Utils;
 
 import java.io.Closeable;
@@ -27,32 +32,13 @@ public class AperianEndpoint implements Closeable {
 
     <T extends AperianResponse> T doJsonRpc(AperianRequest request,
                                             Class<T> responseClass) throws IOException {
-        throw new UnsupportedOperationException("doJsonRpc"); // TODO
-//        HttpPost post = buildJsonRpcPost(request);
-//        CloseableHttpResponse response = httpClient.execute(post);
-//        try {
-//            return buildResponseObject(responseClass, response);
-//        } finally {
-//            response.close();
-//        }
-    }
 
-//    private <T extends PublishingResponse> T buildResponseObject(Class<T> responseClass, CloseableHttpResponse response) throws IOException {
-//        HttpEntity entity = response.getEntity();
-//        String responseString = EntityUtils.toString(entity);
-//        return mapper.readValue(responseString, responseClass);
-//    }
-//
-//    private HttpUriRequest buildJsonRpcPost(AperianRequest request) {
-//        HttpPost post = new HttpPost(url + request.getApiPath());
-//        try {
-//            String requestStr = mapper.writeValueAsString(request);
-//            post.setEntity(new StringEntity(requestStr, APIConstants.REQUEST_CHARSET));
-//        } catch(Exception ex) {
-//            throw new RuntimeException("Request marshaling error", ex);
-//        }
-//        return post;
-//    }
+        HttpUriRequest httpRequest = request.buildHttpRequest(url, mapper);
+
+        try (CloseableHttpResponse response = httpClient.execute(httpRequest)) {
+            return request.buildResponseObject(mapper, responseClass, response);
+        }
+    }
 
     public void close() throws IOException {
         httpClient.close();
