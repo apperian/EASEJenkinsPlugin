@@ -32,4 +32,10 @@ public abstract class PublishingRequest {
     }
 
     public abstract PublishingResponse call(PublishingEndpoint endpoint) throws IOException;
+
+    protected <T extends PublishingResponse> T doJsonRpc(PublishingEndpoint endpoint,
+                                                         PublishingRequest request,
+                                                         Class<T> responseClass) throws IOException {
+        return endpoint.doJsonRpc(request, responseClass);
+    }
 }

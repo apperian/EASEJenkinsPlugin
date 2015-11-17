@@ -12,8 +12,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import com.apperian.eas.GetListResponse.Application;
-import com.apperian.eas.PublishingAPI;
+import com.apperian.eas.publishing.GetListResponse.Application;
+import com.apperian.eas.publishing.PublishingAPI;
 import com.apperian.eas.PublishingEndpoint;
 
 import hudson.model.BuildListener;

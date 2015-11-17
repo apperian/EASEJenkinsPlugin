@@ -1,4 +1,6 @@
-package com.apperian.eas;
+package com.apperian.eas.publishing;
+
+import com.apperian.eas.PublishingResponse;
 
 public class UpdateResponse extends PublishingResponse {
     public Result result;

@@ -7,8 +7,8 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import com.apperian.eas.Metadata;
-import com.apperian.eas.Metadata.KnownFields;
+import com.apperian.eas.publishing.Metadata;
+import com.apperian.eas.publishing.Metadata.KnownFields;
 import com.dd.plist.NSDictionary;
 import com.dd.plist.NSObject;
 import com.dd.plist.PropertyListParser;

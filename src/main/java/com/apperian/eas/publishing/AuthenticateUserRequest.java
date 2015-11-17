@@ -1,4 +1,8 @@
-package com.apperian.eas;
+package com.apperian.eas.publishing;
+
+import com.apperian.eas.APIConstants;
+import com.apperian.eas.PublishingEndpoint;
+import com.apperian.eas.PublishingRequest;
 
 import java.io.IOException;
 
@@ -14,7 +18,7 @@ public class AuthenticateUserRequest extends PublishingRequest {
 
     @Override
     public AuthenticateUserResponse call(PublishingEndpoint endpoint) throws IOException {
-        return endpoint.doJsonRpc(this, AuthenticateUserResponse.class);
+        return doJsonRpc(endpoint, this, AuthenticateUserResponse.class);
     }
 
     static class Params {

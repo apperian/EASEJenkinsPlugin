@@ -1,5 +1,7 @@
 package com.apperian.eas;
 
+import com.apperian.eas.publishing.AuthenticateUserRequest;
+import com.apperian.eas.publishing.AuthenticateUserResponse;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;

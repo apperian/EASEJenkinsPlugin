@@ -7,13 +7,13 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import com.apperian.eas.AuthenticateUserResponse;
-import com.apperian.eas.Metadata;
-import com.apperian.eas.PublishResponse;
-import com.apperian.eas.PublishingAPI;
+import com.apperian.eas.publishing.AuthenticateUserResponse;
+import com.apperian.eas.publishing.Metadata;
+import com.apperian.eas.publishing.PublishResponse;
+import com.apperian.eas.publishing.PublishingAPI;
 import com.apperian.eas.PublishingEndpoint;
-import com.apperian.eas.UpdateResponse;
-import com.apperian.eas.UploadResult;
+import com.apperian.eas.publishing.UpdateResponse;
+import com.apperian.eas.publishing.UploadResult;
 import com.apperian.eas.metadata.MetadataExtractor;
 
 import hudson.FilePath;

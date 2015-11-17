@@ -1,4 +1,4 @@
-package com.apperian.eas;
+package com.apperian.eas.publishing;
 
 public class UploadResult {
     public String fileID;

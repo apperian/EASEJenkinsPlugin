@@ -7,8 +7,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.xml.xpath.XPathExpressionException;
 
-import com.apperian.eas.Metadata;
-import com.apperian.eas.Metadata.KnownFields;
+import com.apperian.eas.publishing.Metadata;
+import com.apperian.eas.publishing.Metadata.KnownFields;
 
 public class WinPhoneAppxMetadataExtractor extends MetadataExtractor {
     public WinPhoneAppxMetadataExtractor() {

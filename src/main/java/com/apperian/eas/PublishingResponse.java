@@ -1,5 +1,7 @@
 package com.apperian.eas;
 
+import com.apperian.eas.APIConstants;
+
 import java.util.Map;
 
 public class PublishingResponse {

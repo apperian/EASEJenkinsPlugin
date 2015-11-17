@@ -1,4 +1,4 @@
-package com.apperian.eas;
+package com.apperian.eas.publishing;
 
 import java.util.ArrayList;
 import java.util.Arrays;
