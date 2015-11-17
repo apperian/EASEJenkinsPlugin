@@ -20,7 +20,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import com.apperian.eas.publishing.AuthenticateUserResponse;
 import com.apperian.eas.publishing.GetListResponse;
 import com.apperian.eas.publishing.PublishingAPI;
-import com.apperian.eas.PublishingEndpoint;
+import com.apperian.eas.EASEEndpoint;
 
 import hudson.EnvVars;
 import hudson.Extension;
@@ -174,7 +174,7 @@ public class EaseRecorder extends Recorder {
     }
 
     private List<EaseUpload> gatherAllUploads(EaseUpload prototypeUpload) {
-        List<EaseUpload> allUploads = new ArrayList<EaseUpload>();
+        List<EaseUpload> allUploads = new ArrayList<>();
         allUploads.add(prototypeUpload);
         if (additionalUploads != null) {
             for (EaseUpload additionalUpload : additionalUploads) {
@@ -241,7 +241,7 @@ public class EaseRecorder extends Recorder {
         }
 
         private FormValidation checkConnectivity(String url, String username, String password) throws IOException {
-            PublishingEndpoint endpoint = new PublishingEndpoint(url);
+            EASEEndpoint endpoint = new EASEEndpoint(url);
 
             EaseCredentials credentials = new EaseCredentials(url, username, Secret.fromString(password));
             try {
@@ -269,7 +269,7 @@ public class EaseRecorder extends Recorder {
                 return FormValidation.error(errorMessage);
             }
 
-            List<Application> list = new ArrayList<Application>(
+            List<Application> list = new ArrayList<>(
                     Arrays.asList(getListResponse.result.applications));
             Collections.sort(list, new Comparator<Application>() {
                 public int compare(Application o1, Application o2) {

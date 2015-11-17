@@ -20,7 +20,7 @@ import org.jenkinsci.plugins.ease.Utils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class PublishingEndpoint implements Closeable {
+public class EASEEndpoint implements Closeable {
     private CloseableHttpClient httpClient =
             Utils.configureProxy(HttpClients.custom())
                  .build();
@@ -32,19 +32,16 @@ public class PublishingEndpoint implements Closeable {
 
     public final String url;
 
-    public PublishingEndpoint(String url) {
+    public EASEEndpoint(String url) {
         this.url = url;
     }
 
-    <T extends PublishingResponse> T doJsonRpc(PublishingRequest request,
-                                               Class<T> responseClass) throws IOException {
+    <T extends EASEResponse> T doJsonRpc(EASERequest request,
+                                         Class<T> responseClass) throws IOException {
 
         HttpPost post = buildJsonRpcPost(request);
-        CloseableHttpResponse response = httpClient.execute(post);
-        try {
+        try (CloseableHttpResponse response = httpClient.execute(post)) {
             return buildResponseObject(responseClass, response);
-        } finally {
-            response.close();
         }
     }
 
@@ -60,8 +57,7 @@ public class PublishingEndpoint implements Closeable {
 
         post.setEntity(multipartEntity);
 
-        CloseableHttpResponse response = httpClient.execute(post);
-        try{
+        try (CloseableHttpResponse response = httpClient.execute(post)) {
             String body = EntityUtils.toString(response.getEntity());
             UploadResult result;
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
@@ -71,18 +67,16 @@ public class PublishingEndpoint implements Closeable {
                 result = mapper.readValue(body, UploadResult.class);
             }
             return result;
-        } finally {
-            response.close();
         }
     }
 
-    private <T extends PublishingResponse> T buildResponseObject(Class<T> responseClass, CloseableHttpResponse response) throws IOException {
+    private <T extends EASEResponse> T buildResponseObject(Class<T> responseClass, CloseableHttpResponse response) throws IOException {
         HttpEntity entity = response.getEntity();
         String responseString = EntityUtils.toString(entity);
         return mapper.readValue(responseString, responseClass);
     }
 
-    private HttpPost buildJsonRpcPost(PublishingRequest request) {
+    private HttpPost buildJsonRpcPost(EASERequest request) {
         HttpPost post = new HttpPost(url);
         try {
             String requestStr = mapper.writeValueAsString(request);

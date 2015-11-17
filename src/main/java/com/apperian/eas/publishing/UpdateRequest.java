@@ -1,12 +1,12 @@
 package com.apperian.eas.publishing;
 
 import com.apperian.eas.APIConstants;
-import com.apperian.eas.PublishingEndpoint;
-import com.apperian.eas.PublishingRequest;
+import com.apperian.eas.EASEEndpoint;
+import com.apperian.eas.EASERequest;
 
 import java.io.IOException;
 
-public class UpdateRequest extends PublishingRequest {
+public class UpdateRequest extends EASERequest {
     public final Params params;
 
     public UpdateRequest(String token, String appID) {
@@ -17,7 +17,7 @@ public class UpdateRequest extends PublishingRequest {
     }
 
     @Override
-    public UpdateResponse call(PublishingEndpoint endpoint) throws IOException {
+    public UpdateResponse call(EASEEndpoint endpoint) throws IOException {
         return doJsonRpc(endpoint, this, UpdateResponse.class);
     }
 

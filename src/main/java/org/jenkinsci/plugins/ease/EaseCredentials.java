@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 
 import com.apperian.eas.publishing.AuthenticateUserResponse;
 import com.apperian.eas.publishing.PublishingAPI;
-import com.apperian.eas.PublishingEndpoint;
+import com.apperian.eas.EASEEndpoint;
 import com.cloudbees.plugins.credentials.CredentialsNameProvider;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
@@ -27,7 +27,7 @@ public class EaseCredentials {
 
     public EaseCredentials(String url, String username, Secret password) {
         this.url = Utils.trim(url);
-        credentials = new ArrayList<EaseUser>();
+        credentials = new ArrayList<>();
         if (!Utils.isEmptyString(username)) {
             credentials.add(new EaseUser(
                     Utils.trim(username),
@@ -68,7 +68,7 @@ public class EaseCredentials {
         }
     }
 
-    public AuthenticateUserResponse authenticate(final PublishingEndpoint endpoint) {
+    public AuthenticateUserResponse authenticate(final EASEEndpoint endpoint) {
         AuthenticateUserResponse authResponse = null;
         for (EaseUser user : credentials) {
             try {

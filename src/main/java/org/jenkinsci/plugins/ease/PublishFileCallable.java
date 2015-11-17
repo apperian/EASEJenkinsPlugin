@@ -11,7 +11,7 @@ import com.apperian.eas.publishing.AuthenticateUserResponse;
 import com.apperian.eas.publishing.Metadata;
 import com.apperian.eas.publishing.PublishResponse;
 import com.apperian.eas.publishing.PublishingAPI;
-import com.apperian.eas.PublishingEndpoint;
+import com.apperian.eas.EASEEndpoint;
 import com.apperian.eas.publishing.UpdateResponse;
 import com.apperian.eas.publishing.UploadResult;
 import com.apperian.eas.metadata.MetadataExtractor;
@@ -43,20 +43,17 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
     }
 
     public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-        PublishingEndpoint endpoint = new PublishingEndpoint(url);
-        try {
+        try (EASEEndpoint endpoint = new EASEEndpoint(url)) {
             return publishFileToEndpoint(f, endpoint);
         } catch (Exception ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
             report("General plugin problem : %s", ex);
             ex.printStackTrace(getLogger());
             return false;
-        } finally {
-            endpoint.close();
         }
     }
 
-    private Boolean publishFileToEndpoint(File f, PublishingEndpoint endpoint) throws IOException {
+    private Boolean publishFileToEndpoint(File f, EASEEndpoint endpoint) throws IOException {
         EaseCredentials credentials = new EaseCredentials(url, username, password);
         try {
             credentials.lookupStoredCredentials();

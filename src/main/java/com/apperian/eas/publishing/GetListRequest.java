@@ -1,12 +1,12 @@
 package com.apperian.eas.publishing;
 
 import com.apperian.eas.APIConstants;
-import com.apperian.eas.PublishingEndpoint;
-import com.apperian.eas.PublishingRequest;
+import com.apperian.eas.EASEEndpoint;
+import com.apperian.eas.EASERequest;
 
 import java.io.IOException;
 
-public class GetListRequest extends PublishingRequest {
+public class GetListRequest extends EASERequest {
     public final Params params;
 
     public GetListRequest(String token) {
@@ -16,7 +16,7 @@ public class GetListRequest extends PublishingRequest {
     }
 
         @Override
-    public GetListResponse call(PublishingEndpoint endpoint) throws IOException {
+    public GetListResponse call(EASEEndpoint endpoint) throws IOException {
         return doJsonRpc(endpoint, this, GetListResponse.class);
     }
 

@@ -2,13 +2,13 @@ package com.apperian.eas;
 
 import java.io.IOException;
 
-public abstract class PublishingRequest {
+public abstract class EASERequest {
     private final long id;
     private final String jsonrpc;
     private final String apiVersion;
     private final String method;
 
-    public PublishingRequest(String method) {
+    public EASERequest(String method) {
         this.id = APIConstants.ID_GENERATOR.incrementAndGet();
         this.jsonrpc = APIConstants.JSON_RPC_VERSION;
         this.apiVersion = APIConstants.API_VERSION;
@@ -31,11 +31,11 @@ public abstract class PublishingRequest {
         return method;
     }
 
-    public abstract PublishingResponse call(PublishingEndpoint endpoint) throws IOException;
+    public abstract EASEResponse call(EASEEndpoint endpoint) throws IOException;
 
-    protected <T extends PublishingResponse> T doJsonRpc(PublishingEndpoint endpoint,
-                                                         PublishingRequest request,
-                                                         Class<T> responseClass) throws IOException {
+    protected <T extends EASEResponse> T doJsonRpc(EASEEndpoint endpoint,
+                                                   EASERequest request,
+                                                   Class<T> responseClass) throws IOException {
         return endpoint.doJsonRpc(request, responseClass);
     }
 }

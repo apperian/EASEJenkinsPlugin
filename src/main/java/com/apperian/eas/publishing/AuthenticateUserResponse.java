@@ -1,8 +1,8 @@
 package com.apperian.eas.publishing;
 
-import com.apperian.eas.PublishingResponse;
+import com.apperian.eas.EASEResponse;
 
-public class AuthenticateUserResponse extends PublishingResponse {
+public class AuthenticateUserResponse extends EASEResponse {
     public Result result;
 
     public static class Result {

@@ -4,7 +4,7 @@ import com.apperian.eas.APIConstants;
 
 import java.util.Map;
 
-public class PublishingResponse {
+public class EASEResponse {
     long id;
     String jsonrpc;
     String apiVersion;

@@ -1,10 +1,10 @@
 package com.apperian.eas.publishing;
 
-import com.apperian.eas.PublishingResponse;
+import com.apperian.eas.EASEResponse;
 
 import java.util.Arrays;
 
-public class GetListResponse extends PublishingResponse {
+public class GetListResponse extends EASEResponse {
     public Result result;
 
     public static class Result {

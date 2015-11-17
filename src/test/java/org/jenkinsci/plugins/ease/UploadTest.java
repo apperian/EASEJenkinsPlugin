@@ -14,7 +14,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 import com.apperian.eas.publishing.GetListResponse.Application;
 import com.apperian.eas.publishing.PublishingAPI;
-import com.apperian.eas.PublishingEndpoint;
+import com.apperian.eas.EASEEndpoint;
 
 import hudson.model.BuildListener;
 
@@ -32,7 +32,7 @@ public class UploadTest {
             return;
         }
 
-        PublishingEndpoint endpoint = new PublishingEndpoint(URL);
+        EASEEndpoint endpoint = new EASEEndpoint(URL);
 
         String token = PublishingAPI.authenticateUser(USER, PWD)
                                     .call(endpoint).result.token;
