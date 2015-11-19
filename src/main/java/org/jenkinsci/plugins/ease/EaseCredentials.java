@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.apperian.eas.publishing.AuthenticateUserResponse;
-import com.apperian.eas.EASEEndpoint;
+import com.apperian.api.publishing.AuthenticateUserResponse;
+import com.apperian.api.EASEEndpoint;
 import com.cloudbees.plugins.credentials.CredentialsNameProvider;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;

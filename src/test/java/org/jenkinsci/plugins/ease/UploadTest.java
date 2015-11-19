@@ -5,7 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.apperian.eas.TestCredentials;
+import com.apperian.api.TestCredentials;
 import org.apache.commons.fileupload.util.Streams;
 import org.easymock.EasyMock;
 import org.junit.Assert;
@@ -13,9 +13,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import com.apperian.eas.publishing.GetListResponse.Application;
-import com.apperian.eas.publishing.Publishing;
-import com.apperian.eas.EASEEndpoint;
+import com.apperian.api.publishing.GetListResponse.Application;
+import com.apperian.api.publishing.Publishing;
 
 import hudson.model.BuildListener;
 

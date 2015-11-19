@@ -17,10 +17,9 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
-import com.apperian.eas.publishing.AuthenticateUserResponse;
-import com.apperian.eas.publishing.GetListResponse;
-import com.apperian.eas.publishing.Publishing;
-import com.apperian.eas.EASEEndpoint;
+import com.apperian.api.publishing.GetListResponse;
+import com.apperian.api.publishing.Publishing;
+import com.apperian.api.EASEEndpoint;
 
 import hudson.EnvVars;
 import hudson.Extension;
@@ -38,7 +37,7 @@ import hudson.util.Function1;
 import hudson.util.Secret;
 import net.sf.json.JSONObject;
 
-import static com.apperian.eas.publishing.GetListResponse.Application;
+import static com.apperian.api.publishing.GetListResponse.Application;
 
 public class EaseRecorder extends Recorder {
     public static final String PLUGIN_NAME = "EASE Plugin";

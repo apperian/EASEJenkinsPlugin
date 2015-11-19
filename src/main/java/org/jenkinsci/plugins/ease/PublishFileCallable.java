@@ -7,9 +7,9 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import com.apperian.eas.publishing.*;
-import com.apperian.eas.EASEEndpoint;
-import com.apperian.eas.metadata.MetadataExtractor;
+import com.apperian.api.publishing.*;
+import com.apperian.api.EASEEndpoint;
+import com.apperian.api.metadata.MetadataExtractor;
 
 import hudson.FilePath;
 import hudson.model.BuildListener;
