@@ -5,7 +5,7 @@ import com.apperian.eas.TestCredentials;
 import org.junit.Before;
 import org.junit.Test;
 
-public class PublishingAPITest {
+public class PublishingTest {
 
     EASEEndpoint endpoint;
 
@@ -19,7 +19,7 @@ public class PublishingAPITest {
         if (!TestCredentials.areSet()) {
             return;
         }
-        AuthenticateUserResponse response = PublishingAPI.authenticateUser(TestCredentials.USER_ID, TestCredentials.PASSWORD).call(endpoint);
+        AuthenticateUserResponse response = Publishing.API.authenticateUser(TestCredentials.USER_ID, TestCredentials.PASSWORD).call(endpoint);
         System.out.println(response);
     }
 }

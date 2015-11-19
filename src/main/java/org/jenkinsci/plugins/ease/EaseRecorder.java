@@ -19,7 +19,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import com.apperian.eas.publishing.AuthenticateUserResponse;
 import com.apperian.eas.publishing.GetListResponse;
-import com.apperian.eas.publishing.PublishingAPI;
+import com.apperian.eas.publishing.Publishing;
 import com.apperian.eas.EASEEndpoint;
 
 import hudson.EnvVars;
@@ -261,7 +261,7 @@ public class EaseRecorder extends Recorder {
                 return FormValidation.error(errorMessage);
             }
 
-            GetListResponse getListResponse = PublishingAPI.getList(authResponse.result.token)
+            GetListResponse getListResponse = Publishing.API.getList(authResponse.result.token)
                     .call(endpoint);
 
             if (getListResponse.hasError()) {

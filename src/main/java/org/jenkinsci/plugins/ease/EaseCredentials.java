@@ -7,7 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.apperian.eas.publishing.AuthenticateUserResponse;
-import com.apperian.eas.publishing.PublishingAPI;
+import com.apperian.eas.publishing.Publishing;
 import com.apperian.eas.EASEEndpoint;
 import com.cloudbees.plugins.credentials.CredentialsNameProvider;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
@@ -72,9 +72,7 @@ public class EaseCredentials {
         AuthenticateUserResponse authResponse = null;
         for (EaseUser user : credentials) {
             try {
-                authResponse = PublishingAPI.authenticateUser(
-                        user.getUsername(),
-                        user.getPassword().getPlainText())
+                authResponse = Publishing.API.authenticateUser(user.getUsername(), user.getPassword().getPlainText())
                         .call(endpoint);
             } catch (Exception e) {
                 String errMsg = "Failed to do request to '" + endpoint.url +

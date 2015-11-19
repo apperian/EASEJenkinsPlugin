@@ -7,13 +7,8 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import com.apperian.eas.publishing.AuthenticateUserResponse;
-import com.apperian.eas.publishing.Metadata;
-import com.apperian.eas.publishing.PublishResponse;
-import com.apperian.eas.publishing.PublishingAPI;
+import com.apperian.eas.publishing.*;
 import com.apperian.eas.EASEEndpoint;
-import com.apperian.eas.publishing.UpdateResponse;
-import com.apperian.eas.publishing.UploadResult;
 import com.apperian.eas.metadata.MetadataExtractor;
 
 import hudson.FilePath;
@@ -76,7 +71,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
             return false;
         }
 
-        UpdateResponse update = PublishingAPI.update(auth.result.token, appId)
+        UpdateResponse update = Publishing.API.update(auth.result.token, appId)
                 .call(endpoint);
 
         if (update.hasError()) {
@@ -108,11 +103,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         }
 
 
-        PublishResponse publish = PublishingAPI.publish(
-                auth.result.token,
-                update.result.transactionID,
-                metadata,
-                upload.fileID).call(endpoint);
+        PublishResponse publish = Publishing.API.publish(auth.result.token, update.result.transactionID, metadata, upload.fileID).call(endpoint);
         if (publish.hasError()) {
             String errorMessage = publish.getErrorMessage();
             report(errorMessage);
