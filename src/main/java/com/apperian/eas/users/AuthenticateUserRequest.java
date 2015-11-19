@@ -2,6 +2,7 @@ package com.apperian.eas.users;
 
 import com.apperian.eas.AperianEndpoint;
 import com.apperian.eas.AperianRequest;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
 
@@ -13,7 +14,7 @@ public class AuthenticateUserRequest extends AperianRequest {
     AuthenticateUserRequest(String email, String password) {
         super(Type.POST, "/users/authenticate");
         params = new Params();
-        params.user_id = email;
+        params.userId = email;
         params.password = password;
     }
 
@@ -23,7 +24,9 @@ public class AuthenticateUserRequest extends AperianRequest {
     }
 
     static class Params {
-        public String user_id;
+        @JsonProperty("user_id")
+        public String userId;
+
         public String password;
     }
 
@@ -40,7 +43,7 @@ public class AuthenticateUserRequest extends AperianRequest {
     @Override
     public String toString() {
         return "AuthenticateUserRequest{" +
-                "email=" + params.user_id +
+                "email=" + params.userId +
                 ", password=" + params.password +
                 '}';
     }

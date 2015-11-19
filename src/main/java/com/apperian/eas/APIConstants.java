@@ -1,6 +1,7 @@
 package com.apperian.eas;
 
 import org.apache.http.Header;
+import org.apache.http.message.BasicHeader;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -22,4 +23,6 @@ public interface APIConstants {
     String ERROR_FIELD_DETAILED_MESSAGE = "detailedMessage";
 
     String X_TOKEN_HEADER = "X-TOKEN";
+
+    BasicHeader CONTENT_TYPE_JSON_HEADER = new BasicHeader("Content-Type", "application/json");
 }

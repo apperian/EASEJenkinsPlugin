@@ -1,9 +1,5 @@
 package com.apperian.eas;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-
 import com.apperian.eas.publishing.UploadResult;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpEntity;
@@ -12,24 +8,12 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.jenkinsci.plugins.ease.Utils;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.File;
+import java.io.IOException;
 
-public class EASEEndpoint implements Closeable {
-    private CloseableHttpClient httpClient =
-            Utils.configureProxy(HttpClients.custom())
-                 .build();
-
-    private ObjectMapper mapper = new ObjectMapper();
-    {
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
-
+public class EASEEndpoint extends JsonHttpEndpoint {
     public final String url;
 
     public EASEEndpoint(String url) {
@@ -85,9 +69,5 @@ public class EASEEndpoint implements Closeable {
             throw new RuntimeException("Request marshaling error", ex);
         }
         return post;
-    }
-
-    public void close() throws IOException {
-        httpClient.close();
     }
 }

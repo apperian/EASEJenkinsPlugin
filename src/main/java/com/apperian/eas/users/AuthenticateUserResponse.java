@@ -3,9 +3,13 @@ package com.apperian.eas.users;
 import com.apperian.eas.AperianResponse;
 
 public class AuthenticateUserResponse extends AperianResponse {
-    // public Organization organization;
-    public String token;
-    // public User user;
+    String token;
+    // User user;
+    // Organization organization;
+
+    public String getToken() {
+        return token;
+    }
 
     @Override
     public String getErrorMessage() {
