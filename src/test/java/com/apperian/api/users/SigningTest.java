@@ -1,12 +1,13 @@
 package com.apperian.api.users;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.apperian.api.TestCredentials;
 import com.apperian.api.TestUtil;
 import com.apperian.api.signing.ListAllSigningCredentialsResponse;
 import com.apperian.api.signing.SignApplicationResponse;
 import com.apperian.api.signing.Signing;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class SigningTest {
     @Test
@@ -23,6 +24,8 @@ public class SigningTest {
         TestUtil.assertNoError(response);
 
         Assert.assertNotNull(response.getCredentials());
+
+        System.out.println(response.getCredentials());
     }
 
     @Test

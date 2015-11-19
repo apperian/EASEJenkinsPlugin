@@ -4,20 +4,20 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public class ApperianResourceID {
-    final long numValue;
+    final String id;
 
     @JsonCreator
-    public ApperianResourceID(long numValue) {
-        this.numValue = numValue;
+    public ApperianResourceID(String id) {
+        this.id = id;
     }
 
     @JsonValue
-    public long getNumericValue() {
-        return numValue;
+    public String getId() {
+        return id;
     }
 
     @Override
     public String toString() {
-        return Long.toString(numValue);
+        return id;
     }
 }
