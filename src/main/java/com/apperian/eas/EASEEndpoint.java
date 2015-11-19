@@ -1,5 +1,7 @@
 package com.apperian.eas;
 
+import com.apperian.eas.publishing.AuthenticateUserResponse;
+import com.apperian.eas.publishing.Publishing;
 import com.apperian.eas.publishing.UploadResult;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpEntity;
@@ -69,5 +71,25 @@ public class EASEEndpoint extends JsonHttpEndpoint {
             throw new RuntimeException("Request marshaling error", ex);
         }
         return post;
+    }
+
+    @Override
+    public boolean tryLogin(String email, String password) {
+        AuthenticateUserResponse response;
+        try {
+            response = Publishing.API.authenticateUser(email, password)
+                    .call(this);
+
+            lastLoginError = response.getErrorMessage();
+
+            if (response.hasError()) {
+                return false;
+            }
+
+            sessionToken = response.result.token;
+            return true;
+        } catch (IOException e) {
+            throw new RuntimeException("no network", e);
+        }
     }
 }

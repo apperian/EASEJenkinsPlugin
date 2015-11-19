@@ -1,9 +1,9 @@
 package com.apperian.eas.signing;
 
-import com.apperian.eas.AperianResponse;
+import com.apperian.eas.ApperianResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class SignApplicationResponse extends AperianResponse {
+public class SignApplicationResponse extends ApperianResponse {
     @JsonProperty("signing_status")
     SigningStatus status;
 

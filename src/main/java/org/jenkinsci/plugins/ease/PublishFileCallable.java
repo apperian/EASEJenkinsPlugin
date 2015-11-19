@@ -64,14 +64,15 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
             return false;
         }
 
-        AuthenticateUserResponse auth = credentials.authenticate(endpoint);
-        if (auth.hasError()) {
-            String errorMessage = auth.getErrorMessage();
+        if (!credentials.authenticate(endpoint)) {
+            String errorMessage = endpoint.getLastLoginError() +
+                    ", lastCredentials=" +
+                    credentials.getLastCredentialDescription();
             report("Error: %s, url=%s", errorMessage, url);
             return false;
         }
 
-        UpdateResponse update = Publishing.API.update(auth.result.token, appId)
+        UpdateResponse update = Publishing.API.update(appId)
                 .call(endpoint);
 
         if (update.hasError()) {
@@ -103,7 +104,8 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         }
 
 
-        PublishResponse publish = Publishing.API.publish(auth.result.token, update.result.transactionID, metadata, upload.fileID).call(endpoint);
+        PublishResponse publish = Publishing.API.publish(update.result.transactionID, metadata, upload.fileID)
+                .call(endpoint);
         if (publish.hasError()) {
             String errorMessage = publish.getErrorMessage();
             report(errorMessage);

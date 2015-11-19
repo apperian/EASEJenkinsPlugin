@@ -9,7 +9,7 @@ import org.jenkinsci.plugins.ease.Utils;
 import java.io.Closeable;
 import java.io.IOException;
 
-public class JsonHttpEndpoint  implements Closeable {
+public abstract class JsonHttpEndpoint  implements Closeable {
     CloseableHttpClient httpClient =
             Utils.configureProxy(HttpClients.custom())
                     .build();
@@ -17,6 +17,21 @@ public class JsonHttpEndpoint  implements Closeable {
     ObjectMapper mapper = new ObjectMapper();
     {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    protected String sessionToken;
+    protected String lastLoginError;
+
+    public String getSessionToken() {
+        return sessionToken;
+    }
+
+    public String getLastLoginError() {
+        return lastLoginError;
+    }
+
+    public void setLastLoginError(String lastLoginError) {
+        this.lastLoginError = lastLoginError;
     }
 
     protected CloseableHttpClient getHttpClient() {
@@ -27,7 +42,13 @@ public class JsonHttpEndpoint  implements Closeable {
         return mapper;
     }
 
+    public abstract boolean tryLogin(String email, String password);
+
     public void close() throws IOException {
         httpClient.close();
+    }
+
+    public boolean isLoggedIn() {
+        return sessionToken != null;
     }
 }

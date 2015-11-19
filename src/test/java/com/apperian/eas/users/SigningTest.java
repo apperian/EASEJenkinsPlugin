@@ -1,41 +1,44 @@
 package com.apperian.eas.users;
 
-import com.apperian.eas.AperianEndpoint;
 import com.apperian.eas.TestCredentials;
+import com.apperian.eas.TestUtil;
 import com.apperian.eas.signing.ListAllSigningCredentialsResponse;
 import com.apperian.eas.signing.SignApplicationResponse;
 import com.apperian.eas.signing.Signing;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 public class SigningTest {
-    Signing api;
-    String sessionToken;
-    AperianEndpoint endpoint;
+    @Test
+    public void testListCredentials() throws Exception {
+        if (TestUtil.shouldSkipIntegrationTests()) {
+            return;
+        }
 
-    @Before
-    public void setUp() throws Exception {
-        api = Signing.API;
-        sessionToken = UsersTest.lazyAuth();
-        endpoint = TestCredentials.APERIAN_ENDPOINT;
+        ListAllSigningCredentialsResponse response;
+
+        response = Signing.API.listAllSigningCredentials()
+                .call(TestCredentials.APERIAN_ENDPOINT);
+
+        TestUtil.assertNoError(response);
+
+        Assert.assertNotNull(response.getCredentials());
     }
 
     @Test
-    public void testListCredentials() throws Exception {
-        ListAllSigningCredentialsResponse response;
-
-        response = api.listAllSigningCredentials(sessionToken)
-                .call(endpoint);
-
-        Assert.assertNotNull(response.credentials);
-    }
-
     public void testSignApplication() throws Exception {
+        if (TestUtil.shouldSkipIntegrationTests()) {
+            return;
+        }
+
         SignApplicationResponse response;
 
-        response = api.signApplication(sessionToken)
-                .call(endpoint);
+        response = Signing.API.signApplication(TestCredentials.CREDENTIALS_PSK, TestCredentials.APP_PSK)
+                .call(TestCredentials.APERIAN_ENDPOINT);
 
+        TestUtil.assertNoError(response);
+
+        Assert.assertNotNull(response.getStatus());
     }
+
 }

@@ -14,15 +14,15 @@ public class Publishing {
         return new AuthenticateUserRequest(username, password);
     }
 
-    public GetListRequest getList(String token) {
-        return new GetListRequest(token);
+    public GetListRequest getList() {
+        return new GetListRequest();
     }
 
-    public UpdateRequest update(String token, String appID) {
-        return new UpdateRequest(token, appID);
+    public UpdateRequest update(String appID) {
+        return new UpdateRequest(appID);
     }
 
-    public PublishRequest publish(String token, String transactionID, Metadata metadata, String applicationFileId) {
-        return new PublishRequest(token, transactionID, metadata, applicationFileId);
+    public PublishRequest publish(String transactionID, Metadata metadata, String applicationFileId) {
+        return new PublishRequest(transactionID, metadata, applicationFileId);
     }
 }

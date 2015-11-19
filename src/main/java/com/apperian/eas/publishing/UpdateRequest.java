@@ -9,15 +9,15 @@ import java.io.IOException;
 public class UpdateRequest extends EASERequest {
     public final Params params;
 
-    public UpdateRequest(String token, String appID) {
+    public UpdateRequest(String appID) {
         super(APIConstants.UPDATE_METHOD);
         this.params = new Params();
-        this.params.token = token;
         this.params.appID = appID;
     }
 
     @Override
     public UpdateResponse call(EASEEndpoint endpoint) throws IOException {
+        this.params.token = endpoint.getSessionToken();
         return doJsonRpc(endpoint, this, UpdateResponse.class);
     }
 
@@ -29,9 +29,8 @@ public class UpdateRequest extends EASERequest {
     @Override
     public String toString() {
         return "UpdateRequest{" +
-                "token=" + params.token +
                 "appID=" + params.appID +
-                '}';
+                "}";
     }
 }
 

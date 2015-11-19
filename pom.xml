@@ -95,6 +95,13 @@
             <artifactId>httpmime</artifactId>
             <version>4.3.3</version>
         </dependency>
+        <!-- think about caching calls to API
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient-cache</artifactId>
+            <version>4.3.3</version>
+        </dependency>
+        -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

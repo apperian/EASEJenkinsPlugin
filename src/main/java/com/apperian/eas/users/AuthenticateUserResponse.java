@@ -1,8 +1,8 @@
 package com.apperian.eas.users;
 
-import com.apperian.eas.AperianResponse;
+import com.apperian.eas.ApperianResponse;
 
-public class AuthenticateUserResponse extends AperianResponse {
+public class AuthenticateUserResponse extends ApperianResponse {
     String token;
     // User user;
     // Organization organization;

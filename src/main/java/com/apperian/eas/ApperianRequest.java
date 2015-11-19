@@ -1,31 +1,29 @@
 package com.apperian.eas;
 
+import com.apperian.eas.users.AuthenticateUserRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-public abstract class AperianRequest {
+public abstract class ApperianRequest {
     public enum Type {
         GET, PUT, POST
     }
 
     private final Type type;
     private final String apiPath;
-    private final String sessionToken;
 
-    public AperianRequest(Type type, String apiPath) {
-        this(type, apiPath, null);
-    }
-
-    public AperianRequest(Type type, String apiPath, String sessionToken) {
+    public ApperianRequest(Type type, String apiPath) {
         this.type = type;
         this.apiPath = apiPath;
-        this.sessionToken = sessionToken;
     }
 
     public Type getType() {
@@ -36,15 +34,11 @@ public abstract class AperianRequest {
         return apiPath;
     }
 
-    public String getSessionToken() {
-        return sessionToken;
-    }
+    public abstract ApperianResponse call(ApperianEndpoint endpoint) throws IOException;
 
-    public abstract AperianResponse call(AperianEndpoint endpoint) throws IOException;
-
-    protected <T extends AperianResponse> T doJsonRpc(AperianEndpoint endpoint,
-                                                      AperianRequest request,
-                                                      Class<T> responseClass) throws IOException {
+    protected <T extends ApperianResponse> T doJsonRpc(ApperianEndpoint endpoint,
+                                                       ApperianRequest request,
+                                                       Class<T> responseClass) throws IOException {
         return endpoint.doJsonRpc(request, responseClass);
     }
 
@@ -53,34 +47,41 @@ public abstract class AperianRequest {
         return this;
     }
 
-    protected Header[] takeHttpHeaders() {
-        return new Header[0];
-    }
-
-    public HttpUriRequest buildHttpRequest(String endpointUrl, ObjectMapper mapper) {
+    public HttpUriRequest buildHttpRequest(ApperianEndpoint endpoint, ObjectMapper mapper) {
         HttpRequestBase request = null;
         switch (type) {
             case POST:
-                request = new HttpPost(endpointUrl + apiPath);
+                request = new HttpPost(endpoint.url + apiPath);
+                break;
+            case PUT:
+                request = new HttpPut(endpoint.url + apiPath);
                 break;
             case GET:
-                request = new HttpGet(endpointUrl + apiPath);
+                request = new HttpGet(endpoint.url + apiPath);
                 break;
         }
         if (request == null) {
             throw new UnsupportedOperationException("http method " + type);
         }
         try {
+            List<Header> headers = new ArrayList<>();
             if (request instanceof HttpEntityEnclosingRequestBase) {
                 String requestAsString = mapper.writeValueAsString(takeRequestJsonObject());
 
                 HttpEntityEnclosingRequestBase requestWithEntity;
                 requestWithEntity = (HttpEntityEnclosingRequestBase) request;
                 requestWithEntity.setEntity(new StringEntity(requestAsString, APIConstants.REQUEST_CHARSET));
+
+                headers.add(APIConstants.CONTENT_TYPE_JSON_HEADER);
             }
-            Header[] headers = takeHttpHeaders();
-            if (headers != null) {
-                request.setHeaders(headers);
+            if (!(this instanceof AuthenticateUserRequest)) {
+                if (endpoint.sessionToken == null) {
+                    throw new RuntimeException("bad session token");
+                }
+                headers.add(new BasicHeader(APIConstants.X_TOKEN_HEADER, endpoint.sessionToken));
+            }
+            if (!headers.isEmpty()) {
+                request.setHeaders(headers.toArray(new Header[headers.size()]));
             }
         } catch(Exception ex) {
             throw new RuntimeException("Request marshaling error", ex);
@@ -88,7 +89,7 @@ public abstract class AperianRequest {
         return request;
     }
 
-    public <T extends AperianResponse> T buildResponseObject(ObjectMapper mapper, Class<T> responseClass, CloseableHttpResponse response) throws IOException {
+    public <T extends ApperianResponse> T buildResponseObject(ObjectMapper mapper, Class<T> responseClass, CloseableHttpResponse response) throws IOException {
         HttpEntity entity = response.getEntity();
         String responseString = EntityUtils.toString(entity);
         System.out.println(responseString); // FIXME

@@ -1,10 +1,10 @@
 package com.apperian.eas.signing;
 
-import com.apperian.eas.AperianResponse;
+import com.apperian.eas.ApperianResponse;
 
 import java.util.List;
 
-public class ListAllSigningCredentialsResponse extends AperianResponse {
+public class ListAllSigningCredentialsResponse extends ApperianResponse {
     List<SigningCredential> credentials;
 
     public List<SigningCredential> getCredentials() {

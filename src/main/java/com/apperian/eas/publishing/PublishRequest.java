@@ -9,10 +9,9 @@ import java.io.IOException;
 public class PublishRequest extends EASERequest {
     public final Params params;
 
-    public PublishRequest(String token, String transactionID, Metadata metadata, String applicationFileId) {
+    public PublishRequest(String transactionID, Metadata metadata, String applicationFileId) {
         super(APIConstants.PUBLISH_METHOD);
         this.params = new Params();
-        this.params.token = token;
         this.params.transactionID = transactionID;
         this.params.EASEmetadata = metadata;
         this.params.files = new Files();
@@ -21,6 +20,7 @@ public class PublishRequest extends EASERequest {
 
     @Override
     public PublishResponse call(EASEEndpoint endpoint) throws IOException {
+        this.params.token = endpoint.getSessionToken();
         return doJsonRpc(endpoint, this, PublishResponse.class);
     }
 
@@ -38,7 +38,6 @@ public class PublishRequest extends EASERequest {
     @Override
     public String toString() {
         return "PublishRequest{" +
-                "token=" + params.token +
                 ", transactionID=" + params.transactionID +
                 ", applicationFileId=" + params.files.application +
                 ", metadata=" + params.EASEmetadata +

@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.apperian.eas.TestCredentials;
 import org.apache.commons.fileupload.util.Streams;
 import org.easymock.EasyMock;
 import org.junit.Assert;
@@ -32,13 +33,8 @@ public class UploadTest {
             return;
         }
 
-        EASEEndpoint endpoint = new EASEEndpoint(URL);
-
-        String token = Publishing.API.authenticateUser(USER, PWD)
-                                    .call(endpoint).result.token;
-
-        Application[] apps = Publishing.API.getList(token)
-                                          .call(endpoint).result.applications;
+        Application[] apps = Publishing.API.getList()
+                .call(TestCredentials.EASE_ENDPOINT).result.applications;
 
         for (Application app : apps) {
             System.out.println(app.ID);

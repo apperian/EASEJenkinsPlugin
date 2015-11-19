@@ -7,7 +7,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.apperian.eas.publishing.AuthenticateUserResponse;
-import com.apperian.eas.publishing.Publishing;
 import com.apperian.eas.EASEEndpoint;
 import com.cloudbees.plugins.credentials.CredentialsNameProvider;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
@@ -68,26 +67,28 @@ public class EaseCredentials {
         }
     }
 
-    public AuthenticateUserResponse authenticate(final EASEEndpoint endpoint) {
-        AuthenticateUserResponse authResponse = null;
+    public boolean authenticate(final EASEEndpoint endpoint) {
         for (EaseUser user : credentials) {
             try {
-                authResponse = Publishing.API.authenticateUser(user.getUsername(), user.getPassword().getPlainText())
-                        .call(endpoint);
+                if (endpoint.tryLogin(user.getUsername(), user.getPassword().getPlainText())) {
+                    return true;
+                }
             } catch (Exception e) {
-                String errMsg = "Failed to do request to '" + endpoint.url +
-                        "', lastCredentials=" + user.getDescription() +
+                String message = "Could authenticate to '" + endpoint.url +
+                        "', credentials used=" + user.getDescription() +
                         ", error='" + e.getMessage() + "'";
-                authResponse = new ErrorAuthenticateUserResponse(errMsg);
-                logger.log(Level.WARNING, errMsg, e);
-                break;
+                logger.log(Level.WARNING, message, e);
+                endpoint.setLastLoginError(message);
             }
-            if (!authResponse.hasError()) {
-                break;
-            }
-            authResponse.appendError(", lastCredentials=" + user.getDescription());
         }
-        return authResponse;
+        return false;
+    }
+
+    public String getLastCredentialDescription() {
+        if (credentials.isEmpty()) {
+            return "no credentials";
+        }
+        return credentials.listIterator().previous().getDescription();
     }
 
     private static class ErrorAuthenticateUserResponse extends AuthenticateUserResponse {

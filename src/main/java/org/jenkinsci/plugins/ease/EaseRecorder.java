@@ -255,17 +255,18 @@ public class EaseRecorder extends Recorder {
             }
 
 
-            AuthenticateUserResponse authResponse = credentials.authenticate(endpoint);
-            if (authResponse.hasError()) {
-                String errorMessage = authResponse.getErrorMessage();
+            if (!credentials.authenticate(endpoint)) {
+                String errorMessage = endpoint.getLastLoginError() +
+                        ", lastCredentials=" +
+                        credentials.getLastCredentialDescription();
                 return FormValidation.error(errorMessage);
             }
 
-            GetListResponse getListResponse = Publishing.API.getList(authResponse.result.token)
+            GetListResponse getListResponse = Publishing.API.getList()
                     .call(endpoint);
 
             if (getListResponse.hasError()) {
-                String errorMessage = authResponse.getErrorMessage();
+                String errorMessage = getListResponse.getErrorMessage();
                 return FormValidation.error(errorMessage);
             }
 

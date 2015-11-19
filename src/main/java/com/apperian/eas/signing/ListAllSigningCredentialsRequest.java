@@ -1,29 +1,19 @@
 package com.apperian.eas.signing;
 
 
-import com.apperian.eas.APIConstants;
-import com.apperian.eas.AperianEndpoint;
-import com.apperian.eas.AperianRequest;
-import org.apache.http.Header;
-import org.apache.http.message.BasicHeader;
+import com.apperian.eas.ApperianEndpoint;
+import com.apperian.eas.ApperianRequest;
 
 import java.io.IOException;
 
-public class ListAllSigningCredentialsRequest extends AperianRequest {
-    public ListAllSigningCredentialsRequest(String sessionToken) {
-        super(Type.GET, "/credentials", sessionToken);
+public class ListAllSigningCredentialsRequest extends ApperianRequest {
+    public ListAllSigningCredentialsRequest() {
+        super(Type.GET, "/credentials");
     }
 
     @Override
-    public ListAllSigningCredentialsResponse call(AperianEndpoint endpoint) throws IOException {
+    public ListAllSigningCredentialsResponse call(ApperianEndpoint endpoint) throws IOException {
         return doJsonRpc(endpoint, this, ListAllSigningCredentialsResponse.class);
-    }
-
-    @Override
-    protected Header[] takeHttpHeaders() {
-        return new Header[] {
-                new BasicHeader(APIConstants.X_TOKEN_HEADER, getSessionToken())
-        };
     }
 
     @Override
@@ -31,7 +21,6 @@ public class ListAllSigningCredentialsRequest extends AperianRequest {
         return "ListAllSigningCredentialsRequest{" +
                 "type=" + getType() +
                 ", apiPath='" + getApiPath() + '\'' +
-                ", sessionToken='" + getSessionToken() + '\'' +
                 '}';
     }
 }
