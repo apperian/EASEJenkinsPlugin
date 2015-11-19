@@ -87,6 +87,7 @@ public class EASEEndpoint extends JsonHttpEndpoint {
             }
 
             sessionToken = response.result.token;
+
             return true;
         } catch (IOException e) {
             throw new RuntimeException("no network", e);

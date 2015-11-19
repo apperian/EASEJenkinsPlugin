@@ -32,12 +32,13 @@ public class ApperianEndpoint extends JsonHttpEndpoint {
             response = Users.API.authenticateUser(email, password)
                     .call(this);
 
+            lastLoginError = response.getErrorMessage();
+
             if (response.hasError()) {
                 return false;
             }
 
             sessionToken = response.getToken();
-            lastLoginError = response.getErrorMessage();
             return true;
         } catch (IOException e) {
             throw new RuntimeException("no network", e);
