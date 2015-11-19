@@ -1,5 +1,7 @@
 package com.apperian.eas;
 
+import org.apache.http.Header;
+
 import java.util.concurrent.atomic.AtomicLong;
 
 public interface APIConstants {
@@ -18,4 +20,6 @@ public interface APIConstants {
 
     AtomicLong ID_GENERATOR = new AtomicLong();
     String ERROR_FIELD_DETAILED_MESSAGE = "detailedMessage";
+
+    String X_TOKEN_HEADER = "X-TOKEN";
 }

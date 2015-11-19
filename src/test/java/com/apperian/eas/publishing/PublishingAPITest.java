@@ -11,7 +11,7 @@ public class PublishingAPITest {
 
     @Before
     public void setUp() {
-        endpoint = new EASEEndpoint(TestCredentials.EASE_ENDPOINT);
+        endpoint = new EASEEndpoint(TestCredentials.EASE_ENDPOINT_URL);
     }
 
     @Test

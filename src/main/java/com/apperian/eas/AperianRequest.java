@@ -3,10 +3,7 @@ package com.apperian.eas;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.*;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
 
@@ -61,26 +58,34 @@ public abstract class AperianRequest {
     }
 
     public HttpUriRequest buildHttpRequest(String endpointUrl, ObjectMapper mapper) {
-        HttpEntityEnclosingRequestBase post = null;
+        HttpRequestBase request = null;
         switch (type) {
             case POST:
-                post = new HttpPost(endpointUrl + apiPath);
+                request = new HttpPost(endpointUrl + apiPath);
+                break;
+            case GET:
+                request = new HttpGet(endpointUrl + apiPath);
                 break;
         }
-        if (post == null) {
-            throw new UnsupportedOperationException("type=" + type);
+        if (request == null) {
+            throw new UnsupportedOperationException("http method " + type);
         }
         try {
-            String requestAsString = mapper.writeValueAsString(takeRequestJsonObject());
-            post.setEntity(new StringEntity(requestAsString, APIConstants.REQUEST_CHARSET));
+            if (request instanceof HttpEntityEnclosingRequestBase) {
+                String requestAsString = mapper.writeValueAsString(takeRequestJsonObject());
+
+                HttpEntityEnclosingRequestBase requestWithEntity;
+                requestWithEntity = (HttpEntityEnclosingRequestBase) request;
+                requestWithEntity.setEntity(new StringEntity(requestAsString, APIConstants.REQUEST_CHARSET));
+            }
             Header[] headers = takeHttpHeaders();
             if (headers != null) {
-                post.setHeaders(headers);
+                request.setHeaders(headers);
             }
         } catch(Exception ex) {
             throw new RuntimeException("Request marshaling error", ex);
         }
-        return post;
+        return request;
     }
 
     public <T extends AperianResponse> T buildResponseObject(ObjectMapper mapper, Class<T> responseClass, CloseableHttpResponse response) throws IOException {

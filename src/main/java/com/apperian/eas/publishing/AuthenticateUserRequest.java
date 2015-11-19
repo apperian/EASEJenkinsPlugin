@@ -9,10 +9,10 @@ import java.io.IOException;
 public class AuthenticateUserRequest extends EASERequest {
     public final Params params;
 
-    public AuthenticateUserRequest(String userId, String password) {
+    public AuthenticateUserRequest(String email, String password) {
         super(APIConstants.AUTHENTICATE_USER_METHOD);
         this.params = new Params();
-        this.params.userId = userId;
+        this.params.email = email;
         this.params.password = password;
     }
 
@@ -22,14 +22,14 @@ public class AuthenticateUserRequest extends EASERequest {
     }
 
     static class Params {
-        public String userId;
+        public String email;
         public String password;
     }
 
     @Override
     public String toString() {
         return "AuthenticateUserRequest{" +
-                "email=" + params.userId +
+                "email=" + params.email +
                 ", password=" + params.password +
                 '}';
     }
