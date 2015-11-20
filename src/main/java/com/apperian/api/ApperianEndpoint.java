@@ -21,6 +21,10 @@ public class ApperianEndpoint extends JsonHttpEndpoint {
         HttpUriRequest httpRequest = request.buildHttpRequest(this, mapper);
 
         try (CloseableHttpResponse response = httpClient.execute(httpRequest)) {
+            if (response.getStatusLine().getStatusCode() != 200) {
+                throw new RuntimeException("bad API call, http status: " + response.getStatusLine() + ", request: " + httpRequest);
+            }
+
             return request.buildResponseObject(mapper, responseClass, response);
         }
     }

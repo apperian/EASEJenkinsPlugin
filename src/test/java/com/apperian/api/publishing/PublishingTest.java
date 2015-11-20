@@ -1,6 +1,6 @@
 package com.apperian.api.publishing;
 
-import com.apperian.api.TestCredentials;
+import com.apperian.api.ApiTesting;
 import com.apperian.api.TestUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -13,6 +13,6 @@ public class PublishingTest {
             return;
         }
 
-        Assert.assertNotNull(TestCredentials.EASE_ENDPOINT.getSessionToken());
+        Assert.assertNotNull(ApiTesting.EASE_ENDPOINT.getSessionToken());
     }
 }

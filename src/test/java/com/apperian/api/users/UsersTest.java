@@ -1,6 +1,6 @@
 package com.apperian.api.users;
 
-import com.apperian.api.TestCredentials;
+import com.apperian.api.ApiTesting;
 import com.apperian.api.TestUtil;
 import org.junit.Test;
 
@@ -13,6 +13,6 @@ public class UsersTest {
             return;
         }
 
-        assertNotNull(TestCredentials.APERIAN_ENDPOINT.getSessionToken());
+        assertNotNull(ApiTesting.APERIAN_ENDPOINT.getSessionToken());
     }
 }

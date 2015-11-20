@@ -5,7 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.apperian.api.TestCredentials;
+import com.apperian.api.ApiTesting;
 import org.apache.commons.fileupload.util.Streams;
 import org.easymock.EasyMock;
 import org.junit.Assert;
@@ -33,7 +33,7 @@ public class UploadTest {
         }
 
         Application[] apps = Publishing.API.getList()
-                .call(TestCredentials.EASE_ENDPOINT).result.applications;
+                .call(ApiTesting.EASE_ENDPOINT).result.applications;
 
         for (Application app : apps) {
             System.out.println(app.ID);

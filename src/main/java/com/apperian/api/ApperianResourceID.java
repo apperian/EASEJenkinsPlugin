@@ -7,8 +7,8 @@ public class ApperianResourceID {
     final String id;
 
     @JsonCreator
-    public ApperianResourceID(String id) {
-        this.id = id;
+    public ApperianResourceID(Object id) {
+        this.id = id.toString();
     }
 
     @JsonValue

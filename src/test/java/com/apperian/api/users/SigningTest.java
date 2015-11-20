@@ -3,7 +3,7 @@ package com.apperian.api.users;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.apperian.api.TestCredentials;
+import com.apperian.api.ApiTesting;
 import com.apperian.api.TestUtil;
 import com.apperian.api.signing.ListAllSigningCredentialsResponse;
 import com.apperian.api.signing.SignApplicationResponse;
@@ -19,7 +19,7 @@ public class SigningTest {
         ListAllSigningCredentialsResponse response;
 
         response = Signing.API.listAllSigningCredentials()
-                .call(TestCredentials.APERIAN_ENDPOINT);
+                .call(ApiTesting.APERIAN_ENDPOINT);
 
         TestUtil.assertNoError(response);
 
@@ -36,8 +36,8 @@ public class SigningTest {
 
         SignApplicationResponse response;
 
-        response = Signing.API.signApplication(TestCredentials.CREDENTIALS_PSK, TestCredentials.APP_PSK)
-                .call(TestCredentials.APERIAN_ENDPOINT);
+        response = Signing.API.signApplication(ApiTesting.CREDENTIALS_PSK, ApiTesting.APP_ID)
+                .call(ApiTesting.APERIAN_ENDPOINT);
 
         TestUtil.assertNoError(response);
 

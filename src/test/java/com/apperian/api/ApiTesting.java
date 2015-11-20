@@ -1,7 +1,6 @@
 package com.apperian.api;
 
-public interface TestCredentials {
-    // TODO FIXME do not commit!
+public interface ApiTesting {
     String USER_ID = "oleksiy";
     String PASSWORD = "testpassword";
 
@@ -9,7 +8,7 @@ public interface TestCredentials {
     ApperianResourceID ORGANIZATION_PSK = new ApperianResourceID("5763"); // Rails Reactor
     ApperianResourceID USER_PSK = new ApperianResourceID("392157"); // Dima :-)
     ApperianResourceID CREDENTIALS_PSK = new ApperianResourceID("333"); // who knows
-    ApperianResourceID APP_PSK = new ApperianResourceID("333");
+    ApperianResourceID APP_ID = new ApperianResourceID("48489");
 
     String EASE_ENDPOINT_URL = "https://easesvc.apperian.com/ease.interface.php";
     String APERIAN_ENDPOINT_URL = "https://na01ws.apperian.com/v1";

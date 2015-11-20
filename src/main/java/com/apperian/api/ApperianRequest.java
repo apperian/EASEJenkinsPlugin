@@ -89,7 +89,7 @@ public abstract class ApperianRequest {
         return request;
     }
 
-    public <T extends ApperianResponse> T buildResponseObject(ObjectMapper mapper, Class<T> responseClass, CloseableHttpResponse response) throws IOException {
+    public <T> T buildResponseObject(ObjectMapper mapper, Class<T> responseClass, CloseableHttpResponse response) throws IOException {
         HttpEntity entity = response.getEntity();
         String responseString = EntityUtils.toString(entity);
         System.out.println(responseString); // FIXME

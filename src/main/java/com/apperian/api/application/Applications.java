@@ -13,8 +13,8 @@ public class Applications {
         return new ApplicationListRequest();
     }
 
-    public UpdateApplicationRequest updateApplication(ApperianResourceID applicationId) {
-        return new ApplicationListRequest(applicationId);
+    public UpdateApplicationMetadataRequest updateApplicationMetadata(ApperianResourceID applicationId) {
+        return new UpdateApplicationMetadataRequest(applicationId);
     }
 
 }

@@ -7,6 +7,7 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
@@ -25,8 +26,12 @@ public class EASEEndpoint extends JsonHttpEndpoint {
     <T extends EASEResponse> T doJsonRpc(EASERequest request,
                                          Class<T> responseClass) throws IOException {
 
-        HttpPost post = buildJsonRpcPost(request);
-        try (CloseableHttpResponse response = httpClient.execute(post)) {
+        HttpUriRequest httpRequest = buildJsonRpcPost(request);
+        try (CloseableHttpResponse response = httpClient.execute(httpRequest)) {
+            if (response.getStatusLine().getStatusCode() != 200) {
+                throw new RuntimeException("bad API call, http status: " + response.getStatusLine() + ", request: " + httpRequest);
+            }
+
             return buildResponseObject(responseClass, response);
         }
     }
