@@ -5,9 +5,7 @@ package com.apperian.api.publishing;
  * https://help.apperian.com/display/pub/EASE+Publishing+API+Guide
  */
 public class Publishing {
-    public static Publishing API = new Publishing();
-
-    Publishing() {
+    public Publishing() {
     }
 
     public AuthenticateUserRequest authenticateUser(String username, String password) {

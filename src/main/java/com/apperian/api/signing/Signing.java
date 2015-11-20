@@ -7,9 +7,7 @@ import com.apperian.api.ApperianResourceID;
  * https://help.apperian.com/display/pub/Signing+API
  */
 public class Signing {
-    public static Signing API = new Signing();
-
-    Signing() {
+    public Signing() {
     }
 
     public ListAllSigningCredentialsRequest listAllSigningCredentials() {

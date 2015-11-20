@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import com.apperian.api.ApiTesting;
+import com.apperian.api.ApperianEase;
 import org.apache.commons.fileupload.util.Streams;
 import org.easymock.EasyMock;
 import org.junit.Assert;
@@ -14,7 +15,6 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import com.apperian.api.publishing.GetListResponse.Application;
-import com.apperian.api.publishing.Publishing;
 
 import hudson.model.BuildListener;
 
@@ -32,7 +32,7 @@ public class UploadTest {
             return;
         }
 
-        Application[] apps = Publishing.API.getList()
+        Application[] apps = ApperianEase.PUBLISHING.getList()
                 .call(ApiTesting.EASE_ENDPOINT).result.applications;
 
         for (Application app : apps) {

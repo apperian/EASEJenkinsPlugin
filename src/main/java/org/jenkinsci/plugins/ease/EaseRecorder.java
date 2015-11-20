@@ -12,13 +12,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 
+import com.apperian.api.ApperianEase;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import com.apperian.api.publishing.GetListResponse;
-import com.apperian.api.publishing.Publishing;
 import com.apperian.api.EASEEndpoint;
 
 import hudson.EnvVars;
@@ -261,7 +261,7 @@ public class EaseRecorder extends Recorder {
                 return FormValidation.error(errorMessage);
             }
 
-            GetListResponse getListResponse = Publishing.API.getList()
+            GetListResponse getListResponse = ApperianEase.PUBLISHING.getList()
                     .call(endpoint);
 
             if (getListResponse.hasError()) {

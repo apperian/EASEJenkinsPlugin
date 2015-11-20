@@ -1,7 +1,6 @@
 package com.apperian.api;
 
 import com.apperian.api.publishing.AuthenticateUserResponse;
-import com.apperian.api.publishing.Publishing;
 import com.apperian.api.publishing.UploadResult;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpEntity;
@@ -82,7 +81,7 @@ public class EASEEndpoint extends JsonHttpEndpoint {
     public boolean tryLogin(String email, String password) {
         AuthenticateUserResponse response;
         try {
-            response = Publishing.API.authenticateUser(email, password)
+            response = ApperianEase.PUBLISHING.authenticateUser(email, password)
                     .call(this);
 
             lastLoginError = response.getErrorMessage();

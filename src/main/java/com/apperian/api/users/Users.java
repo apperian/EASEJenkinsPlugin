@@ -5,9 +5,7 @@ package com.apperian.api.users;
  * https://help.apperian.com/display/pub/Users+API
  */
 public class Users {
-    public static Users API = new Users();
-
-    Users() {
+    public Users() {
     }
 
     public AuthenticateUserRequest authenticateUser(String userId, String password) {

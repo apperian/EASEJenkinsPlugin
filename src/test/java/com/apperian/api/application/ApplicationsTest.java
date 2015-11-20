@@ -1,6 +1,7 @@
 package com.apperian.api.application;
 
 import com.apperian.api.ApiTesting;
+import com.apperian.api.ApperianEase;
 import com.apperian.api.TestUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -12,7 +13,7 @@ public class ApplicationsTest {
             return;
         }
 
-        ApplicationListResponse response = Applications.API.list()
+        ApplicationListResponse response = ApperianEase.APPLICATIONS.list()
                 .call(ApiTesting.APERIAN_ENDPOINT);
 
         TestUtil.assertNoError(response);
@@ -26,7 +27,7 @@ public class ApplicationsTest {
         }
 
         UpdateApplicationMetadataResponse response;
-        response = Applications.API.updateApplicationMetadata(ApiTesting.APP_ID)
+        response = ApperianEase.APPLICATIONS.updateApplicationMetadata(ApiTesting.APP_ID)
                 .setEnabled(true)
                 .call(ApiTesting.APERIAN_ENDPOINT);
 

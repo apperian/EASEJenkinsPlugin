@@ -1,5 +1,6 @@
 package com.apperian.api.users;
 
+import com.apperian.api.ApperianEase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -7,7 +8,6 @@ import com.apperian.api.ApiTesting;
 import com.apperian.api.TestUtil;
 import com.apperian.api.signing.ListAllSigningCredentialsResponse;
 import com.apperian.api.signing.SignApplicationResponse;
-import com.apperian.api.signing.Signing;
 
 public class SigningTest {
     @Test
@@ -18,7 +18,7 @@ public class SigningTest {
 
         ListAllSigningCredentialsResponse response;
 
-        response = Signing.API.listAllSigningCredentials()
+        response = ApperianEase.SIGNING.listAllSigningCredentials()
                 .call(ApiTesting.APERIAN_ENDPOINT);
 
         TestUtil.assertNoError(response);
@@ -36,7 +36,7 @@ public class SigningTest {
 
         SignApplicationResponse response;
 
-        response = Signing.API.signApplication(ApiTesting.CREDENTIALS_PSK, ApiTesting.APP_ID)
+        response = ApperianEase.SIGNING.signApplication(ApiTesting.CREDENTIALS_PSK, ApiTesting.APP_ID)
                 .call(ApiTesting.APERIAN_ENDPOINT);
 
         TestUtil.assertNoError(response);

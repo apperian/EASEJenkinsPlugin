@@ -1,7 +1,6 @@
 package com.apperian.api;
 
 import com.apperian.api.users.AuthenticateUserResponse;
-import com.apperian.api.users.Users;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 
@@ -33,7 +32,7 @@ public class ApperianEndpoint extends JsonHttpEndpoint {
     public boolean tryLogin(String email, String password) {
         AuthenticateUserResponse response;
         try {
-            response = Users.API.authenticateUser(email, password)
+            response = ApperianEase.USERS.authenticateUser(email, password)
                     .call(this);
 
             lastLoginError = response.getErrorMessage();
