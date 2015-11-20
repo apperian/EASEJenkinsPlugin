@@ -1,13 +1,20 @@
 package com.apperian.api.application;
 
+import java.io.IOException;
+
 import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.ApperianRequest;
-
-import java.io.IOException;
+import com.apperian.api.ApperianResourceID;
 
 public class ApplicationListRequest extends ApperianRequest {
     public ApplicationListRequest() {
         super(Type.GET, "/applications");
+    }
+
+    Boolean enabled;
+
+    public ApplicationListRequest(ApperianResourceID applicationId) {
+        super(Type.PUT, "/application/" + applicationId);
     }
 
     @Override
