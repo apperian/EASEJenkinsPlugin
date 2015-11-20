@@ -1,5 +1,7 @@
 package com.apperian.api.publishing;
 
+import com.apperian.api.metadata.Metadata;
+
 /**
  * API described at:
  * https://help.apperian.com/display/pub/EASE+Publishing+API+Guide
@@ -12,15 +14,15 @@ public class Publishing {
         return new AuthenticateUserRequest(username, password);
     }
 
-    public GetListRequest getList() {
-        return new GetListRequest();
+    public ApplicationListRequest list() {
+        return new ApplicationListRequest();
     }
 
-    public UpdateRequest update(String appID) {
-        return new UpdateRequest(appID);
+    public UpdateApplicationRequest update(String appID) {
+        return new UpdateApplicationRequest(appID);
     }
 
-    public PublishRequest publish(String transactionID, Metadata metadata, String applicationFileId) {
-        return new PublishRequest(transactionID, metadata, applicationFileId);
+    public PublishApplicationRequest publish(String transactionID, Metadata metadata, String applicationFileId) {
+        return new PublishApplicationRequest(transactionID, metadata, applicationFileId);
     }
 }

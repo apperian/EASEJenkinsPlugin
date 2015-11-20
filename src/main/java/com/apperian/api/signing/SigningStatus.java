@@ -1,17 +1,32 @@
 package com.apperian.api.signing;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum SigningStatus {
-    @JsonProperty("in_progress")
-    IN_PROGRESS,
+    IN_PROGRESS("in_progress"),
+    SIGNED("signed"),
+    CANCELLED("cancelled"),
+    ERROR("error");
 
-    @JsonProperty("signed")
-    SIGNED,
+    private String value;
 
-    @JsonProperty("cancelled")
-    CANCELLED,
+    SigningStatus(String value) {
+        this.value = value;
+    }
 
-    @JsonProperty("error")
-    ERROR
+    @JsonValue
+    public String getValue() {
+        return value;
+    }
+
+    @JsonCreator
+    public static final SigningStatus fromString(String value) {
+        for (SigningStatus status : SigningStatus.values()) {
+            if (status.value.equals(value)) {
+                return status;
+            }
+        }
+        throw new RuntimeException("bad value: " + value);
+    }
 }

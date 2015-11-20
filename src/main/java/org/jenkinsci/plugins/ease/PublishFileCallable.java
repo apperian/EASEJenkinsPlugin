@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import com.apperian.api.ApperianEase;
+import com.apperian.api.metadata.Metadata;
 import com.apperian.api.publishing.*;
 import com.apperian.api.EASEEndpoint;
 import com.apperian.api.metadata.MetadataExtractor;
@@ -73,7 +74,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
             return false;
         }
 
-        UpdateResponse update = ApperianEase.PUBLISHING.update(appId)
+        UpdateApplicationResponse update = ApperianEase.PUBLISHING.update(appId)
                 .call(endpoint);
 
         if (update.hasError()) {
@@ -105,7 +106,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         }
 
 
-        PublishResponse publish = ApperianEase.PUBLISHING.publish(update.result.transactionID, metadata, upload.fileID)
+        PublishApplicationResponse publish = ApperianEase.PUBLISHING.publish(update.result.transactionID, metadata, upload.fileID)
                 .call(endpoint);
         if (publish.hasError()) {
             String errorMessage = publish.getErrorMessage();

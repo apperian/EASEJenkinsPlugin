@@ -3,8 +3,13 @@ package com.apperian.api.signing;
 import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.ApperianRequest;
 import com.apperian.api.ApperianResourceID;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.Header;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
 import java.io.IOException;
+import java.util.List;
 
 public class SignApplicationRequest extends ApperianRequest {
 
@@ -14,6 +19,13 @@ public class SignApplicationRequest extends ApperianRequest {
                 "/applications/" +
                 applicationId + "/credentials/" +
                         credentialId);
+    }
+
+    @Override
+    protected void addEntityToRequest(ObjectMapper mapper,
+                                      List<Header> headers,
+                                      HttpEntityEnclosingRequestBase requestWithEntity)
+            throws JsonProcessingException {
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.apperian.api.publishing;
+package com.apperian.api.metadata;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -1,4 +1,4 @@
-package com.apperian.api.users;
+package com.apperian.api.signing;
 
 import com.apperian.api.ApperianEase;
 import org.junit.Assert;
@@ -6,8 +6,6 @@ import org.junit.Test;
 
 import com.apperian.api.ApiTesting;
 import com.apperian.api.TestUtil;
-import com.apperian.api.signing.ListAllSigningCredentialsResponse;
-import com.apperian.api.signing.SignApplicationResponse;
 
 public class SigningTest {
     @Test
@@ -24,8 +22,6 @@ public class SigningTest {
         TestUtil.assertNoError(response);
 
         Assert.assertNotNull(response.getCredentials());
-
-        System.out.println(response.getCredentials());
     }
 
     @Test
@@ -40,7 +36,6 @@ public class SigningTest {
                 .call(ApiTesting.APERIAN_ENDPOINT);
 
         TestUtil.assertNoError(response);
-
         Assert.assertNotNull(response.getStatus());
     }
 

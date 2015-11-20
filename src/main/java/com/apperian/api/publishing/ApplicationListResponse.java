@@ -4,7 +4,7 @@ import com.apperian.api.EASEResponse;
 
 import java.util.Arrays;
 
-public class GetListResponse extends EASEResponse {
+public class ApplicationListResponse extends EASEResponse {
     public Result result;
 
     public static class Result {
@@ -41,7 +41,7 @@ public class GetListResponse extends EASEResponse {
 
     @Override
     public String toString() {
-        return "GetListResponse{" +
+        return "ApplicationListResponse{" +
                 "applications=" + Arrays.toString(result.applications) +
                 (hasError() ? ", error='" + getError() + '\'' : "") +
                 '}';

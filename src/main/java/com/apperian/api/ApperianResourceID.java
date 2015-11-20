@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public class ApperianResourceID {
     final String id;
 
-    @JsonCreator
+    @JsonCreator // input could be a String or Numeric
     public ApperianResourceID(Object id) {
         this.id = id.toString();
     }

@@ -27,7 +27,7 @@ public class ApplicationsTest {
         }
 
         UpdateApplicationMetadataResponse response;
-        response = ApperianEase.APPLICATIONS.updateApplicationMetadata(ApiTesting.APP_ID)
+        response = ApperianEase.APPLICATIONS.updateApplicationMetadata(ApiTesting.APP_PSK)
                 .setEnabled(true)
                 .call(ApiTesting.APERIAN_ENDPOINT);
 

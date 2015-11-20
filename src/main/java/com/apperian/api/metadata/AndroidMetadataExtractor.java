@@ -4,8 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import com.apperian.api.publishing.Metadata;
-import com.apperian.api.publishing.Metadata.KnownFields;
+import com.apperian.api.metadata.Metadata.KnownFields;
 
 import net.dongliu.apk.parser.ApkParser;
 import net.dongliu.apk.parser.bean.ApkMeta;

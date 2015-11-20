@@ -1,6 +1,7 @@
 package com.apperian.api;
 
 import com.apperian.api.users.AuthenticateUserRequest;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -66,13 +67,9 @@ public abstract class ApperianRequest {
         try {
             List<Header> headers = new ArrayList<>();
             if (request instanceof HttpEntityEnclosingRequestBase) {
-                String requestAsString = mapper.writeValueAsString(takeRequestJsonObject());
-
                 HttpEntityEnclosingRequestBase requestWithEntity;
                 requestWithEntity = (HttpEntityEnclosingRequestBase) request;
-                requestWithEntity.setEntity(new StringEntity(requestAsString, APIConstants.REQUEST_CHARSET));
-
-                headers.add(APIConstants.CONTENT_TYPE_JSON_HEADER);
+                addEntityToRequest(mapper, headers, requestWithEntity);
             }
             if (!(this instanceof AuthenticateUserRequest)) {
                 if (endpoint.sessionToken == null) {
@@ -89,10 +86,19 @@ public abstract class ApperianRequest {
         return request;
     }
 
+    protected void addEntityToRequest(ObjectMapper mapper,
+                                      List<Header> headers,
+                                      HttpEntityEnclosingRequestBase requestWithEntity) throws JsonProcessingException {
+
+        String requestAsString = mapper.writeValueAsString(takeRequestJsonObject());
+        StringEntity entity = new StringEntity(requestAsString, APIConstants.REQUEST_CHARSET);
+        headers.add(APIConstants.CONTENT_TYPE_JSON_HEADER);
+        requestWithEntity.setEntity(entity);
+    }
+
     public <T> T buildResponseObject(ObjectMapper mapper, Class<T> responseClass, CloseableHttpResponse response) throws IOException {
         HttpEntity entity = response.getEntity();
         String responseString = EntityUtils.toString(entity);
-        System.out.println(responseString); // FIXME
         return mapper.readValue(responseString, responseClass);
     }
 }

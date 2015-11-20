@@ -7,8 +7,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
-import com.apperian.api.publishing.Metadata;
-
 public abstract class MetadataExtractor implements Comparable<MetadataExtractor> {
     protected static final Logger logger = Logger.getLogger(MetadataExtractor.class.getName());
 

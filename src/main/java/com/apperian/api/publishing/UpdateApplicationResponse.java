@@ -1,8 +1,9 @@
 package com.apperian.api.publishing;
 
 import com.apperian.api.EASEResponse;
+import com.apperian.api.metadata.Metadata;
 
-public class UpdateResponse extends EASEResponse {
+public class UpdateApplicationResponse extends EASEResponse {
     public Result result;
 
     public static class Result {
@@ -13,7 +14,7 @@ public class UpdateResponse extends EASEResponse {
 
     @Override
     public String toString() {
-        return "UpdateResponse{" +
+        return "UpdateApplicationResponse{" +
                 "transactionID=" + result.transactionID +
                 ", fileUploadURL=" + result.fileUploadURL +
                 ", EASEmetadata=" + result.EASEmetadata +

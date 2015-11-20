@@ -6,19 +6,19 @@ import com.apperian.api.EASERequest;
 
 import java.io.IOException;
 
-public class UpdateRequest extends EASERequest {
+public class UpdateApplicationRequest extends EASERequest {
     public final Params params;
 
-    public UpdateRequest(String appID) {
+    public UpdateApplicationRequest(String appID) {
         super(APIConstants.UPDATE_METHOD);
         this.params = new Params();
         this.params.appID = appID;
     }
 
     @Override
-    public UpdateResponse call(EASEEndpoint endpoint) throws IOException {
+    public UpdateApplicationResponse call(EASEEndpoint endpoint) throws IOException {
         this.params.token = endpoint.getSessionToken();
-        return doJsonRpc(endpoint, this, UpdateResponse.class);
+        return doJsonRpc(endpoint, this, UpdateApplicationResponse.class);
     }
 
     public static class Params {
@@ -28,7 +28,7 @@ public class UpdateRequest extends EASERequest {
 
     @Override
     public String toString() {
-        return "UpdateRequest{" +
+        return "UpdateApplicationRequest{" +
                 "appID=" + params.appID +
                 "}";
     }

@@ -14,7 +14,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import com.apperian.api.publishing.GetListResponse.Application;
+import com.apperian.api.publishing.ApplicationListResponse.Application;
 
 import hudson.model.BuildListener;
 
@@ -25,20 +25,6 @@ public class UploadTest {
 
     @ClassRule
     public static JenkinsRule j = new JenkinsRule();
-
-    @Test
-    public void testListApps() throws Exception {
-        if (PWD.isEmpty()) {
-            return;
-        }
-
-        Application[] apps = ApperianEase.PUBLISHING.getList()
-                .call(ApiTesting.EASE_ENDPOINT).result.applications;
-
-        for (Application app : apps) {
-            System.out.println(app.ID);
-        }
-    }
 
     @Test
     public void testAndroid() throws Exception {

@@ -3,13 +3,14 @@ package com.apperian.api.publishing;
 import com.apperian.api.APIConstants;
 import com.apperian.api.EASEEndpoint;
 import com.apperian.api.EASERequest;
+import com.apperian.api.metadata.Metadata;
 
 import java.io.IOException;
 
-public class PublishRequest extends EASERequest {
+public class PublishApplicationRequest extends EASERequest {
     public final Params params;
 
-    public PublishRequest(String transactionID, Metadata metadata, String applicationFileId) {
+    public PublishApplicationRequest(String transactionID, Metadata metadata, String applicationFileId) {
         super(APIConstants.PUBLISH_METHOD);
         this.params = new Params();
         this.params.transactionID = transactionID;
@@ -19,9 +20,9 @@ public class PublishRequest extends EASERequest {
     }
 
     @Override
-    public PublishResponse call(EASEEndpoint endpoint) throws IOException {
+    public PublishApplicationResponse call(EASEEndpoint endpoint) throws IOException {
         this.params.token = endpoint.getSessionToken();
-        return doJsonRpc(endpoint, this, PublishResponse.class);
+        return doJsonRpc(endpoint, this, PublishApplicationResponse.class);
     }
 
     public static class Params {
@@ -37,7 +38,7 @@ public class PublishRequest extends EASERequest {
 
     @Override
     public String toString() {
-        return "PublishRequest{" +
+        return "PublishApplicationRequest{" +
                 ", transactionID=" + params.transactionID +
                 ", applicationFileId=" + params.files.application +
                 ", metadata=" + params.EASEmetadata +

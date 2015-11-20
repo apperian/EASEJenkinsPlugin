@@ -18,7 +18,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
-import com.apperian.api.publishing.GetListResponse;
+import com.apperian.api.publishing.ApplicationListResponse;
 import com.apperian.api.EASEEndpoint;
 
 import hudson.EnvVars;
@@ -37,7 +37,7 @@ import hudson.util.Function1;
 import hudson.util.Secret;
 import net.sf.json.JSONObject;
 
-import static com.apperian.api.publishing.GetListResponse.Application;
+import static com.apperian.api.publishing.ApplicationListResponse.Application;
 
 public class EaseRecorder extends Recorder {
     public static final String PLUGIN_NAME = "EASE Plugin";
@@ -261,16 +261,16 @@ public class EaseRecorder extends Recorder {
                 return FormValidation.error(errorMessage);
             }
 
-            GetListResponse getListResponse = ApperianEase.PUBLISHING.getList()
+            ApplicationListResponse applicationListResponse = ApperianEase.PUBLISHING.list()
                     .call(endpoint);
 
-            if (getListResponse.hasError()) {
-                String errorMessage = getListResponse.getErrorMessage();
+            if (applicationListResponse.hasError()) {
+                String errorMessage = applicationListResponse.getErrorMessage();
                 return FormValidation.error(errorMessage);
             }
 
             List<Application> list = new ArrayList<>(
-                    Arrays.asList(getListResponse.result.applications));
+                    Arrays.asList(applicationListResponse.result.applications));
             Collections.sort(list, new Comparator<Application>() {
                 public int compare(Application o1, Application o2) {
                     return o1.name.compareTo(o2.name);
