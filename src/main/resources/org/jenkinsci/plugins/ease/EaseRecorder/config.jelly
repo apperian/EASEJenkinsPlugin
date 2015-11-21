@@ -1,57 +1,105 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <!--
-    Jenkins plugin per-project configuration.
-  -->
 
-    <f:entry title="${%Ease API URL}" field="url">
-        <f:textbox default="https://easesvc.apperian.___/ease.interface.php" />
+    <f:entry title="${%Account region}" field="accountRegion">
+      <table width="100%">
+      <f:dropdownList>
+        <f:dropdownListBlock title="US" value="US" />
+        <f:dropdownListBlock title="Europe &amp; world" value="Europe" />
+        <f:dropdownListBlock title="Custom endpoints" value="custom" >
+          <f:entry title="${%Ease API URL}" field="customEaseUrl">
+            <f:textbox default="https://easesvc.apperian.___/ease.interface.php" />
+          </f:entry>
+          <f:entry title="${%Apperian API URL}" field="customApperianUrl">
+            <f:textbox default="https://____.apperian.com/v1" />
+          </f:entry>
+        </f:dropdownListBlock>
+      </f:dropdownList>
+      </table>
     </f:entry>
-    <f:entry title="${%Username ID/email}" field="username">
+
+    <f:entry title="${%Username}" field="username">
         <f:textbox default="" />
     </f:entry>
     <f:entry title="${%Password}" field="password">
         <f:password />
     </f:entry>
+
     <f:validateButton
-            title="${%Test connection &amp; get IDs}" progress="${%Testing...}"
-            method="testConnection" with="url,username,password" />
+        title="${%Test connection}" progress="${%Testing...}"
+        method="testConnection" with="accountRegion,customEaseUrl,customApperianUrl,username,password" />
 
-    <f:entry title="${%Application ID}" field="appId">
-        <f:textbox />
+    <f:entry title="${%Application}" field="appId">
+      <f:select />
     </f:entry>
-
     <f:entry title="${%Filename}" field="filename">
-        <f:textbox default="**/*.ipa,**/*.apk,**/*.zip" />
+      <f:textbox default="**/*.ipa,**/*.apk,**/*.zip" />
     </f:entry>
-    <f:entry title="${%Metadata assignment}" field="metadataAssignment">
-        <f:textbox />
+    <f:entry title="${%Metadata}" field="metadataAssignment">
+      <f:textbox />
+    </f:entry>
+    <f:entry title="${%Enable}" name="enable">
+      <f:checkbox />
+      If checked, application would be enabled
+    </f:entry>
+    <f:entry title="${%Sign}" field="sign">
+      <f:checkbox />
+      If checked, application would be signed
+    </f:entry>
+    <f:entry title="${%Credential}" field="credential">
+      <f:select />
     </f:entry>
 
-    <f:entry title="${%Additional Uploads}">
+    <!--
+      disabled because of "As a Jenkins plugin user, I would like to remove the ability to add additional uploads."
+
+    <f:entry title="${%More uploads}">
         <f:repeatable name="additionalUploads" var="additionalUpload" items="${instance.additionalUploads}">
             <table width="100%">
-                <f:entry title="${%Application ID}" field="_appId">
-                    <f:textbox default="" value="${additionalUpload.appId}"/>
+                <f:entry title="${%Application}" field="_appId">
+                  <f:select value="${additionalUpload.appId}"/>
                 </f:entry>
-
                 <f:entry title="${%Filename}" field="_filename">
-                    <f:textbox default="" value="${additionalUpload.filename}"/>
+                  <f:textbox default="" value="${additionalUpload.filename}"/>
                 </f:entry>
-
-                <f:entry title="${%Username ID/email} (optional)" field="_username">
+                <f:entry title="${%Username} (optional)" field="_username">
                     <f:textbox default="" value="${additionalUpload.username}"/>
                 </f:entry>
                 <f:entry title="${%Password} (optional)" field="_password">
                     <f:password value="${additionalUpload.password}"/>
                 </f:entry>
-                <f:entry title="${%Ease API URL} (optional)" field="_url">
-                    <f:textbox default="" value="${additionalUpload.url}"/>
+                <f:entry title="${%Account region}" field="_accountRegion">
+                  <table width="100%">
+                  <f:dropdownList value="${additionalUpload.accountRegion}">
+                    <f:dropdownListBlock title="(as in upload)" value="inherit" />
+                    <f:dropdownListBlock title="US" value="US" />
+                    <f:dropdownListBlock title="Europe &amp; world" value="Europe" />
+                    <f:dropdownListBlock title="Custom endpoints" value="custom" >
+                      <f:entry title="${%Ease API URL}" field="_customEaseUrl">
+                        <f:textbox default="https://easesvc.apperian.___/ease.interface.php" value="${additionalUpload.customEaseUrl}" />
+                      </f:entry>
+                      <f:entry title="${%Apperian API URL}" field="_customApperianUrl">
+                        <f:textbox default="https://____.apperian.com/v1" value="${additionalUpload.customApperianUrl}" />
+                      </f:entry>
+                    </f:dropdownListBlock>
+                  </f:dropdownList>
+                  </table>
                 </f:entry>
-                <f:entry title="${%Metadata assignment}" field="metadataAssignment">
-                    <f:textbox />
+                <f:entry title="${%Metadata}" field="_metadataAssignment">
+                  <f:textbox value="${additionalUpload.metadataAssignment}" />
+                </f:entry>
+                <f:entry title="${%Enable}" field="_enable" >
+                  <f:checkbox value="${additionalUpload.enable}" />
+                  If checked, application would be enabled
+                </f:entry>
+                <f:entry title="${%Sign}" field="_sign" >
+                  <f:checkbox value="${additionalUpload.sign}" />
+                  If checked, application would be signed
+                </f:entry>
+                <f:entry title="${%Credential}" field="_credential">
+                  <f:select value="${additionalUpload.credential}" />
                 </f:entry>
 
-                <f:entry title="">
+                <f:entry>
                     <div align="right">
                         <f:repeatableDeleteButton/>
                     </div>
@@ -59,4 +107,6 @@
             </table>
         </f:repeatable>
     </f:entry>
+
+    -->
 </j:jelly>

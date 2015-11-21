@@ -32,7 +32,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
     public PublishFileCallable(EaseUpload upload, BuildListener listener) {
         this.listener = listener;
 
-        this.url = upload.getUrl();
+        this.url = upload.getCustomEaseUrl();
         this.username = upload.getUsername();
         this.password = Secret.fromString(upload.getPassword());
         this.appId = upload.getAppId();

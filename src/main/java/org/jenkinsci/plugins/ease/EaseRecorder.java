@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 
 import com.apperian.api.ApperianEase;
+import hudson.util.ListBoxModel;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -45,7 +46,9 @@ public class EaseRecorder extends Recorder {
     private static final Logger logger = Logger.getLogger(EaseRecorder.class.getName());
 
     private final EaseUpload[] additionalUploads;
-    private final String url;
+    private final String accountRegion;
+    private final String customEaseUrl;
+    private final String customApperianUrl;
     private final String username;
     private final String password;
     private final String appId;
@@ -53,14 +56,20 @@ public class EaseRecorder extends Recorder {
     private final String metadataAssignment;
 
     @DataBoundConstructor
-    public EaseRecorder(String url,
-                        String username,
-                        String password,
-                        String appId,
-                        String filename,
-                        String metadataAssignment,
-                        EaseUpload[] additionalUploads) {
-        this.url = url;
+    public EaseRecorder(
+            String accountRegion,
+            String customEaseUrl,
+            String customApperianUrl,
+            String username,
+            String password,
+            String appId,
+            String filename,
+            String metadataAssignment,
+            EaseUpload[] additionalUploads) {
+
+        this.accountRegion = accountRegion;
+        this.customEaseUrl = customEaseUrl;
+        this.customApperianUrl = customApperianUrl;
         this.username = username;
         this.password = password;
         this.appId = appId;
@@ -69,8 +78,12 @@ public class EaseRecorder extends Recorder {
         this.metadataAssignment = metadataAssignment;
     }
 
-    public String getUrl() {
-        return url;
+    public String getAccountRegion() {
+        return accountRegion;
+    }
+
+    public String getCustomEaseUrl() {
+        return customEaseUrl;
     }
 
     public String getUsername() {
@@ -100,12 +113,7 @@ public class EaseRecorder extends Recorder {
         final PrintStream logger = listener.getLogger();
 
 
-        EaseUpload mainUpload = new EaseUpload(url,
-                                               username,
-                                               password,
-                                               appId,
-                                               filename,
-                                               metadataAssignment);
+        EaseUpload mainUpload = null; // TODO
         if (!mainUpload.checkOk()) {
             logger.println("One of required configuration options is not set");
             return false;
@@ -215,6 +223,27 @@ public class EaseRecorder extends Recorder {
             save();
             return super.configure(req,formData);
         }
+
+        public ListBoxModel doFillAppItems(@QueryParameter("accountRegion") final String accountRegion,
+                                           @QueryParameter("username") final String username,
+                                           @QueryParameter("password") final String password,
+                                           @QueryParameter("sign") boolean sign,
+                                           @QueryParameter("apperianUrl") String apperianUrl) {
+            ListBoxModel m = new ListBoxModel();
+            m.add("abc", "def");
+            return m;
+        }
+
+        public ListBoxModel doFillCredentialItems(@QueryParameter("accountRegion") final String accountRegion, // ...
+                                                  @QueryParameter("username") final String username,
+                                                  @QueryParameter("password") final String password,
+                                                  @QueryParameter("sign") boolean sign,
+                                                  @QueryParameter("apperianUrl") String apperianUrl) {
+            ListBoxModel m = new ListBoxModel();
+            m.add("abc", "def");
+            return m;
+        }
+
 
         public FormValidation doTestConnection(@QueryParameter("url") final String url,
                                                @QueryParameter("username") final String username,

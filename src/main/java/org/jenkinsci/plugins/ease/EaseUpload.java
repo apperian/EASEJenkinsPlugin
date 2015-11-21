@@ -9,7 +9,7 @@ import hudson.FilePath;
 import hudson.util.Function1;
 
 public class EaseUpload {
-    private String url;
+    private String customEaseUrl;
     private String appId;
     private String filename;
     private String username;
@@ -18,13 +18,18 @@ public class EaseUpload {
     private transient  FilePath filePath;
 
     @DataBoundConstructor
-    public EaseUpload(String _url,
+    public EaseUpload(String _appId,
+                      String _filename,
                       String _username,
                       String _password,
-                      String _appId,
-                      String _filename,
+                      String _accountRegion,
+                      String _customEaseUrl,
+                      String _customApperianUrl,
+                      boolean _sign,
+                      String _credential,
+                      boolean _enable,
                       String _metadataAssignment) {
-        this.url = Utils.trim(_url);
+        this.customEaseUrl = Utils.trim(_customEaseUrl);
         this.username = Utils.trim(_username);
         this.password = _password;
         this.appId = Utils.trim(_appId);
@@ -33,13 +38,15 @@ public class EaseUpload {
     }
 
     public EaseUpload derive(EaseUpload additionalUpload) {
-        return new EaseUpload(
-                Utils.override(additionalUpload.url, url),
-                Utils.override(additionalUpload.username, username),
-                Utils.override(additionalUpload.password, password),
-                additionalUpload.getAppId(),
-                additionalUpload.getFilename(),
-                Utils.override(additionalUpload.metadataAssignment, metadataAssignment));
+        // TODO
+        return null;
+//        return new EaseUpload(
+//                Utils.override(additionalUpload.customEaseUrl, customEaseUrl),
+//                Utils.override(additionalUpload.username, username),
+//                Utils.override(additionalUpload.password, password),
+//                additionalUpload.getAppId(),
+//                additionalUpload.getFilename(),
+//                Utils.override(additionalUpload.metadataAssignment, metadataAssignment));
     }
 
     public void setFilePath(FilePath filePath) {
@@ -50,8 +57,8 @@ public class EaseUpload {
         return filePath;
     }
 
-    public String getUrl() {
-        return url;
+    public String getCustomEaseUrl() {
+        return customEaseUrl;
     }
 
     public String getAppId() {
@@ -76,12 +83,12 @@ public class EaseUpload {
 
     public boolean checkOk() {
         return !(Utils.isEmptyString(appId)
-                || Utils.isEmptyString(url)
+                || Utils.isEmptyString(customEaseUrl)
                 || Utils.isEmptyString(filename));
     }
 
     public void expand(Function1<String, String> expandVars) {
-        url = expandVars.call(url);
+        customEaseUrl = expandVars.call(customEaseUrl);
         appId = expandVars.call(appId);
         filename = expandVars.call(filename);
         username = expandVars.call(username);
