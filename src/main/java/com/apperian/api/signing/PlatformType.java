@@ -4,13 +4,15 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum PlatformType {
-    IOS(1),
-    ANDROID(2);
+    IOS(1, "iOS"),
+    ANDROID(2, "Android");
 
-    int ordValue;
+    final int ordValue;
+    final String displayName;
 
-    PlatformType(int ordValue) {
+    PlatformType(int ordValue, String displayName) {
         this.ordValue = ordValue;
+        this.displayName = displayName;
     }
 
     @JsonValue
@@ -26,5 +28,9 @@ public enum PlatformType {
             }
         }
         throw new IllegalArgumentException("bad platform: " + platformAsOrd);
+    }
+
+    public String getDisplayName() {
+        return displayName;
     }
 }

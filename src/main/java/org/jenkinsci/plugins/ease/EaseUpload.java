@@ -14,7 +14,7 @@ import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
 
 public class EaseUpload implements Serializable {
     private String url; // for backward compatibility
-    private String accountRegion;
+    private String region;
     private String customEaseUrl;
     private String customApperianUrl;
     private String appId;
@@ -30,12 +30,12 @@ public class EaseUpload implements Serializable {
     // @DataBoundConstructor should include all fields
 
     public EaseUpload(String _url,
-                      String _accountRegion,
+                      String _region,
                       String _customEaseUrl,
                       String _customApperianUrl,
                       String _username,
                       String _password) {
-        this.accountRegion = Utils.trim(_accountRegion);
+        this.region = Utils.trim(_region);
         this.customEaseUrl = Utils.trim(_customEaseUrl);
         this.customApperianUrl = Utils.trim(_customApperianUrl);
 
@@ -64,7 +64,7 @@ public class EaseUpload implements Serializable {
         if (_url.isEmpty()) {
             return;
         }
-        if (!accountRegion.isEmpty()) {
+        if (!region.isEmpty()) {
             return;
         }
         if (!customApperianUrl.isEmpty()) {
@@ -175,11 +175,11 @@ public class EaseUpload implements Serializable {
     }
 
     public boolean checkHasFieldsForAuth() {
-        if (accountRegion == null) {
+        if (region == null) {
             return false;
         }
 
-        Region region = Region.fromNameOrCustom(accountRegion);
+        Region region = Region.fromNameOrCustom(this.region);
 
         if (region == Region.CUSTOM) {
             return !Utils.isEmptyString(customApperianUrl) &&
@@ -191,7 +191,7 @@ public class EaseUpload implements Serializable {
 
 
     public EASEEndpoint createEaseEndpoint() {
-        Region region = Region.fromNameOrCustom(accountRegion);
+        Region region = Region.fromNameOrCustom(this.region);
         if (region == Region.CUSTOM) {
             return new EASEEndpoint(customEaseUrl);
         } else {
@@ -200,7 +200,7 @@ public class EaseUpload implements Serializable {
     }
 
     public ApperianEndpoint createApperianEndpoint() {
-        Region region = Region.fromNameOrCustom(accountRegion);
+        Region region = Region.fromNameOrCustom(this.region);
         if (region == Region.CUSTOM) {
             return new ApperianEndpoint(customApperianUrl);
         } else {

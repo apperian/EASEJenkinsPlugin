@@ -44,7 +44,7 @@ public class EaseRecorder extends Recorder {
     private static final Logger logger = Logger.getLogger(EaseRecorder.class.getName());
 
     private final String url;
-    private final String accountRegion;
+    private final String region;
     private final String customEaseUrl;
     private final String customApperianUrl;
     private final String username;
@@ -59,7 +59,7 @@ public class EaseRecorder extends Recorder {
     @DataBoundConstructor
     public EaseRecorder(
             String url,
-            String accountRegion,
+            String region,
             String customEaseUrl,
             String customApperianUrl,
             String username,
@@ -71,7 +71,7 @@ public class EaseRecorder extends Recorder {
             String credentials,
             boolean enable) {
         this.url = url;
-        this.accountRegion = accountRegion;
+        this.region = region;
         this.customEaseUrl = customEaseUrl;
         this.customApperianUrl = customApperianUrl;
         this.username = username;
@@ -84,8 +84,11 @@ public class EaseRecorder extends Recorder {
         this.metadataAssignment = metadataAssignment;
     }
 
-    public String getAccountRegion() {
-        return accountRegion;
+    public String getRegion() {
+        if (region == null) {
+            return Region.DEFAULT_REGION.name();
+        }
+        return region;
     }
 
     public String getCustomEaseUrl() {
@@ -133,7 +136,7 @@ public class EaseRecorder extends Recorder {
         final PrintStream buildLog = listener.getLogger();
 
 
-        EaseUpload mainUpload = new EaseUpload(url, accountRegion, customEaseUrl,  customApperianUrl, username, password)
+        EaseUpload mainUpload = new EaseUpload(url, region, customEaseUrl,  customApperianUrl, username, password)
                 .setOtherParams(appId, filename, metadataAssignment, sign, credentials, enable);
 
         if (!mainUpload.checkOk()) {
@@ -229,13 +232,24 @@ public class EaseRecorder extends Recorder {
             return super.configure(req,formData);
         }
 
-        public ListBoxModel doFillAppIdItems(@QueryParameter("accountRegion") final String accountRegion,
+        public ListBoxModel doFillRegionItems() {
+            ListBoxModel resultListBox = new ListBoxModel();
+            for (Region region : Region.values()) {
+                if (region == Region.CUSTOM) {
+                    continue;
+                }
+                resultListBox.add(region.getTitle(), region.name());
+            }
+            return resultListBox;
+        }
+
+        public ListBoxModel doFillAppIdItems(@QueryParameter("region") final String region,
                                              @QueryParameter("customApperianUrl") String customApperianUrl,
                                              @QueryParameter("customEaseUrl") String customEaseUrl,
                                              @QueryParameter("username") final String username,
                                              @QueryParameter("password") final String password) {
             EaseUpload upload = new EaseUpload(null,
-                    accountRegion,
+                    region,
                     customEaseUrl,
                     customApperianUrl,
                     username,
@@ -262,7 +276,8 @@ public class EaseRecorder extends Recorder {
                 Application[] apps = response.result.applications;
                 ListBoxModel listItems = new ListBoxModel();
                 for (Application app : apps) {
-                    listItems.add(app.ID, app.name + " " + app.version + " " + app.type);
+                    listItems.add(app.name + " v:" + app.version + " type:" + app.type,
+                            app.ID);
                 }
                 return listItems;
             } catch (Exception e) {
@@ -271,13 +286,13 @@ public class EaseRecorder extends Recorder {
             }
         }
 
-        public ListBoxModel doFillCredentialItems(@QueryParameter("accountRegion") final String accountRegion,
+        public ListBoxModel doFillCredentialItems(@QueryParameter("region") final String region,
                                                   @QueryParameter("customApperianUrl") String customApperianUrl,
                                                   @QueryParameter("customEaseUrl") String customEaseUrl,
                                                   @QueryParameter("username") final String username,
                                                   @QueryParameter("password") final String password) {
             EaseUpload upload = new EaseUpload(null,
-                    accountRegion,
+                    region,
                     customEaseUrl,
                     customApperianUrl,
                     username,
@@ -306,11 +321,10 @@ public class EaseRecorder extends Recorder {
                 DateFormat format = SimpleDateFormat.getDateInstance(DateFormat.SHORT);
 
                 for (SigningCredential credential : response.getCredentials()) {
-                    listItems.add(credential.getCredentialId().getId(),
-                            credential.getPlatform() + " " +
-                                    format.format(credential.getExpirationDate()) + " " +
-                                    credential.getDescription()
-                    );
+                    listItems.add(
+                            credential.getDescription() + " exp:" + format.format(credential.getExpirationDate()) +
+                                    " platform:" + credential.getPlatform().getDisplayName(),
+                            credential.getCredentialId().getId());
                 }
 
                 return listItems;
@@ -321,7 +335,7 @@ public class EaseRecorder extends Recorder {
         }
 
 
-        public FormValidation doTestConnection(@QueryParameter("accountRegion") final String accountRegion,
+        public FormValidation doTestConnection(@QueryParameter("region") final String region,
                                                @QueryParameter("customApperianUrl") String customApperianUrl,
                                                @QueryParameter("customEaseUrl") String customEaseUrl,
                                                @QueryParameter("username") final String username,
@@ -329,7 +343,7 @@ public class EaseRecorder extends Recorder {
                 throws IOException, ServletException {
 
             EaseUpload upload = new EaseUpload(null,
-                    accountRegion,
+                    region,
                     customEaseUrl,
                     customApperianUrl,
                     username,

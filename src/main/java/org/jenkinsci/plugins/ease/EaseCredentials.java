@@ -1,24 +1,22 @@
 package org.jenkinsci.plugins.ease;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.apperian.api.JsonHttpEndpoint;
 import com.apperian.api.publishing.AuthenticateUserResponse;
-import com.apperian.api.EASEEndpoint;
 import com.cloudbees.plugins.credentials.CredentialsNameProvider;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import com.cloudbees.plugins.credentials.domains.DomainRequirement;
 import com.cloudbees.plugins.credentials.domains.HostnameRequirement;
-
 import hudson.security.ACL;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
+
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class EaseCredentials {
     static final Logger logger = Logger.getLogger(EaseCredentials.class.getName());
@@ -80,11 +78,11 @@ public class EaseCredentials {
                     return true;
                 }
             } catch (Exception e) {
-                String message = "Could authenticate to '" + endpoint.getUrl() +
+                String message = "Could not authenticate to '" + endpoint.getUrl() +
                         "', credentials used=" + user.getDescription() +
                         ", error='" + e.getMessage();
                 logger.log(Level.WARNING, message, e);
-                endpoint.setLastLoginError(message);
+                endpoint.setLastLoginError(e.getMessage());
             }
         }
         return false;

@@ -1,8 +1,9 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 
-      <f:dropdownList title="${%Account region}" name="accountRegion">
-        <f:dropdownListBlock title="North America" value="NORTH_AMERICA" />
-        <f:dropdownListBlock title="Europe" value="EUROPE" />
+    <f:entry title="${%Account region}" field="region">
+      <f:select />
+    </f:entry>
+      <!--
         <f:dropdownListBlock title="Custom endpoints" value="CUSTOM" >
           <f:entry title="${%Ease API URL}" field="customEaseUrl">
             <f:textbox default="https://easesvc.apperian.___/ease.interface.php" />
@@ -11,13 +12,7 @@
             <f:textbox default="https://____.apperian.com/v1" />
           </f:entry>
         </f:dropdownListBlock>
-      </f:dropdownList>
-      <!--
-    <f:entry>
-      <table width="100%">
-      </table>
-    </f:entry>
-    -->
+        -->
 
     <f:entry title="${%Username}" field="username">
         <f:textbox default="" />
@@ -28,9 +23,9 @@
 
     <f:validateButton
         title="${%Test connection}" progress="${%Testing...}"
-        method="testConnection" with="accountRegion,customEaseUrl,customApperianUrl,username,password" />
+        method="testConnection" with="region,customEaseUrl,customApperianUrl,username,password" />
 
-    <f:entry title="${%Application}" field="appId" with="accountRegion,customEaseUrl,customApperianUrl,username,password" >
+    <f:entry title="${%Application}" field="appId" with="region,customEaseUrl,customApperianUrl,username,password" >
       <f:select />
     </f:entry>
     <f:entry title="${%Filename}" field="filename">
@@ -47,7 +42,7 @@
       <f:checkbox />
       If checked, application would be signed
     </f:entry>
-    <f:entry title="${%Credential}" field="credential"  with="accountRegion,customEaseUrl,customApperianUrl,username,password,sign" >
+    <f:entry title="${%Credential}" field="credential"  with="region,customEaseUrl,customApperianUrl,username,password,sign" >
       <f:select />
     </f:entry>
 
@@ -70,9 +65,9 @@
                 <f:entry title="${%Password} (optional)" field="_password">
                     <f:password value="${additionalUpload.password}"/>
                 </f:entry>
-                <f:entry title="${%Account region}" field="_accountRegion">
+                <f:entry title="${%Account region}" field="_region">
                   <table width="100%">
-                  <f:dropdownList value="${additionalUpload.accountRegion}">
+                  <f:dropdownList value="${additionalUpload.region}">
                     <f:dropdownListBlock title="(as in upload)" value="inherit" />
                     <f:dropdownListBlock title="US" value="US" />
                     <f:dropdownListBlock title="Europe &amp; world" value="Europe" />
