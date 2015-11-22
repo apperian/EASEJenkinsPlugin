@@ -9,11 +9,14 @@ import java.util.logging.Logger;
 
 import com.apperian.api.ApperianEaseApi;
 import com.apperian.api.ApperianEndpoint;
+import com.apperian.api.ApperianResourceID;
+import com.apperian.api.application.UpdateApplicationMetadataResponse;
 import com.apperian.api.metadata.Metadata;
 import com.apperian.api.publishing.*;
 import com.apperian.api.EASEEndpoint;
 import com.apperian.api.metadata.MetadataExtractor;
 
+import com.apperian.api.signing.SignApplicationResponse;
 import hudson.FilePath;
 import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
@@ -101,7 +104,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
 
         report("Metadata from server: %s", metadata);
 
-        assignAuthor(metadata);
+        // assignAuthor(metadata); FIXME seems stupid for me
         extractMetadataFromFile(metadata, applicationPackage);
         assignUserSetVars(metadata, metadataAssignment);
 
@@ -143,7 +146,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
     }
 
     private void assignUserSetVars(Metadata metadata, Map<String, String> map) {
-        report("Taking from user provided metadata assignment");
+        report("Applying provided metadata assignment");
         for (String name : map.keySet()) {
             String value = map.get(name);
 
@@ -159,7 +162,26 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
             return false;
         }
 
-        // TODO
+
+        report("Signing application %s", upload.getCredentials());
+        try {
+            ApperianResourceID appId = new ApperianResourceID(upload.getAppId());
+            ApperianResourceID credentialId = new ApperianResourceID(upload.getCredentials());
+
+
+            SignApplicationResponse response;
+            response = ApperianEaseApi.SIGNING.signApplication(credentialId, appId)
+                    .call(apperianEndpoint);
+
+            if (response.hasError()) {
+                report("Error enabling application: %s", response.getErrorMessage());
+                return false;
+            }
+
+        } catch (IOException e) {
+            report("Network error: %s", e.getMessage());
+            return false;
+        }
 
         return true;
     }
@@ -171,7 +193,24 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
             return false;
         }
 
-        // TODO
+        report("Enabling application");
+        try {
+            ApperianResourceID appId = new ApperianResourceID(upload.getAppId());
+
+            UpdateApplicationMetadataResponse response;
+            response = ApperianEaseApi.APPLICATIONS.updateApplicationMetadata(appId)
+                    .setEnabled(true)
+                    .call(apperianEndpoint);
+
+            if (response.hasError()) {
+                report("Error enabling application: %s", response.getErrorMessage());
+                return false;
+            }
+
+        } catch (IOException e) {
+            report("Network error: %s", e.getMessage());
+            return false;
+        }
 
         return true;
     }

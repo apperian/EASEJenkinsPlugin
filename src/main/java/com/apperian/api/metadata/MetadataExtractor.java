@@ -20,14 +20,17 @@ public abstract class MetadataExtractor implements Comparable<MetadataExtractor>
     public static List<MetadataExtractor> allExtractors(File file) {
         List<MetadataExtractor> extractors = new ArrayList<>();
 
+        String metadataPackage = MetadataExtractor.class.getPackage().getName();
+        metadataPackage += ".";
+
         addExtractorByClass(extractors, file,
-                            "com.apperian.eas.metadata.AndroidMetadataExtractor");
+                metadataPackage + "AndroidMetadataExtractor");
         addExtractorByClass(extractors, file,
-                            "com.apperian.eas.metadata.IOSMetadataExtractor");
+                metadataPackage + "OSMetadataExtractor");
         addExtractorByClass(extractors, file,
-                            "com.apperian.eas.metadata.WinPhoneAppxMetadataExtractor");
+                metadataPackage + "WinPhoneAppxMetadataExtractor");
         addExtractorByClass(extractors, file,
-                            "com.apperian.eas.metadata.BlackberryMetadataExtractor");
+                metadataPackage + "BlackberryMetadataExtractor");
 
         Collections.sort(extractors);
 
