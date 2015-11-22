@@ -96,7 +96,7 @@ public abstract class ApperianRequest {
         requestWithEntity.setEntity(entity);
     }
 
-    public <T> T buildResponseObject(ObjectMapper mapper, Class<T> responseClass, CloseableHttpResponse response) throws IOException {
+    public <T extends ApperianResponse> T buildResponseObject(ObjectMapper mapper, Class<T> responseClass, CloseableHttpResponse response) throws IOException {
         HttpEntity entity = response.getEntity();
         String responseString = EntityUtils.toString(entity);
         return mapper.readValue(responseString, responseClass);

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.apperian.api.JsonHttpEndpoint;
 import com.apperian.api.publishing.AuthenticateUserResponse;
 import com.apperian.api.EASEEndpoint;
 import com.cloudbees.plugins.credentials.CredentialsNameProvider;
@@ -17,42 +18,47 @@ import com.cloudbees.plugins.credentials.domains.HostnameRequirement;
 import hudson.security.ACL;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
+import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
 
 public class EaseCredentials {
-    private final String url;
-    private final List<EaseUser> credentials;
+    static final Logger logger = Logger.getLogger(EaseCredentials.class.getName());
 
-    private static final Logger logger = Logger.getLogger(EaseCredentials.class.getName());
+    final List<EaseUser> credentials;
 
-    public EaseCredentials(String url, String username, Secret password) {
-        this.url = Utils.trim(url);
+    public EaseCredentials(String username, Secret password) {
         credentials = new ArrayList<>();
         if (!Utils.isEmptyString(username)) {
-            credentials.add(new EaseUser(
-                    Utils.trim(username),
-                    password,
-                    "form username/password"));
+            credentials.add(
+                    new EaseUser(
+                            Utils.trim(username),
+                            password,
+                            "form username/password"));
         }
     }
 
-    public void lookupStoredCredentials() {
+    public void lookupStoredCredentials(ApperianEaseEndpoint endpoint) {
+        List<DomainRequirement> requirements = new ArrayList<>();
+        putUrlHostnameAsADomainRequirement(endpoint.getApperianEndpoint().url, requirements);
+        putUrlHostnameAsADomainRequirement(endpoint.getEaseEndpoint().url, requirements);
+        addCredentials(requirements);
+    }
+
+    private void putUrlHostnameAsADomainRequirement(String url,
+                                                    List<DomainRequirement> requirements) {
         URL urlObj;
         try {
-            urlObj = new URL(this.url);
+            urlObj = new URL(url);
+            String host = urlObj.getHost();
+            requirements.add(new HostnameRequirement(host));
         } catch (Exception ex) {
-            addCredentials();
-            return;
         }
-
-        String host = urlObj.getHost();
-        addCredentials(new HostnameRequirement(host));
     }
 
     public boolean checkOk() {
         return !credentials.isEmpty();
     }
 
-    private void addCredentials(DomainRequirement ...domainRequirement) {
+    private void addCredentials(List<DomainRequirement> domainRequirement) {
         List<StandardUsernamePasswordCredentials> list = CredentialsProvider.lookupCredentials(
                 StandardUsernamePasswordCredentials.class,
                 Jenkins.getInstance(),
@@ -67,16 +73,16 @@ public class EaseCredentials {
         }
     }
 
-    public boolean authenticate(final EASEEndpoint endpoint) {
+    public boolean authenticate(final JsonHttpEndpoint endpoint) {
         for (EaseUser user : credentials) {
             try {
                 if (endpoint.tryLogin(user.getUsername(), user.getPassword().getPlainText())) {
                     return true;
                 }
             } catch (Exception e) {
-                String message = "Could authenticate to '" + endpoint.url +
+                String message = "Could authenticate to '" + endpoint.getUrl() +
                         "', credentials used=" + user.getDescription() +
-                        ", error='" + e.getMessage() + "'";
+                        ", error='" + e.getMessage();
                 logger.log(Level.WARNING, message, e);
                 endpoint.setLastLoginError(message);
             }

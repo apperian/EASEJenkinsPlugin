@@ -16,10 +16,8 @@ import java.io.File;
 import java.io.IOException;
 
 public class EASEEndpoint extends JsonHttpEndpoint {
-    public final String url;
-
     public EASEEndpoint(String url) {
-        this.url = url;
+        super(url);
     }
 
     <T extends EASEResponse> T doJsonRpc(EASERequest request,
@@ -81,7 +79,7 @@ public class EASEEndpoint extends JsonHttpEndpoint {
     public boolean tryLogin(String email, String password) {
         AuthenticateUserResponse response;
         try {
-            response = ApperianEase.PUBLISHING.authenticateUser(email, password)
+            response = ApperianEaseApi.PUBLISHING.authenticateUser(email, password)
                     .call(this);
 
             lastLoginError = response.getErrorMessage();

@@ -3,9 +3,9 @@ package org.jenkinsci.plugins.ease;
 import hudson.util.Secret;
 
 public class EaseUser {
-    private final String username;
-    private final Secret password;
-    private final String description;
+    final String username;
+    final Secret password;
+    final String description;
 
     public EaseUser(String username, Secret password, String description) {
         this.username = username;

@@ -7,7 +7,8 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import com.apperian.api.ApperianEase;
+import com.apperian.api.ApperianEaseApi;
+import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.metadata.Metadata;
 import com.apperian.api.publishing.*;
 import com.apperian.api.EASEEndpoint;
@@ -17,64 +18,77 @@ import hudson.FilePath;
 import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.Secret;
+import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
 
 public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Serializable {
     private final static Logger logger = Logger.getLogger(PublishFileCallable.class.getName());
 
+    private EaseUpload upload;
     private final BuildListener listener;
-    private final String appId;
-    private final String username;
-    private final Secret password;
-    private final String url;
-
     private final Map<String, String> metadataAssignment;
 
     public PublishFileCallable(EaseUpload upload, BuildListener listener) {
+        this.upload = upload;
         this.listener = listener;
-
-        this.url = upload.getCustomEaseUrl();
-        this.username = upload.getUsername();
-        this.password = Secret.fromString(upload.getPassword());
-        this.appId = upload.getAppId();
         this.metadataAssignment = Utils.parseAssignmentMap(upload.getMetadataAssignment());
     }
 
     public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-        try (EASEEndpoint endpoint = new EASEEndpoint(url)) {
-            return publishFileToEndpoint(f, endpoint);
+        if (!upload.checkHasFieldsForAuth()) {
+            report("Error: username/password are not set and there is no stored credentials found");
+            return false;
+        }
+
+        if (!upload.checkOk()) {
+            report("Error: all required upload parameters should be set: auth, appId and filename");
+            return false;
+        }
+
+        boolean shouldAuthApperian = upload.isEnable() || upload.isSign();
+
+        StringBuilder errorMessage = new StringBuilder();
+        ApperianEaseEndpoint endpoint = upload.tryAuthenticate(true,
+                shouldAuthApperian,
+                errorMessage);
+
+        if (endpoint == null) {
+            report("Error: %s, endpoint=%s", errorMessage, upload.createEndpoint());
+            return false;
+        }
+
+        try (EASEEndpoint easeEndpoint = endpoint.getEaseEndpoint()) {
+            if (!uploadApp(f, easeEndpoint)) {
+                return false;
+            }
         } catch (Exception ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
             report("General plugin problem : %s", ex);
             ex.printStackTrace(getLogger());
             return false;
         }
+
+
+        if (shouldAuthApperian) {
+            try (ApperianEndpoint apperianEndpoint = endpoint.getApperianEndpoint()) {
+                if (!signApp(f, apperianEndpoint)) {
+                    return false;
+                }
+            } catch (Exception ex) {
+                logger.throwing("PublishFileCallable", "invoke", ex);
+                report("General plugin problem : %s", ex);
+                ex.printStackTrace(getLogger());
+                return false;
+            }
+        }
+        return true;
     }
 
-    private Boolean publishFileToEndpoint(File f, EASEEndpoint endpoint) throws IOException {
-        EaseCredentials credentials = new EaseCredentials(url, username, password);
-        try {
-            credentials.lookupStoredCredentials();
-        } catch (Exception ex) {
-            logger.throwing(PublishFileCallable.class.getName(),
-                            "publishFileToEndpoint",
-                            ex);
-            // but pass-through
-        }
+    private boolean uploadApp(File applicationPackage,
+                              EASEEndpoint endpoint) throws IOException {
 
-        if (!credentials.checkOk()) {
-            report("Error: username/password are not set and there is no stored credentials found");
-            return false;
-        }
+        String appId = upload.getAppId();
 
-        if (!credentials.authenticate(endpoint)) {
-            String errorMessage = endpoint.getLastLoginError() +
-                    ", lastCredentials=" +
-                    credentials.getLastCredentialDescription();
-            report("Error: %s, url=%s", errorMessage, url);
-            return false;
-        }
-
-        UpdateApplicationResponse update = ApperianEase.PUBLISHING.update(appId)
+        UpdateApplicationResponse update = ApperianEaseApi.PUBLISHING.update(appId)
                 .call(endpoint);
 
         if (update.hasError()) {
@@ -88,25 +102,25 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         report("Metadata from server: %s", metadata);
 
         assignAuthor(metadata);
-        extractMetadataFromFile(metadata, f);
+        extractMetadataFromFile(metadata, applicationPackage);
         assignUserSetVars(metadata, metadataAssignment);
 
         report("New metadata: %s", metadata);
 
-        report("Publishing %s to EASE", f);
-        UploadResult upload = endpoint.uploadFile(update.result.fileUploadURL, f);
-        if (upload.hasError()) {
-            report("Error: %s", upload.errorMessage);
+        report("Publishing %s to EASE", applicationPackage);
+        UploadResult uploadResult = endpoint.uploadFile(update.result.fileUploadURL, applicationPackage);
+        if (uploadResult.hasError()) {
+            report("Error: %s", uploadResult.errorMessage);
             return false;
         }
 
-        if (upload.fileID == null) {
+        if (uploadResult.fileID == null) {
             report("Error: Upload file ID is null. Publish transaction not finished");
             return false;
         }
 
 
-        PublishApplicationResponse publish = ApperianEase.PUBLISHING.publish(update.result.transactionID, metadata, upload.fileID)
+        PublishApplicationResponse publish = ApperianEaseApi.PUBLISHING.publish(update.result.transactionID, metadata, uploadResult.fileID)
                 .call(endpoint);
         if (publish.hasError()) {
             String errorMessage = publish.getErrorMessage();
@@ -119,13 +133,13 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
             return false;
         }
 
-        report("DONE! Uploaded %s to %s for appId=%s", f.getName(), url, appId);
+        report("DONE! Uploaded %s to %s for appId=%s", applicationPackage.getName(), endpoint, appId);
         return true;
     }
 
     private void assignAuthor(Metadata metadata) {
         report("Using 'username' for author property in metadata");
-        metadata.setAuthor(getUsername());
+        metadata.setAuthor(upload.getUsername());
     }
 
     private void assignUserSetVars(Metadata metadata, Map<String, String> map) {
@@ -136,6 +150,30 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
             report("Assigning %s = '%s'", name, value);
             metadata.getValues().put(name, value);
         }
+    }
+
+    private boolean signApp(File applicationPackage,
+                            ApperianEndpoint apperianEndpoint) {
+
+        if (!upload.isSign()) {
+            return false;
+        }
+
+        // TODO
+
+        return true;
+    }
+
+    private boolean enableApp(File applicationPackage,
+                              ApperianEndpoint apperianEndpoint) {
+
+        if (!upload.isEnable()) {
+            return false;
+        }
+
+        // TODO
+
+        return true;
     }
 
     private void extractMetadataFromFile(Metadata metadata, File file) {
@@ -153,20 +191,8 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         }
     }
 
-    public String getAppId() {
-        return appId;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public Secret getPassword() {
-        return password;
-    }
-
-    public String getUrl() {
-        return url;
+    public EaseUpload getUpload() {
+        return upload;
     }
 
     public Map<String, String> getMetadataAssignment() {

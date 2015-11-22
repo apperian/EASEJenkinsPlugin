@@ -2,29 +2,28 @@ package org.jenkinsci.plugins.ease;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 
-import com.apperian.api.ApperianEase;
+import com.apperian.api.ApperianEaseApi;
+import com.apperian.api.signing.ListAllSigningCredentialsResponse;
+import com.apperian.api.signing.SigningCredential;
+import hudson.FilePath;
 import hudson.util.ListBoxModel;
-import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import com.apperian.api.publishing.ApplicationListResponse;
-import com.apperian.api.EASEEndpoint;
 
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -35,7 +34,6 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
 import hudson.util.Function1;
-import hudson.util.Secret;
 import net.sf.json.JSONObject;
 
 import static com.apperian.api.publishing.ApplicationListResponse.Application;
@@ -45,7 +43,7 @@ public class EaseRecorder extends Recorder {
 
     private static final Logger logger = Logger.getLogger(EaseRecorder.class.getName());
 
-    private final EaseUpload[] additionalUploads;
+    private final String url;
     private final String accountRegion;
     private final String customEaseUrl;
     private final String customApperianUrl;
@@ -54,9 +52,13 @@ public class EaseRecorder extends Recorder {
     private final String appId;
     private final String filename;
     private final String metadataAssignment;
+    private final boolean sign;
+    private final String credentials;
+    private final boolean enable;
 
     @DataBoundConstructor
     public EaseRecorder(
+            String url,
             String accountRegion,
             String customEaseUrl,
             String customApperianUrl,
@@ -65,8 +67,10 @@ public class EaseRecorder extends Recorder {
             String appId,
             String filename,
             String metadataAssignment,
-            EaseUpload[] additionalUploads) {
-
+            boolean sign,
+            String credentials,
+            boolean enable) {
+        this.url = url;
         this.accountRegion = accountRegion;
         this.customEaseUrl = customEaseUrl;
         this.customApperianUrl = customApperianUrl;
@@ -74,7 +78,9 @@ public class EaseRecorder extends Recorder {
         this.password = password;
         this.appId = appId;
         this.filename = filename;
-        this.additionalUploads = additionalUploads;
+        this.sign = sign;
+        this.credentials = credentials;
+        this.enable = enable;
         this.metadataAssignment = metadataAssignment;
     }
 
@@ -84,6 +90,10 @@ public class EaseRecorder extends Recorder {
 
     public String getCustomEaseUrl() {
         return customEaseUrl;
+    }
+
+    public String getCustomApperianUrl() {
+        return customApperianUrl;
     }
 
     public String getUsername() {
@@ -106,16 +116,28 @@ public class EaseRecorder extends Recorder {
         return metadataAssignment;
     }
 
-    public EaseUpload[] getAdditionalUploads() { return additionalUploads; }
+    public boolean isSign() {
+        return sign;
+    }
+
+    public String getCredentials() {
+        return credentials;
+    }
+
+    public boolean isEnable() {
+        return enable;
+    }
 
     @Override
     public boolean perform(final AbstractBuild build, Launcher launcher, final BuildListener listener) {
-        final PrintStream logger = listener.getLogger();
+        final PrintStream buildLog = listener.getLogger();
 
 
-        EaseUpload mainUpload = null; // TODO
+        EaseUpload mainUpload = new EaseUpload(url, accountRegion, customEaseUrl,  customApperianUrl, username, password)
+                .setOtherParams(appId, filename, metadataAssignment, sign, credentials, enable);
+
         if (!mainUpload.checkOk()) {
-            logger.println("One of required configuration options is not set");
+            buildLog.println("One of required configuration options is not set");
             return false;
         }
 
@@ -123,7 +145,7 @@ public class EaseRecorder extends Recorder {
             List<EaseUpload> allUploads = gatherAllUploads(mainUpload);
 
             Function1<String, String> expandVarFunctions;
-            expandVarFunctions = new ExpandVariablesFunction(build, listener, logger);
+            expandVarFunctions = new ExpandVariablesFunction(build, listener, buildLog);
             for (EaseUpload upload : allUploads) {
                 upload.expand(expandVarFunctions);
             }
@@ -131,51 +153,38 @@ public class EaseRecorder extends Recorder {
             for (Iterator<EaseUpload> iterator = allUploads.iterator(); iterator.hasNext(); ) {
                 EaseUpload upload = iterator.next();
                 if (!upload.checkOk()) {
-                    logger.println("Additional upload skipped: '" + upload.getFilename() + "' -> appId='" + upload.getAppId() + "', specify appId, filename or url");
+                    buildLog.println("Additional upload skipped: '" + upload.getFilename() + "' -> appId='" + upload.getAppId() + "', specify appId, filename or url");
                     iterator.remove();
                 }
             }
 
-            boolean error = false;
+            boolean ok = true;
             for (EaseUpload upload : allUploads) {
-                String filename = upload.getFilename();
-
-                FilePath[] paths = build.getWorkspace().list(filename);
-                if (paths.length != 1) {
-                    logger.println("Found " + (paths.length == 0 ? "no files" : " ambiguous list " + Arrays.asList(paths)) +
-                            " as candidates for pattern '" + filename + "'");
-                    error = true;
-                    continue;
-                }
-
-                upload.setFilePath(paths[0]);
+                ok &= upload.searchWorkspace(build.getWorkspace(), buildLog);
             }
-
-            if (error) {
+            if (!ok) {
                 return false;
             }
 
             for (EaseUpload upload : allUploads) {
-                if (!upload.checkOk()) {
-                    continue;
-                }
+                FilePath path = upload.getFilePath();
+                PublishFileCallable callable = new PublishFileCallable(upload, listener);
 
-                if (!upload.getFilePath().act(
-                        new PublishFileCallable(upload, listener))) {
-                    error = true;
+                if (!path.act(callable)) {
+                    ok = false;
                 }
             }
-            return !error;
+            return ok;
         } catch (IOException e) {
-            logger.println("Connectivity or IO problem");
-            e.printStackTrace(logger);
+            buildLog.println("Connectivity or IO problem");
+            e.printStackTrace(buildLog);
             return false;
         } catch (InterruptedException e) {
-            logger.println("Execution stopped");
+            buildLog.println("Execution stopped");
             return false;
         } catch (Exception e) {
-            logger.println("General plugin problem");
-            e.printStackTrace(logger);
+            buildLog.println("General plugin problem");
+            e.printStackTrace(buildLog);
             return false;
         }
     }
@@ -183,11 +192,7 @@ public class EaseRecorder extends Recorder {
     private List<EaseUpload> gatherAllUploads(EaseUpload prototypeUpload) {
         List<EaseUpload> allUploads = new ArrayList<>();
         allUploads.add(prototypeUpload);
-        if (additionalUploads != null) {
-            for (EaseUpload additionalUpload : additionalUploads) {
-                allUploads.add(prototypeUpload.derive(additionalUpload));
-            }
-        }
+        logger.warning("Additional uploads was removed due the user story 'As a Jenkins plugin user, I would like to remove the ability to add additional uploads.'");
         return allUploads;
     }
 
@@ -224,114 +229,124 @@ public class EaseRecorder extends Recorder {
             return super.configure(req,formData);
         }
 
-        public ListBoxModel doFillAppItems(@QueryParameter("accountRegion") final String accountRegion,
-                                           @QueryParameter("username") final String username,
-                                           @QueryParameter("password") final String password,
-                                           @QueryParameter("sign") boolean sign,
-                                           @QueryParameter("apperianUrl") String apperianUrl) {
-            ListBoxModel m = new ListBoxModel();
-            m.add("abc", "def");
-            return m;
+        public ListBoxModel doFillAppIdItems(@QueryParameter("accountRegion") final String accountRegion,
+                                             @QueryParameter("customApperianUrl") String customApperianUrl,
+                                             @QueryParameter("customEaseUrl") String customEaseUrl,
+                                             @QueryParameter("username") final String username,
+                                             @QueryParameter("password") final String password) {
+            EaseUpload upload = new EaseUpload(null,
+                    accountRegion,
+                    customEaseUrl,
+                    customApperianUrl,
+                    username,
+                    password);
+
+            if (!upload.checkHasFieldsForAuth()) {
+                return new ListBoxModel().add("(no credentials)");
+            }
+
+            StringBuilder errorMessage = new StringBuilder();
+            ApperianEaseEndpoint endpoint = upload.tryAuthenticate(true, false, errorMessage);
+            if (endpoint == null) {
+                return new ListBoxModel().add("(" + errorMessage + ")");
+            }
+
+            try {
+                ApplicationListResponse response = ApperianEaseApi.PUBLISHING.list()
+                        .call(endpoint.getEaseEndpoint());
+
+                if (response.hasError()) {
+                    return new ListBoxModel().add("(" + response.getErrorMessage() + ")");
+                }
+
+                Application[] apps = response.result.applications;
+                ListBoxModel listItems = new ListBoxModel();
+                for (Application app : apps) {
+                    listItems.add(app.ID, app.name + " " + app.version + " " + app.type);
+                }
+                return listItems;
+            } catch (Exception e) {
+                logger.throwing(EaseRecorder.class.getName(), "doFillAppItems", e);
+                return new ListBoxModel().add("(error: " + e.getMessage() + ")");
+            }
         }
 
-        public ListBoxModel doFillCredentialItems(@QueryParameter("accountRegion") final String accountRegion, // ...
+        public ListBoxModel doFillCredentialItems(@QueryParameter("accountRegion") final String accountRegion,
+                                                  @QueryParameter("customApperianUrl") String customApperianUrl,
+                                                  @QueryParameter("customEaseUrl") String customEaseUrl,
                                                   @QueryParameter("username") final String username,
-                                                  @QueryParameter("password") final String password,
-                                                  @QueryParameter("sign") boolean sign,
-                                                  @QueryParameter("apperianUrl") String apperianUrl) {
-            ListBoxModel m = new ListBoxModel();
-            m.add("abc", "def");
-            return m;
+                                                  @QueryParameter("password") final String password) {
+            EaseUpload upload = new EaseUpload(null,
+                    accountRegion,
+                    customEaseUrl,
+                    customApperianUrl,
+                    username,
+                    password);
+
+            if (!upload.checkHasFieldsForAuth()) {
+                return new ListBoxModel().add("(no credentials)");
+            }
+
+            StringBuilder errorMessage = new StringBuilder();
+            ApperianEaseEndpoint endpoint = upload.tryAuthenticate(false, true, errorMessage);
+            if (endpoint == null) {
+                return new ListBoxModel().add("(" + errorMessage + ")");
+            }
+
+            ListAllSigningCredentialsResponse response;
+            try {
+                response = ApperianEaseApi.SIGNING.listCredentials()
+                        .call(endpoint.getApperianEndpoint());
+
+                if (response.hasError()) {
+                    return new ListBoxModel().add("(" + response + ")");
+                }
+
+                ListBoxModel listItems = new ListBoxModel();
+                DateFormat format = SimpleDateFormat.getDateInstance(DateFormat.SHORT);
+
+                for (SigningCredential credential : response.getCredentials()) {
+                    listItems.add(credential.getCredentialId().getId(),
+                            credential.getPlatform() + " " +
+                                    format.format(credential.getExpirationDate()) + " " +
+                                    credential.getDescription()
+                    );
+                }
+
+                return listItems;
+            } catch (IOException e) {
+                return new ListBoxModel().add("(no network)");
+            }
+
         }
 
 
-        public FormValidation doTestConnection(@QueryParameter("url") final String url,
+        public FormValidation doTestConnection(@QueryParameter("accountRegion") final String accountRegion,
+                                               @QueryParameter("customApperianUrl") String customApperianUrl,
+                                               @QueryParameter("customEaseUrl") String customEaseUrl,
                                                @QueryParameter("username") final String username,
                                                @QueryParameter("password") final String password)
                 throws IOException, ServletException {
-            if (isEmptyString(url)) {
-                return FormValidation.error("API URL should not be empty");
+
+            EaseUpload upload = new EaseUpload(null,
+                    accountRegion,
+                    customEaseUrl,
+                    customApperianUrl,
+                    username,
+                    password);
+
+
+            if (!upload.checkHasFieldsForAuth()) {
+                return FormValidation.error("Custom URLs should be non empty or region provided");
             }
 
-            if (url.contains("___")) {
-                return FormValidation.error("Fix URL to 'https://easesvc.apperian.com/ease.interface.php' or 'https://easesvc.apperian.eu/ease.interface.php'");
+            StringBuilder errorMessage = new StringBuilder();
+            ApperianEaseEndpoint endpoint = upload.tryAuthenticate(true, true, errorMessage);
+            if (endpoint == null) {
+                return FormValidation.error(errorMessage.toString());
             }
 
-            try {
-                return checkConnectivity(url, username, password);
-            } catch (IOException e) {
-                logger.log(Level.WARNING, "Connectivity problem", e);
-                return FormValidation.error("Connectivity problem: " + e.getMessage());
-            } catch (Exception e) {
-                logger.log(Level.WARNING, "General plugin problem", e);
-                return FormValidation.error("General plugin problem: " + e.getMessage());
-            }
-        }
-
-        private FormValidation checkConnectivity(String url, String username, String password) throws IOException {
-            EASEEndpoint endpoint = new EASEEndpoint(url);
-
-            EaseCredentials credentials = new EaseCredentials(url, username, Secret.fromString(password));
-            try {
-                credentials.lookupStoredCredentials();
-            } catch (Exception ex) {
-                // skip
-            }
-
-            if (!credentials.checkOk()) {
-                return FormValidation.error("Username/password are not set and there is no stored credentials found");
-            }
-
-
-            if (!credentials.authenticate(endpoint)) {
-                String errorMessage = endpoint.getLastLoginError() +
-                        ", lastCredentials=" +
-                        credentials.getLastCredentialDescription();
-                return FormValidation.error(errorMessage);
-            }
-
-            ApplicationListResponse applicationListResponse = ApperianEase.PUBLISHING.list()
-                    .call(endpoint);
-
-            if (applicationListResponse.hasError()) {
-                String errorMessage = applicationListResponse.getErrorMessage();
-                return FormValidation.error(errorMessage);
-            }
-
-            List<Application> list = new ArrayList<>(
-                    Arrays.asList(applicationListResponse.result.applications));
-            Collections.sort(list, new Comparator<Application>() {
-                public int compare(Application o1, Application o2) {
-                    return o1.name.compareTo(o2.name);
-                }
-            });
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("Connection OK!");
-            if (list.isEmpty()) {
-                sb.append(" No applications found in account");
-            } else {
-                sb.append(" Application IDs (just copy/paste to below field): \n");
-                for (Application app : list) {
-                    sb.append(" ")
-                      .append(app.ID)
-                      .append(" \u2190 ")
-                      .append(app.name)
-                      .append(" ")
-                      .append(app.version)
-                      .append(" ")
-                      .append(app.type);                      
-
-                    if (!StringUtils.isEmpty(app.shortdescription)) {
-                        sb.append(" (description: ")
-                          .append(app.shortdescription)
-                          .append(")");
-                    }
-                    sb.append("\n");
-                }
-            }
-
-            return FormValidation.ok(sb.toString());
+            return FormValidation.ok("Connected Apperian EASE!");
         }
 
     }

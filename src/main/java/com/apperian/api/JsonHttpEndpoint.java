@@ -12,6 +12,7 @@ import java.io.Closeable;
 import java.io.IOException;
 
 public abstract class JsonHttpEndpoint  implements Closeable {
+    public final String url;
     CloseableHttpClient httpClient =
             Utils.configureProxy(HttpClients.custom())
                     .build();
@@ -23,6 +24,10 @@ public abstract class JsonHttpEndpoint  implements Closeable {
 
     protected String sessionToken;
     protected String lastLoginError;
+
+    public JsonHttpEndpoint(String url) {
+        this.url = url;
+    }
 
     public String getSessionToken() {
         return sessionToken;
@@ -52,5 +57,14 @@ public abstract class JsonHttpEndpoint  implements Closeable {
 
     public boolean isLoggedIn() {
         return sessionToken != null;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    @Override
+    public String toString() {
+        return url.toString();
     }
 }

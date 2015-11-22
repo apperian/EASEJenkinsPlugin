@@ -22,6 +22,18 @@ public class SigningCredential {
         return credentialId;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public Date getExpirationDate() {
+        return expirationDate;
+    }
+
+    public PlatformType getPlatform() {
+        return platform;
+    }
+
     @Override public String toString() {
         return "SigningCredential{" +
                "credentialId=" + credentialId +

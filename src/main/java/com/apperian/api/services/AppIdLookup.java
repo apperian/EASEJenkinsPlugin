@@ -2,7 +2,7 @@ package com.apperian.api.services;
 
 import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.ApperianResourceID;
-import com.apperian.api.ApperianEase;
+import com.apperian.api.ApperianEaseApi;
 import com.apperian.api.application.Application;
 import com.apperian.api.application.ApplicationListResponse;
 
@@ -18,7 +18,7 @@ public class AppIdLookup {
 
     public ApperianResourceID lookupAppId(String easeId) {
         try {
-            ApplicationListResponse response = ApperianEase.APPLICATIONS.list()
+            ApplicationListResponse response = ApperianEaseApi.APPLICATIONS.list()
                     .call(endpoint);
 
             List<Application> apps = response.getApplications();

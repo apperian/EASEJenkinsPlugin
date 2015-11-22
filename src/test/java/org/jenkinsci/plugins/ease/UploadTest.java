@@ -5,16 +5,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.apperian.api.ApiTesting;
-import com.apperian.api.ApperianEase;
 import org.apache.commons.fileupload.util.Streams;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import com.apperian.api.publishing.ApplicationListResponse.Application;
 
 import hudson.model.BuildListener;
 

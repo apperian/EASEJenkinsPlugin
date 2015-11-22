@@ -22,8 +22,9 @@ public class PublishFileCallableTest {
     @ClassRule
     public static JenkinsRule j = new JenkinsRule();
 
-    public static final EaseUpload EASE_UPLOAD1 = new EaseUpload("url1", "user1", "pass1", "app1", "file1",
-                                                                 "abc=ghi");
+    public static final EaseUpload EASE_UPLOAD1 =
+            new EaseUpload("url0", "NORTH_AMERICA", "url1", "url2", "user1", "pass1")
+                    .setOtherParams("app1", "filename", "abc=ghi", true, "cred", false);
 
     @Test
     public void testSerialization() throws Exception {
@@ -45,10 +46,9 @@ public class PublishFileCallableTest {
         PublishFileCallable deserializedCallable = (PublishFileCallable) objIn.readObject();
 
         Assert.assertNull(deserializedCallable.getLogger());
-        Assert.assertEquals("url1", deserializedCallable.getUrl());
-        Assert.assertEquals("user1", deserializedCallable.getUsername());
-        Assert.assertEquals(Secret.fromString("pass1"), deserializedCallable.getPassword());
-        Assert.assertEquals("app1", deserializedCallable.getAppId());
+        Assert.assertEquals("user1", deserializedCallable.getUpload().getUsername());
+        Assert.assertEquals("pass1", deserializedCallable.getUpload().getPassword());
+        Assert.assertEquals("app1", deserializedCallable.getUpload().getAppId());
         Assert.assertEquals(Collections.singletonMap("abc", "ghi"), deserializedCallable.getMetadataAssignment());
 
     }

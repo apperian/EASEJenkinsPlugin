@@ -1,11 +1,9 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 
-    <f:entry title="${%Account region}" field="accountRegion">
-      <table width="100%">
-      <f:dropdownList>
-        <f:dropdownListBlock title="US" value="US" />
-        <f:dropdownListBlock title="Europe &amp; world" value="Europe" />
-        <f:dropdownListBlock title="Custom endpoints" value="custom" >
+      <f:dropdownList title="${%Account region}" name="accountRegion">
+        <f:dropdownListBlock title="North America" value="NORTH_AMERICA" />
+        <f:dropdownListBlock title="Europe" value="EUROPE" />
+        <f:dropdownListBlock title="Custom endpoints" value="CUSTOM" >
           <f:entry title="${%Ease API URL}" field="customEaseUrl">
             <f:textbox default="https://easesvc.apperian.___/ease.interface.php" />
           </f:entry>
@@ -14,8 +12,12 @@
           </f:entry>
         </f:dropdownListBlock>
       </f:dropdownList>
+      <!--
+    <f:entry>
+      <table width="100%">
       </table>
     </f:entry>
+    -->
 
     <f:entry title="${%Username}" field="username">
         <f:textbox default="" />
@@ -28,7 +30,7 @@
         title="${%Test connection}" progress="${%Testing...}"
         method="testConnection" with="accountRegion,customEaseUrl,customApperianUrl,username,password" />
 
-    <f:entry title="${%Application}" field="appId">
+    <f:entry title="${%Application}" field="appId" with="accountRegion,customEaseUrl,customApperianUrl,username,password" >
       <f:select />
     </f:entry>
     <f:entry title="${%Filename}" field="filename">
@@ -45,12 +47,13 @@
       <f:checkbox />
       If checked, application would be signed
     </f:entry>
-    <f:entry title="${%Credential}" field="credential">
+    <f:entry title="${%Credential}" field="credential"  with="accountRegion,customEaseUrl,customApperianUrl,username,password,sign" >
       <f:select />
     </f:entry>
 
     <!--
-      disabled because of "As a Jenkins plugin user, I would like to remove the ability to add additional uploads."
+      disabled because of the user story...
+       "As a Jenkins plugin user, I would like to remove the ability to add additional uploads."
 
     <f:entry title="${%More uploads}">
         <f:repeatable name="additionalUploads" var="additionalUpload" items="${instance.additionalUploads}">

@@ -7,11 +7,8 @@ import org.apache.http.client.methods.HttpUriRequest;
 import java.io.IOException;
 
 public class ApperianEndpoint extends JsonHttpEndpoint {
-
-    public final String url;
-
     public ApperianEndpoint(String url) {
-        this.url = url;
+        super(url);
     }
 
     <T extends ApperianResponse> T doJsonRpc(ApperianRequest request,
@@ -32,7 +29,7 @@ public class ApperianEndpoint extends JsonHttpEndpoint {
     public boolean tryLogin(String email, String password) {
         AuthenticateUserResponse response;
         try {
-            response = ApperianEase.USERS.authenticateUser(email, password)
+            response = ApperianEaseApi.USERS.authenticateUser(email, password)
                     .call(this);
 
             lastLoginError = response.getErrorMessage();

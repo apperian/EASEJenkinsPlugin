@@ -10,7 +10,7 @@ public class Signing {
     public Signing() {
     }
 
-    public ListAllSigningCredentialsRequest listAllSigningCredentials() {
+    public ListAllSigningCredentialsRequest listCredentials() {
         return new ListAllSigningCredentialsRequest();
     }
 
