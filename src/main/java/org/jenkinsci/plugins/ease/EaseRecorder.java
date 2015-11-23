@@ -53,7 +53,7 @@ public class EaseRecorder extends Recorder {
     private final String filename;
     private final String metadataAssignment;
     private final boolean sign;
-    private final String credentials;
+    private final String credential;
     private final boolean enable;
 
     @DataBoundConstructor
@@ -68,7 +68,7 @@ public class EaseRecorder extends Recorder {
             String filename,
             String metadataAssignment,
             boolean sign,
-            String credentials,
+            String credential,
             boolean enable) {
         this.url = url;
         this.region = region;
@@ -79,7 +79,7 @@ public class EaseRecorder extends Recorder {
         this.appId = appId;
         this.filename = filename;
         this.sign = sign;
-        this.credentials = credentials;
+        this.credential = credential;
         this.enable = enable;
         this.metadataAssignment = metadataAssignment;
     }
@@ -123,8 +123,8 @@ public class EaseRecorder extends Recorder {
         return sign;
     }
 
-    public String getCredentials() {
-        return credentials;
+    public String getCredential() {
+        return credential;
     }
 
     public boolean isEnable() {
@@ -137,7 +137,7 @@ public class EaseRecorder extends Recorder {
 
 
         EaseUpload mainUpload = new EaseUpload(url, region, customEaseUrl,  customApperianUrl, username, password)
-                .setOtherParams(appId, filename, metadataAssignment, sign, credentials, enable);
+                .setOtherParams(appId, filename, metadataAssignment, sign, credential, enable);
 
         if (!mainUpload.checkOk()) {
             buildLog.println("One of required configuration options is not set");

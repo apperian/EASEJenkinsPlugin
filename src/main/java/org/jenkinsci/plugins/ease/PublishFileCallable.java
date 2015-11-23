@@ -20,7 +20,6 @@ import com.apperian.api.signing.SignApplicationResponse;
 import hudson.FilePath;
 import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
-import hudson.util.Secret;
 import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
 
 public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Serializable {
@@ -161,12 +160,16 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         if (!upload.isSign()) {
             return false;
         }
+        if (Utils.trim(upload.getCredential()).isEmpty()) {
+            report("Failed to sign: no credentials set");
+            return false;
+        }
 
 
-        report("Signing application %s", upload.getCredentials());
+        report("Signing application %s", upload.getCredential());
         try {
             ApperianResourceID appId = new ApperianResourceID(upload.getAppId());
-            ApperianResourceID credentialId = new ApperianResourceID(upload.getCredentials());
+            ApperianResourceID credentialId = new ApperianResourceID(upload.getCredential());
 
 
             SignApplicationResponse response;

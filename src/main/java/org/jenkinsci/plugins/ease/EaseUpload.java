@@ -24,7 +24,7 @@ public class EaseUpload implements Serializable {
     private String metadataAssignment;
     private FilePath filePath;
     private boolean sign;
-    private String credentials;
+    private String credential;
     private boolean enable;
 
     // @DataBoundConstructor should include all fields
@@ -49,13 +49,13 @@ public class EaseUpload implements Serializable {
                                      String _filename,
                                      String _metadataAssignment,
                                      boolean _sign,
-                                     String _credentials,
+                                     String _credential,
                                      boolean _enable) {
         this.appId = Utils.trim(_appId);
         this.filename = Utils.trim(_filename);
         this.metadataAssignment = Utils.trim(_metadataAssignment);
         this.sign = _sign;
-        this.credentials = _credentials;
+        this.credential = _credential;
         this.enable = _enable;
         return this;
     }
@@ -124,8 +124,8 @@ public class EaseUpload implements Serializable {
         return sign;
     }
 
-    public String getCredentials() {
-        return credentials;
+    public String getCredential() {
+        return credential;
     }
 
     public boolean isEnable() {
