@@ -1,9 +1,7 @@
 <div>
     <p>
-        Filename pattern to search for native applications (iOS, Android, and BlackBerry) related to workspace.
-        For example "target/android-app-v*.apk"
-    </p>
-    <p>
-        Here variable expansion $VAR is allowed. Standard jenkins namespace is used thus it could be environment variables or build parameters.
+        The plugin uses this filename pattern to search for the file that should be uploaded.
+        If your project builds multiple versions of the application binary (for example, one that is signed and one that is unsigned),
+        use this field to explicitly specify the correct file in the workspace. For example: target/android-app-v*.apk.
     </p>
 </div>
