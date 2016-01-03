@@ -39,7 +39,7 @@ import net.sf.json.JSONObject;
 import static com.apperian.api.publishing.ApplicationListResponse.Application;
 
 public class EaseRecorder extends Recorder {
-    public static final String PLUGIN_NAME = "EASE Plugin";
+    public static final String PLUGIN_NAME = "Apperian EASE Plugin";
 
     private static final Logger logger = Logger.getLogger(EaseRecorder.class.getName());
 
@@ -360,7 +360,7 @@ public class EaseRecorder extends Recorder {
                 return FormValidation.error(errorMessage.toString());
             }
 
-            return FormValidation.ok("Connected Apperian EASE!");
+            return FormValidation.ok("Connection OK");
         }
 
     }
