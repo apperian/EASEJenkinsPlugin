@@ -31,8 +31,11 @@
     <f:entry title="${%Filename}" field="filename">
       <f:textbox default="**/*.ipa,**/*.apk,**/*.zip,**/*.xap,**/*.appx,**/*.zip,**/*.msi,**/*.exe" />
     </f:entry>
-    <f:entry title="${%Metadata}" field="metadataAssignment">
+    <f:entry title="${%Author}" field="author">
       <f:textbox />
+    </f:entry>
+    <f:entry title="${%Version Notes}" field="versionNotes">
+      <f:textbox default="$APP_NAME $APP_VERSION $BUILD_NUMBER $BUILD_TIMESTAMP" />
     </f:entry>
     <f:entry title="${%Enable}" name="enable">
       <f:checkbox />
@@ -82,8 +85,11 @@
                   </f:dropdownList>
                   </table>
                 </f:entry>
-                <f:entry title="${%Metadata}" field="_metadataAssignment">
-                  <f:textbox value="${additionalUpload.metadataAssignment}" />
+                <f:entry title="${%Author}" field="author">
+                  <f:textbox />
+                </f:entry>
+                <f:entry title="${%Version}" field="version">
+                  <f:textbox />
                 </f:entry>
                 <f:entry title="${%Enable}" field="_enable" >
                   <f:checkbox value="${additionalUpload.enable}" />

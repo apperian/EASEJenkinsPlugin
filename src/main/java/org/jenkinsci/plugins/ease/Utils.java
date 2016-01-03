@@ -4,8 +4,12 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Proxy.Type;
 import java.net.SocketAddress;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -22,44 +26,32 @@ import hudson.ProxyConfiguration;
 import jenkins.model.Jenkins;
 
 public class Utils {
+    private static final DateFormat ISO_8601_FORMAT;
+    static {
+        ISO_8601_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
+        ISO_8601_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+    }
+
+
     public static String trim(String url) {
         return url == null ? "" : url.trim();
     }
 
-    public static String override(String v1, String v2) {
-        return !v1.isEmpty() ? v1 : v2;
+    public static String override(String ...args) {
+        for (String arg : args) {
+            if (!Utils.isEmptyString(arg)) {
+                return arg;
+            }
+        }
+        return "";
     }
 
     public static boolean isEmptyString(String val) {
-        return val.isEmpty();
+        return val == null || val.isEmpty();
     }
 
-    public static Map<String, String> parseMetadataAssignment(String strDef) {
-        String trimmed = trim(strDef);
-        if (trimmed.isEmpty()) {
-            return new LinkedHashMap<>();
-        }
-        return Splitter.on(";")
-                       .withKeyValueSeparator("=")
-                       .split(trimmed);
-
-    }
-
-    public static Map<String, String> parseAssignmentMap(String str) {
-        str = trim(str);
-        if (str.isEmpty()) {
-            return new LinkedHashMap<>();
-        }
-        return Splitter.on(";")
-                       .trimResults()
-                       .withKeyValueSeparator("=")
-                       .split(str);
-    }
-
-    public static String outAssignmentMap(Map<String, String> map) {
-        return Joiner.on(";")
-                     .withKeyValueSeparator("=")
-                     .join(map);
+    public static synchronized String formatIso8601(Date date) {
+        return ISO_8601_FORMAT.format(date);
     }
 
     public static HttpClientBuilder configureProxy(HttpClientBuilder builder) {

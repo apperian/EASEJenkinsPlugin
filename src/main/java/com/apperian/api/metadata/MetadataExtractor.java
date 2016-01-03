@@ -60,7 +60,7 @@ public abstract class MetadataExtractor implements Comparable<MetadataExtractor>
         try {
             return tryExtractTo(metadata, file, logger);
         } catch (Throwable e) {
-            this.logger.throwing("MetadataExtractor", "addExtractorByClass", e);
+            MetadataExtractor.logger.throwing("MetadataExtractor", "addExtractorByClass", e);
             return false;
         }
     }

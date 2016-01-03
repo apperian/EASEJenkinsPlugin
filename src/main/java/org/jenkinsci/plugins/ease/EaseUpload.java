@@ -21,7 +21,8 @@ public class EaseUpload implements Serializable {
     private String filename;
     private String username;
     private String password;
-    private String metadataAssignment;
+    private String author;
+    private String versionNotes;
     private FilePath filePath;
     private boolean sign;
     private String credential;
@@ -47,13 +48,15 @@ public class EaseUpload implements Serializable {
 
     public EaseUpload setOtherParams(String _appId,
                                      String _filename,
-                                     String _metadataAssignment,
+                                     String _author,
+                                     String _versionNotes,
                                      boolean _sign,
                                      String _credential,
                                      boolean _enable) {
         this.appId = Utils.trim(_appId);
         this.filename = Utils.trim(_filename);
-        this.metadataAssignment = Utils.trim(_metadataAssignment);
+        this.author = Utils.trim(_author);
+        this.versionNotes = Utils.trim(_versionNotes);
         this.sign = _sign;
         this.credential = _credential;
         this.enable = _enable;
@@ -89,7 +92,6 @@ public class EaseUpload implements Serializable {
 //                Utils.override(additionalUpload.password, password),
 //                additionalUpload.getAppId(),
 //                additionalUpload.getFilename(),
-//                Utils.override(additionalUpload.metadataAssignment, metadataAssignment));
     }
 
     public FilePath getFilePath() {
@@ -116,8 +118,12 @@ public class EaseUpload implements Serializable {
         return password;
     }
 
-    public String getMetadataAssignment() {
-        return metadataAssignment;
+    public String getAuthor() {
+        return author;
+    }
+
+    public String getVersionNotes() {
+        return versionNotes;
     }
 
     public boolean isSign() {
@@ -143,21 +149,8 @@ public class EaseUpload implements Serializable {
         appId = expandVars.call(appId);
         filename = expandVars.call(filename);
         username = expandVars.call(username);
-        Map<String, String> map = Utils.parseAssignmentMap(metadataAssignment);
-        map = expandValuesOnly(map, expandVars);
-        metadataAssignment = Utils.outAssignmentMap(map);
-    }
-
-    private Map<String, String> expandValuesOnly(Map<String, String> map,
-                                                 Function1<String, String> expandVars) {
-        Map<String, String> resultMap = new LinkedHashMap<>(map.size());
-        for (String key : map.keySet()) {
-            String val = map.get(key);
-            String expandedVal = expandVars.call(val);
-            resultMap.put(key, expandedVal);
-        }
-
-        return resultMap;
+        author = expandVars.call(author);
+        versionNotes = expandVars.call(versionNotes);
     }
 
     public boolean searchWorkspace(FilePath workspacePath,

@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.util.Map;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.logging.Logger;
 
 import com.apperian.api.ApperianEaseApi;
@@ -18,6 +20,7 @@ import com.apperian.api.metadata.MetadataExtractor;
 
 import com.apperian.api.signing.SignApplicationResponse;
 import hudson.FilePath;
+import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
 import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
@@ -27,12 +30,10 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
 
     private EaseUpload upload;
     private final BuildListener listener;
-    private final Map<String, String> metadataAssignment;
 
     public PublishFileCallable(EaseUpload upload, BuildListener listener) {
         this.upload = upload;
         this.listener = listener;
-        this.metadataAssignment = Utils.parseAssignmentMap(upload.getMetadataAssignment());
     }
 
     public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
@@ -103,9 +104,33 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
 
         report("Metadata from server: %s", metadata);
 
-        // assignAuthor(metadata); FIXME seems stupid for me
-        extractMetadataFromFile(metadata, applicationPackage);
-        assignUserSetVars(metadata, metadataAssignment);
+        Metadata metadataUpdate = extractMetadataFromFile(applicationPackage);
+
+        if (!Utils.isEmptyString(upload.getAuthor())) {
+            metadataUpdate.setAuthor(upload.getAuthor());
+        }
+
+        String versionNotes = upload.getVersionNotes();
+        if (!Utils.isEmptyString(versionNotes)) {
+            Map<String, String> vars = new HashMap<>();
+
+            vars.put("APP_NAME", Utils.override(
+                    metadataUpdate.getName(),
+                    metadata.getName()));
+
+            vars.put("APP_VERSION", Utils.override(
+                    metadataUpdate.getVersion(),
+                    metadata.getVersion()));
+
+            vars.put("BUILD_TIMESTAMP", Utils.formatIso8601(
+                    new Date()));
+
+            versionNotes = Util.replaceMacro(versionNotes, vars);
+
+            metadataUpdate.setVersionNotes(versionNotes);
+        }
+
+        assignMetadata(metadata, metadataUpdate);
 
         report("New metadata: %s", metadata);
 
@@ -139,18 +164,11 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         return true;
     }
 
-    private void assignAuthor(Metadata metadata) {
-        report("Using 'username' for author property in metadata");
-        metadata.setAuthor(upload.getUsername());
-    }
-
-    private void assignUserSetVars(Metadata metadata, Map<String, String> map) {
-        report("Applying provided metadata assignment");
-        for (String name : map.keySet()) {
-            String value = map.get(name);
-
-            report("Assigning %s = '%s'", name, value);
-            metadata.getValues().put(name, value);
+    private void assignMetadata(Metadata metadata, Metadata metadataUpdate) {
+        for (String key : metadataUpdate.getValues().keySet()) {
+            String value = metadataUpdate.getValues().get(key);
+            report("Setting %s metadata to '%s'", key, value);
+            metadata.getValues().put(key, value);
         }
     }
 
@@ -218,8 +236,10 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         return true;
     }
 
-    private void extractMetadataFromFile(Metadata metadata, File file) {
+    private Metadata extractMetadataFromFile(File file) {
         report("Extracting from dist archive '%s'", file.getName());
+
+        Metadata metadata = new Metadata(new HashMap<String, String>());
 
         boolean extracted = false;
         for (MetadataExtractor extractor : MetadataExtractor.allExtractors(file)) {
@@ -231,14 +251,12 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         if (!extracted) {
             report("Couldn't find metadata extractor for '%s'", file.getName());
         }
+
+        return metadata;
     }
 
     public EaseUpload getUpload() {
         return upload;
-    }
-
-    public Map<String, String> getMetadataAssignment() {
-        return metadataAssignment;
     }
 
     public PrintStream getLogger() {
