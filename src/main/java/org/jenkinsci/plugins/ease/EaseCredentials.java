@@ -48,6 +48,7 @@ public class EaseCredentials {
             urlObj = new URL(url);
             String host = urlObj.getHost();
             requirements.add(new HostnameRequirement(host));
+            // TODO add user !
         } catch (Exception ex) {
         }
     }
