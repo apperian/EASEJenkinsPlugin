@@ -20,7 +20,11 @@ public class ApperianEndpoint extends JsonHttpEndpoint {
             int statusCode = response.getStatusLine().getStatusCode();
 
             if (statusCode == 401) {
-                throw new RuntimeException("No access");
+                if (responseClass == AuthenticateUserResponse.class) {
+                    return responseClass.cast(AuthenticateUserResponse.buildNoAccessResponse());
+                } else {
+                    throw new RuntimeException("No access");
+                }
             }
             if (statusCode != 200) {
                 throw new RuntimeException("bad API call, http status: " + response.getStatusLine() + ", request: " + httpRequest);

@@ -2,7 +2,7 @@ package com.apperian.api;
 
 public interface ApiTesting {
     String USER_ID = "oleksiy";
-    String PASSWORD = "testpassword";
+    String PASSWORD = "";
 
 
     ApperianResourceID ORGANIZATION_ID = new ApperianResourceID("5763"); // Rails Reactor

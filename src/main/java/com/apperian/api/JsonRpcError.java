@@ -1,5 +1,8 @@
 package com.apperian.api;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Map;
 
 public class JsonRpcError {
@@ -17,6 +20,15 @@ public class JsonRpcError {
 
     public Map<String, Object> getData() {
         return data;
+    }
+
+    @JsonCreator
+    public JsonRpcError(@JsonProperty("code") int code,
+                        @JsonProperty("message") String message,
+                        @JsonProperty("data") Map<String, Object> data) {
+        this.code = code;
+        this.message = message;
+        this.data = data;
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.apperian.api;
 
 public class ResponseWithError {
-    JsonRpcError error;
+    protected JsonRpcError error;
 
     public JsonRpcError getError() {
         return error;

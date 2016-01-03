@@ -1,6 +1,9 @@
 package com.apperian.api.users;
 
 import com.apperian.api.ApperianResponse;
+import com.apperian.api.JsonRpcError;
+
+import java.util.Collections;
 
 public class AuthenticateUserResponse extends ApperianResponse {
     String token;
@@ -25,5 +28,11 @@ public class AuthenticateUserResponse extends ApperianResponse {
                 "token='" + token + '\'' +
                 (hasError() ? ", error='" + getError() + '\'' : "") +
                 '}';
+    }
+
+    public static AuthenticateUserResponse buildNoAccessResponse() {
+        AuthenticateUserResponse response = new AuthenticateUserResponse();
+        response.error = new JsonRpcError(401, "No access", Collections.<String, Object>emptyMap());
+        return response;
     }
 }
