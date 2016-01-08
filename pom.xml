@@ -8,7 +8,7 @@
     </parent>
 
     <artifactId>ease-plugin</artifactId>
-    <version>1.2.11-SNAPSHOT</version>
+    <version>1.2.10-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
     <url>https://wiki.jenkins-ci.org/display/JENKINS/EASE+Plugin</url>
