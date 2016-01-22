@@ -21,8 +21,8 @@ public class PublishFileCallableTest {
     public static JenkinsRule j = new JenkinsRule();
 
     public static final EaseUpload EASE_UPLOAD1 =
-            new EaseUpload("url0", "NORTH_AMERICA", "url1", "url2", "user1", "pass1")
-                    .setOtherParams("app1", "filename", "author", "version", true, "cred", false);
+            new EaseUpload("NORTH_AMERICA", "url1", "url2", "user1", "pass1",
+                    "app1", "filename", "author", "version", true, "cred", false);
 
     @Test
     public void testSerialization() throws Exception {

@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -37,7 +35,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
     }
 
     public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-        if (!upload.checkHasFieldsForAuth()) {
+        if (!upload.validateHasAuthFields()) {
             report("Error: username/password are not set and there is no stored credentials found");
             return false;
         }
@@ -47,7 +45,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
             return false;
         }
 
-        boolean shouldAuthApperian = upload.isEnable() || upload.isSign();
+        boolean shouldAuthApperian = upload.isEnableApp() || upload.isSignApp();
 
         StringBuilder errorMessage = new StringBuilder();
         ApperianEaseEndpoint endpoint = upload.tryAuthenticate(true,
@@ -175,7 +173,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
     private boolean signApp(File applicationPackage,
                             ApperianEndpoint apperianEndpoint) {
 
-        if (!upload.isSign()) {
+        if (!upload.isSignApp()) {
             return false;
         }
         if (Utils.trim(upload.getCredential()).isEmpty()) {
@@ -210,7 +208,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
     private boolean enableApp(File applicationPackage,
                               ApperianEndpoint apperianEndpoint) {
 
-        if (!upload.isEnable()) {
+        if (!upload.isEnableApp()) {
             return false;
         }
 

@@ -1,116 +1,25 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler"
+         xmlns:f="/lib/form">
 
-    <f:entry title="${%Production Environment}" field="region">
-      <f:select />
-    </f:entry>
-      <!--
-        <f:dropdownListBlock title="Custom endpoints" value="CUSTOM" >
-          <f:entry title="${%Ease API URL}" field="customEaseUrl">
-            <f:textbox default="https://easesvc.apperian.___/ease.interface.php" />
-          </f:entry>
-          <f:entry title="${%Apperian API URL}" field="customApperianUrl">
-            <f:textbox default="https://____.apperian.com/v1" />
-          </f:entry>
-        </f:dropdownListBlock>
-        -->
-
-    <f:entry title="${%User ID}" field="username">
-        <f:textbox default="" />
-    </f:entry>
-    <f:entry title="${%Password}" field="password">
-        <f:password />
+    <f:entry field="uploads">
+        <f:repeatableProperty field="uploads" noAddButton="true" minimum="1"/>
     </f:entry>
 
-    <f:validateButton
-        title="${%Test connection}" progress="${%Testing...}"
-        method="testConnection" with="region,customEaseUrl,customApperianUrl,username,password" />
+    <script>
+      function hideShowUrls(selectEl) {
+        var tr = selectEl.parentNode.parentNode.parentNode;
+        var isCustom = selectEl.value === 'CUSTOM';
+        findElementsBySelector(tr, ".fieldCustomURLs").each(function (el) {
+            el.parentNode.parentNode.style.display = isCustom ? '' : 'none';
+        });
+      }
 
-    <f:entry title="${%Application}" field="appId" with="region,customEaseUrl,customApperianUrl,username,password" >
-      <f:select />
-    </f:entry>
-    <f:entry title="${%Filename}" field="filename">
-      <f:textbox default="**/*.ipa,**/*.apk,**/*.zip,**/*.xap,**/*.appx,**/*.zip,**/*.msi,**/*.exe" />
-    </f:entry>
-    <f:entry title="${%Author}" field="author">
-      <f:textbox />
-    </f:entry>
-    <f:entry title="${%Version Notes}" field="versionNotes">
-      <f:textbox default="$APP_NAME $APP_VERSION $BUILD_NUMBER $BUILD_TIMESTAMP" />
-    </f:entry>
-    <f:entry title="${%Enable}" name="enable">
-      <f:checkbox />
-       If checked, application will be enabled after publishing
-    </f:entry>
-    <f:entry title="${%Sign}" field="sign">
-      <f:checkbox />
-       If checked, application will be signed after publishing
-    </f:entry>
-    <f:entry title="${%Signing Credentials}" field="credential"  with="region,customEaseUrl,customApperianUrl,username,password,sign" >
-      <f:select />
-    </f:entry>
+      Behaviour.register({
+        ".prodEnv" : function(el) {
+            el.onchange = function () { hideShowUrls(el); };
+            hideShowUrls(el);
+        },
+      });
+    </script>
 
-    <!--
-      disabled because of the user story...
-       "As a Jenkins plugin user, I would like to remove the ability to add additional uploads."
-
-    <f:entry title="${%More uploads}">
-        <f:repeatable name="additionalUploads" var="additionalUpload" items="${instance.additionalUploads}">
-            <table width="100%">
-                <f:entry title="${%Application}" field="_appId">
-                  <f:select value="${additionalUpload.appId}"/>
-                </f:entry>
-                <f:entry title="${%Filename}" field="_filename">
-                  <f:textbox default="" value="${additionalUpload.filename}"/>
-                </f:entry>
-                <f:entry title="${%Username} (optional)" field="_username">
-                    <f:textbox default="" value="${additionalUpload.username}"/>
-                </f:entry>
-                <f:entry title="${%Password} (optional)" field="_password">
-                    <f:password value="${additionalUpload.password}"/>
-                </f:entry>
-                <f:entry title="${%Account region}" field="_region">
-                  <table width="100%">
-                  <f:dropdownList value="${additionalUpload.region}">
-                    <f:dropdownListBlock title="(as in upload)" value="inherit" />
-                    <f:dropdownListBlock title="US" value="US" />
-                    <f:dropdownListBlock title="Europe &amp; world" value="Europe" />
-                    <f:dropdownListBlock title="Custom endpoints" value="custom" >
-                      <f:entry title="${%Ease API URL}" field="_customEaseUrl">
-                        <f:textbox default="https://easesvc.apperian.___/ease.interface.php" value="${additionalUpload.customEaseUrl}" />
-                      </f:entry>
-                      <f:entry title="${%Apperian API URL}" field="_customApperianUrl">
-                        <f:textbox default="https://____.apperian.com/v1" value="${additionalUpload.customApperianUrl}" />
-                      </f:entry>
-                    </f:dropdownListBlock>
-                  </f:dropdownList>
-                  </table>
-                </f:entry>
-                <f:entry title="${%Author}" field="author">
-                  <f:textbox />
-                </f:entry>
-                <f:entry title="${%Version}" field="version">
-                  <f:textbox />
-                </f:entry>
-                <f:entry title="${%Enable}" field="_enable" >
-                  <f:checkbox value="${additionalUpload.enable}" />
-                  If checked, application would be enabled
-                </f:entry>
-                <f:entry title="${%Sign}" field="_sign" >
-                  <f:checkbox value="${additionalUpload.sign}" />
-                  If checked, application would be signed
-                </f:entry>
-                <f:entry title="${%Credential}" field="_credential">
-                  <f:select value="${additionalUpload.credential}" />
-                </f:entry>
-
-                <f:entry>
-                    <div align="right">
-                        <f:repeatableDeleteButton/>
-                    </div>
-                </f:entry>
-            </table>
-        </f:repeatable>
-    </f:entry>
-
-    -->
 </j:jelly>

@@ -1,9 +1,7 @@
 package org.jenkinsci.plugins.ease;
 
-import java.net.InetSocketAddress;
-import java.net.Proxy;
+import java.net.*;
 import java.net.Proxy.Type;
-import java.net.SocketAddress;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -46,8 +44,17 @@ public class Utils {
         return "";
     }
 
+    public static boolean isValidURL(String url) {
+        try {
+            new URL(url);
+            return true;
+        } catch (MalformedURLException e) {
+            return false;
+        }
+    }
+
     public static boolean isEmptyString(String val) {
-        return val == null || val.isEmpty();
+        return val == null || val.trim().isEmpty();
     }
 
     public static synchronized String formatIso8601(Date date) {

@@ -59,13 +59,12 @@ public class UploadTest {
     }
 
     private void upload(String appId, String filename) throws IOException, InterruptedException {
-        EaseUpload upload;
-        upload = new EaseUpload(URL,
-                                USER,
-                                PWD,
-                                appId,
-                                filename,
-                                "abc=ghi");
+        EaseUpload upload = EaseUpload.simpleUpload(
+                "EUROPE",
+                null,
+                null,
+                USER,
+                PWD);
 
         InputStream res = getClass().getResourceAsStream(filename);
         File tmpFile = new File(filename);

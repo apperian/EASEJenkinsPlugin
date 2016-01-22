@@ -1,0 +1,58 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler"
+         xmlns:f="/lib/form">
+
+    <f:invisibleEntry>
+        <input type="hidden" name="id" value="${descriptor.getId(instance)}"/>
+    </f:invisibleEntry>
+
+    <f:entry title="${%Production Environment}" field="prodEnv" >
+      <f:select clazz="prodEnv" />
+    </f:entry>
+    <f:entry title="${%Ease API URL}" field="customEaseUrl" >
+      <f:textbox clazz="fieldCustomURLs" />
+    </f:entry>
+    <f:entry title="${%Apperian API URL}" field="customApperianUrl">
+      <f:textbox clazz="fieldCustomURLs" />
+    </f:entry>
+    <f:entry title="${%User ID}" field="username">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Password}" field="password">
+        <f:password />
+    </f:entry>
+
+    <f:validateButton
+        title="${%Test connection}" progress="${%Testing...}"
+        method="testConnection" with="prodEnv,customEaseUrl,customApperianUrl,username,password" />
+
+    <f:entry title="${%Application}" field="appId" with="prodEnv,customEaseUrl,customApperianUrl,username,password" >
+      <f:select />
+    </f:entry>
+    <f:entry title="${%Filename}" field="filename">
+      <f:textbox default="**/*.ipa,**/*.apk,**/*.zip,**/*.xap,**/*.appx,**/*.zip,**/*.msi,**/*.exe" />
+    </f:entry>
+    <f:entry title="${%Author}" field="author">
+      <f:textbox />
+    </f:entry>
+    <f:entry title="${%Version Notes}" field="versionNotes">
+      <f:textbox default="$APP_NAME $APP_VERSION $BUILD_NUMBER $BUILD_TIMESTAMP" />
+    </f:entry>
+    <f:entry title="${%Enable}" field="enableApp">
+      <f:checkbox />
+       If checked, application will be enabled after publishing
+    </f:entry>
+    <f:entry title="${%Sign}" field="signApp">
+      <f:checkbox />
+       If checked, application will be signed after publishing
+    </f:entry>
+    <f:entry title="${%Signing Credentials}" field="credential" with="prodEnv,customEaseUrl,customApperianUrl,username,password,appId" >
+      <f:select />
+    </f:entry>
+
+    <f:entry>
+        <div align="right">
+            <input type="button" value="${%Add an upload}..." class="repeatable-add show-if-last"/>
+            <input type="button" value="${%Delete}" class="repeatable-delete show-if-not-only" style="margin-left: 1em;"/>
+        </div>
+    </f:entry>
+</j:jelly>
