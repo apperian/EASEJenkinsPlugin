@@ -19,6 +19,11 @@
             <name>Oleksiy Pylypenko</name>
             <email>oleksiy.pylypenko@gmail.com</email>
         </developer>
+        <developer>
+            <id>kwilson6744</id>
+            <name>Kevin Wilson</name>
+            <email>kwilson@apperian.com</email>
+        </developer>
     </developers>
 
     <licenses>

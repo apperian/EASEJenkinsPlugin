@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
@@ -15,6 +16,8 @@ import com.apperian.api.ApperianEaseApi;
 import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.ApperianResourceID;
 import com.apperian.api.EASEEndpoint;
+import com.apperian.api.application.Application;
+import com.apperian.api.application.GetApplicationInfoResponse;
 import com.apperian.api.application.UpdateApplicationMetadataResponse;
 import com.apperian.api.metadata.Metadata;
 import com.apperian.api.metadata.Metadata.KnownFields;
@@ -23,6 +26,7 @@ import com.apperian.api.publishing.PublishApplicationResponse;
 import com.apperian.api.publishing.UpdateApplicationResponse;
 import com.apperian.api.publishing.UploadResult;
 import com.apperian.api.signing.SignApplicationResponse;
+import com.apperian.api.signing.SigningStatus;
 
 import hudson.FilePath;
 import hudson.Util;
@@ -75,16 +79,6 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         }
 
         ApperianEndpoint apperianEndpoint = endpoint.getApperianEndpoint();
-        try {
-            if (upload.isEnableApp()) {
-                enableApp(f, apperianEndpoint);
-            }
-        } catch (Exception ex) {
-            logger.throwing("PublishFileCallable", "invoke", ex);
-            report("Error enabling application: %s", ex);
-            ex.printStackTrace(getLogger());
-            return false;
-        }
 
         try {
             if (upload.isSignApp()) {
@@ -93,6 +87,17 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         } catch (Exception ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
             report("Error signing application: %s", ex);
+            ex.printStackTrace(getLogger());
+            return false;
+        }
+
+        try {
+            if (upload.isEnableApp()) {
+                enableApp(f, apperianEndpoint);
+            }
+        } catch (Exception ex) {
+            logger.throwing("PublishFileCallable", "invoke", ex);
+            report("Error enabling application: %s", ex);
             ex.printStackTrace(getLogger());
             return false;
         }
@@ -200,13 +205,69 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         ApperianResourceID credentialId = new ApperianResourceID(upload.getCredential());
 
 
-        SignApplicationResponse response;
-        response = ApperianEaseApi.SIGNING.signApplication(credentialId, appId)
-                .call(apperianEndpoint);
+        SignApplicationResponse response = ApperianEaseApi.SIGNING.signApplication(credentialId, appId)
+                                          .call(apperianEndpoint);
 
         if (response.hasError()) {
             throw new RuntimeException(response.getErrorMessage());
         }
+
+        SigningStatus signingStatus = response.getStatus();
+        String details = response.getStatusDetails();
+
+        if (signingStatus == SigningStatus.IN_PROGRESS) {
+            report("The application is being signed. Doing polling of signing status.");
+        }
+
+        long interval = 5;
+        while (signingStatus == SigningStatus.IN_PROGRESS) {
+            try {
+                report("Sleeping " + interval + " seconds");
+                Thread.sleep(TimeUnit.SECONDS.toMillis(interval));
+
+                interval = interval + interval * 18 / 10;
+                if (interval > 30) {
+                    interval = 30;
+                }
+            } catch (InterruptedException e) {
+                break;
+            }
+
+            GetApplicationInfoResponse appInfoResponse;
+            appInfoResponse = ApperianEaseApi.APPLICATIONS.getApplicationInfo(appId)
+                                                          .call(apperianEndpoint);
+
+            if (appInfoResponse.hasError()) {
+                throw new RuntimeException(appInfoResponse.getErrorMessage());
+            }
+
+            Application application = appInfoResponse.getApplication();
+            if (application == null || application.getVersion() == null) {
+                throw new RuntimeException("Failed to get application " + appId + " signigng status");
+            }
+
+            signingStatus = application.getVersion().getStatus();
+            details = getStatusDetails(application);
+            report(details);
+        }
+    }
+
+    private String getStatusDetails(Application application) {
+        SigningStatus signingStatus = application.getVersion().getStatus();
+        String details = application.getVersion().getStatusDetails();
+
+        if (!Utils.isEmptyString(details)) {
+            return details;
+        }
+
+        switch (signingStatus) {
+            case SIGNED: return "The application was signed successfully.";
+            case CANCELLED: return "The signing request was cancelled.";
+            case ERROR: return "Some error happened while signing.";
+            case IN_PROGRESS: return "The application is being signed.";
+        }
+
+        return details;
     }
 
     private void enableApp(File applicationPackage,

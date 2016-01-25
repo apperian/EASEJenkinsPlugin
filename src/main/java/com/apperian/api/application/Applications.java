@@ -15,4 +15,8 @@ public class Applications {
         return new UpdateApplicationMetadataRequest(applicationId);
     }
 
+    public GetApplicationInfoRequest getApplicationInfo(ApperianResourceID applicationId) {
+        return new GetApplicationInfoRequest(applicationId);
+    }
+
 }

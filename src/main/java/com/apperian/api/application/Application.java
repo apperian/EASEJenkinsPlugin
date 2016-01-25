@@ -1,11 +1,35 @@
 package com.apperian.api.application;
 
 import com.apperian.api.ApperianResourceID;
+import com.apperian.api.signing.SigningStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Application {
     @JsonProperty("psk")
     ApperianResourceID id;
+
+    Version version;
+
+    public static class Version {
+
+        @JsonProperty("signing_status")
+        SigningStatus status;
+
+        @JsonProperty("signing_status_details")
+        String statusDetails;
+
+        public SigningStatus getStatus() {
+            return status;
+        }
+
+        public String getStatusDetails() {
+            return statusDetails;
+        }
+    }
+
+    public Version getVersion() {
+        return version;
+    }
 
     @Override
     public String toString() {

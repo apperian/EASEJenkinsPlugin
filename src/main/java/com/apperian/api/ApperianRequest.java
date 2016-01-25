@@ -1,18 +1,25 @@
 package com.apperian.api;
 
-import com.apperian.api.users.AuthenticateUserRequest;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.*;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.apperian.api.users.AuthenticateUserRequest;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class ApperianRequest {
     public enum Type {
