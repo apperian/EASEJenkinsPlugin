@@ -4,24 +4,29 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
+
+import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
 
 import com.apperian.api.ApperianEaseApi;
 import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.ApperianResourceID;
+import com.apperian.api.EASEEndpoint;
 import com.apperian.api.application.UpdateApplicationMetadataResponse;
 import com.apperian.api.metadata.Metadata;
-import com.apperian.api.publishing.*;
-import com.apperian.api.EASEEndpoint;
 import com.apperian.api.metadata.MetadataExtractor;
-
+import com.apperian.api.publishing.PublishApplicationResponse;
+import com.apperian.api.publishing.UpdateApplicationResponse;
+import com.apperian.api.publishing.UploadResult;
 import com.apperian.api.signing.SignApplicationResponse;
+
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
-import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
 
 public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Serializable {
     private final static Logger logger = Logger.getLogger(PublishFileCallable.class.getName());
@@ -49,8 +54,8 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
 
         StringBuilder errorMessage = new StringBuilder();
         ApperianEaseEndpoint endpoint = upload.tryAuthenticate(true,
-                shouldAuthApperian,
-                errorMessage);
+                                                               shouldAuthApperian,
+                                                               errorMessage);
 
         if (endpoint == null) {
             report("Error: %s, endpoint=%s", errorMessage, upload.createEndpoint());
@@ -68,19 +73,29 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
             return false;
         }
 
-
-        if (shouldAuthApperian) {
-            try (ApperianEndpoint apperianEndpoint = endpoint.getApperianEndpoint()) {
-                if (!signApp(f, apperianEndpoint)) {
-                    return false;
-                }
-            } catch (Exception ex) {
-                logger.throwing("PublishFileCallable", "invoke", ex);
-                report("General plugin problem : %s", ex);
-                ex.printStackTrace(getLogger());
-                return false;
+        ApperianEndpoint apperianEndpoint = endpoint.getApperianEndpoint();
+        try {
+            if (upload.isEnableApp()) {
+                enableApp(f, apperianEndpoint);
             }
+        } catch (Exception ex) {
+            logger.throwing("PublishFileCallable", "invoke", ex);
+            report("Error enabling application: %s", ex);
+            ex.printStackTrace(getLogger());
+            return false;
         }
+
+        try {
+            if (upload.isSignApp()) {
+                signApp(f, apperianEndpoint);
+            }
+        } catch (Exception ex) {
+            logger.throwing("PublishFileCallable", "invoke", ex);
+            report("Error signing application: %s", ex);
+            ex.printStackTrace(getLogger());
+            return false;
+        }
+
         return true;
     }
 
@@ -170,68 +185,35 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         }
     }
 
-    private boolean signApp(File applicationPackage,
-                            ApperianEndpoint apperianEndpoint) {
+    private void signApp(File applicationPackage,
+                         ApperianEndpoint apperianEndpoint) throws IOException {
+        report("Signing application with credential '%s'", upload.getCredential());
+        ApperianResourceID appId = new ApperianResourceID(upload.getAppId());
+        ApperianResourceID credentialId = new ApperianResourceID(upload.getCredential());
 
-        if (!upload.isSignApp()) {
-            return false;
+
+        SignApplicationResponse response;
+        response = ApperianEaseApi.SIGNING.signApplication(credentialId, appId)
+                .call(apperianEndpoint);
+
+        if (response.hasError()) {
+            throw new RuntimeException(response.getErrorMessage());
         }
-        if (Utils.trim(upload.getCredential()).isEmpty()) {
-            report("Failed to sign: no credentials set");
-            return false;
-        }
-
-
-        report("Signing application %s", upload.getCredential());
-        try {
-            ApperianResourceID appId = new ApperianResourceID(upload.getAppId());
-            ApperianResourceID credentialId = new ApperianResourceID(upload.getCredential());
-
-
-            SignApplicationResponse response;
-            response = ApperianEaseApi.SIGNING.signApplication(credentialId, appId)
-                    .call(apperianEndpoint);
-
-            if (response.hasError()) {
-                report("Error enabling application: %s", response.getErrorMessage());
-                return false;
-            }
-
-        } catch (IOException e) {
-            report("Network error: %s", e.getMessage());
-            return false;
-        }
-
-        return true;
     }
 
-    private boolean enableApp(File applicationPackage,
-                              ApperianEndpoint apperianEndpoint) {
+    private void enableApp(File applicationPackage,
+                           ApperianEndpoint apperianEndpoint) throws IOException {
+        report("Enabling application with ID '%s'", upload.getAppId());
+        ApperianResourceID appId = new ApperianResourceID(upload.getAppId());
 
-        if (!upload.isEnableApp()) {
-            return false;
+        UpdateApplicationMetadataResponse response;
+        response = ApperianEaseApi.APPLICATIONS.updateApplicationMetadata(appId)
+                .setEnabled(true)
+                .call(apperianEndpoint);
+
+        if (response.hasError()) {
+            throw new RuntimeException(response.getErrorMessage());
         }
-
-        report("Enabling application");
-        try {
-            ApperianResourceID appId = new ApperianResourceID(upload.getAppId());
-
-            UpdateApplicationMetadataResponse response;
-            response = ApperianEaseApi.APPLICATIONS.updateApplicationMetadata(appId)
-                    .setEnabled(true)
-                    .call(apperianEndpoint);
-
-            if (response.hasError()) {
-                report("Error enabling application: %s", response.getErrorMessage());
-                return false;
-            }
-
-        } catch (IOException e) {
-            report("Network error: %s", e.getMessage());
-            return false;
-        }
-
-        return true;
     }
 
     private Metadata extractMetadataFromFile(File file) {
