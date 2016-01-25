@@ -17,6 +17,7 @@ import com.apperian.api.ApperianResourceID;
 import com.apperian.api.EASEEndpoint;
 import com.apperian.api.application.UpdateApplicationMetadataResponse;
 import com.apperian.api.metadata.Metadata;
+import com.apperian.api.metadata.Metadata.KnownFields;
 import com.apperian.api.metadata.MetadataExtractor;
 import com.apperian.api.publishing.PublishApplicationResponse;
 import com.apperian.api.publishing.UpdateApplicationResponse;
@@ -118,6 +119,13 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         report("Metadata from server: %s", metadata);
 
         Metadata metadataUpdate = extractMetadataFromFile(applicationPackage);
+
+        // EASE-20978
+        // OP: so for application name
+        // OP: I won't be extracting it from application package
+        // OP: but for version it should be extracted, right?
+        // rufriedman: yes
+        metadataUpdate.getValues().remove(KnownFields.NAME);
 
         if (!Utils.isEmptyString(upload.getAuthor())) {
             metadataUpdate.setAuthor(upload.getAuthor());

@@ -26,7 +26,7 @@ public abstract class MetadataExtractor implements Comparable<MetadataExtractor>
         addExtractorByClass(extractors, file,
                 metadataPackage + "AndroidMetadataExtractor");
         addExtractorByClass(extractors, file,
-                metadataPackage + "OSMetadataExtractor");
+                metadataPackage + "IOSMetadataExtractor");
         addExtractorByClass(extractors, file,
                 metadataPackage + "WinPhoneAppxMetadataExtractor");
         addExtractorByClass(extractors, file,
