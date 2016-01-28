@@ -1,7 +1,5 @@
 package com.apperian.api.signing;
 
-import java.util.Date;
-
 import com.apperian.api.ApperianResourceID;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -13,7 +11,7 @@ public class SigningCredential {
     String description;
 
     @JsonProperty("expiration_date")
-    Date expirationDate;
+    String expirationDate;
 
     @JsonProperty("platform")
     PlatformType platform;
@@ -26,7 +24,7 @@ public class SigningCredential {
         return description;
     }
 
-    public Date getExpirationDate() {
+    public String getExpirationDate() {
         return expirationDate;
     }
 

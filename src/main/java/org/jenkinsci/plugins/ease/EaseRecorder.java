@@ -1,5 +1,15 @@
 package org.jenkinsci.plugins.ease;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Logger;
+
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
+
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -13,14 +23,6 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.Function1;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.Iterator;
-import java.util.List;
-import java.util.logging.Logger;
 
 public class EaseRecorder extends Recorder {
     public static final String PLUGIN_NAME = "Apperian EASE Plugin";
@@ -47,13 +49,15 @@ public class EaseRecorder extends Recorder {
         }
 
         try {
+            List<EaseUpload> expandedUploads = new ArrayList<>(uploads.size());
+
             Function1<String, String> expandVarFunctions;
             expandVarFunctions = new ExpandVariablesFunction(build, listener, buildLog);
             for (EaseUpload upload : uploads) {
-                upload.expand(expandVarFunctions);
+                expandedUploads.add(upload.expand(expandVarFunctions));
             }
 
-            for (Iterator<EaseUpload> iterator = uploads.iterator(); iterator.hasNext(); ) {
+            for (Iterator<EaseUpload> iterator = expandedUploads.iterator(); iterator.hasNext(); ) {
                 EaseUpload upload = iterator.next();
                 if (!upload.checkOk()) {
                     buildLog.println("Additional upload skipped: '" + upload.getFilename() + "' -> appId='" + upload.getAppId() + "', specify appId, filename or url");
@@ -62,14 +66,14 @@ public class EaseRecorder extends Recorder {
             }
 
             boolean ok = true;
-            for (EaseUpload upload : uploads) {
+            for (EaseUpload upload : expandedUploads) {
                 ok &= upload.searchWorkspace(build.getWorkspace(), buildLog);
             }
             if (!ok) {
                 return false;
             }
 
-            for (EaseUpload upload : uploads) {
+            for (EaseUpload upload : expandedUploads) {
                 FilePath path = upload.getFilePath();
                 PublishFileCallable callable = new PublishFileCallable(upload, listener);
 

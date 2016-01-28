@@ -5,8 +5,15 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
+import javax.servlet.ServletException;
+
+import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 
 import com.apperian.api.ApperianEaseApi;
 import com.apperian.api.ApperianEndpoint;
@@ -15,6 +22,7 @@ import com.apperian.api.publishing.ApplicationListResponse;
 import com.apperian.api.signing.ListAllSigningCredentialsResponse;
 import com.apperian.api.signing.PlatformType;
 import com.apperian.api.signing.SigningCredential;
+
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Describable;
@@ -23,28 +31,24 @@ import hudson.util.FormValidation;
 import hudson.util.Function1;
 import hudson.util.ListBoxModel;
 import hudson.util.Secret;
-import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
 
-import javax.servlet.ServletException;
-
-public class EaseUpload implements Describable<EaseUpload>, Serializable {
+public class EaseUpload implements Describable<EaseUpload>, Serializable, Cloneable {
     private static final Logger logger = Logger.getLogger(EaseUpload.class.getName());
 
-    private String prodEnv;
-    private String customEaseUrl;
-    private String customApperianUrl;
-    private String appId;
-    private String filename;
-    private String username;
-    private String password;
-    private String author;
-    private String versionNotes;
+    private final String prodEnv;
+    private final String customEaseUrl;
+    private final String customApperianUrl;
+    private final String appId;
+    private final String filename;
+    private final String username;
+    private final String password;
+    private final String author;
+    private final String versionNotes;
+    private final boolean signApp;
+    private final String credential;
+    private final boolean enableApp;
+
     private FilePath filePath;
-    private boolean signApp;
-    private String credential;
-    private boolean enableApp;
 
     @DataBoundConstructor
     public EaseUpload(
@@ -94,6 +98,21 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable {
                 false,
                 null,
                 false);
+    }
+
+    public EaseUpload expand(Function1<String, String> expandVars) {
+        return new EaseUpload(prodEnv,
+                              customEaseUrl,
+                              customApperianUrl,
+                              expandVars.call(username),
+                              password,
+                              expandVars.call(appId),
+                              expandVars.call(filename),
+                              expandVars.call(author),
+                              expandVars.call(versionNotes),
+                              signApp,
+                              credential,
+                              enableApp);
     }
 
     public String getProdEnv() {
@@ -154,13 +173,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable {
                 !Utils.isEmptyString(filename);
     }
 
-    public void expand(Function1<String, String> expandVars) {
-        appId = expandVars.call(appId);
-        filename = expandVars.call(filename);
-        username = expandVars.call(username);
-        author = expandVars.call(author);
-        versionNotes = expandVars.call(versionNotes);
-    }
+
 
     public boolean searchWorkspace(FilePath workspacePath,
                                    PrintStream buildLog) throws IOException, InterruptedException {
@@ -387,8 +400,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable {
                     }
 
                     listItems.add(credential.getDescription() +
-
-                            " exp:" + format.format(credential.getExpirationDate()) +
+                            " exp:" + Utils.transformDate(credential.getExpirationDate()) +
                             (typeFilter == null ? " platform:" + credential.getPlatform().getDisplayName() : ""),
 
                             credential.getCredentialId().getId());
@@ -400,7 +412,6 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable {
             }
 
         }
-
 
         public FormValidation doTestConnection(@QueryParameter("prodEnv") final String prodEnv,
                                                @QueryParameter("customApperianUrl") String customApperianUrl,

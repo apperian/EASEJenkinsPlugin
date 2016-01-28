@@ -1,12 +1,14 @@
 package org.jenkinsci.plugins.ease;
 
-import java.net.*;
+import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.Proxy.Type;
+import java.net.SocketAddress;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.TimeZone;
 
 import org.apache.http.HttpHost;
@@ -16,9 +18,6 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.ProxyAuthenticationStrategy;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
 
 import hudson.ProxyConfiguration;
 import jenkins.model.Jenkins;
@@ -102,5 +101,14 @@ public class Utils {
                 .setProxyAuthenticationStrategy(new ProxyAuthenticationStrategy());
 
         return builder;
+    }
+
+    public static String transformDate(String jsonDateString) {
+        int idx = jsonDateString.indexOf('T');
+        if (idx != -1) {
+            return jsonDateString.substring(0, idx);
+        } else {
+            return jsonDateString;
+        }
     }
 }

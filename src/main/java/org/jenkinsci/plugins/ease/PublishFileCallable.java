@@ -123,7 +123,8 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
 
         report("Metadata from server: %s", metadata);
 
-        Metadata metadataUpdate = extractMetadataFromFile(applicationPackage);
+        Metadata metadataUpdate = new Metadata(new HashMap<String, String>());
+        //extractMetadataFromFile(applicationPackage);
 
         // EASE-20978
         // OP: so for application name
@@ -131,6 +132,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         // OP: but for version it should be extracted, right?
         // rufriedman: yes
         metadataUpdate.getValues().remove(KnownFields.NAME);
+        metadataUpdate.getValues().remove(KnownFields.VERSION);
 
         if (!Utils.isEmptyString(upload.getAuthor())) {
             metadataUpdate.setAuthor(upload.getAuthor());
