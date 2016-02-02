@@ -35,7 +35,7 @@
       <f:textbox />
     </f:entry>
     <f:entry title="${%Version Notes}" field="versionNotes">
-      <f:textbox default="$APP_NAME $APP_VERSION $BUILD_NUMBER $BUILD_TIMESTAMP" />
+      <f:textbox default="$APP_NAME $BUILD_NUMBER $BUILD_TIMESTAMP" />
     </f:entry>
     <f:entry title="${%Enable}" field="enableApp">
       <f:checkbox />
