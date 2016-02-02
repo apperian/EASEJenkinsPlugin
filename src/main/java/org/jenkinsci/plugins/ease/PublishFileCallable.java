@@ -20,7 +20,6 @@ import com.apperian.api.application.Application;
 import com.apperian.api.application.GetApplicationInfoResponse;
 import com.apperian.api.application.UpdateApplicationMetadataResponse;
 import com.apperian.api.metadata.Metadata;
-import com.apperian.api.metadata.Metadata.KnownFields;
 import com.apperian.api.metadata.MetadataExtractor;
 import com.apperian.api.publishing.PublishApplicationResponse;
 import com.apperian.api.publishing.UpdateApplicationResponse;
@@ -120,19 +119,9 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         }
 
         Metadata metadata = update.result.EASEmetadata;
-
         report("Metadata from server: %s", metadata);
 
         Metadata metadataUpdate = new Metadata(new HashMap<String, String>());
-        //extractMetadataFromFile(applicationPackage);
-
-        // EASE-20978
-        // OP: so for application name
-        // OP: I won't be extracting it from application package
-        // OP: but for version it should be extracted, right?
-        // rufriedman: yes
-        metadataUpdate.getValues().remove(KnownFields.NAME);
-        metadataUpdate.getValues().remove(KnownFields.VERSION);
 
         if (!Utils.isEmptyString(upload.getAuthor())) {
             metadataUpdate.setAuthor(upload.getAuthor());
@@ -142,14 +131,6 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         if (!Utils.isEmptyString(versionNotes)) {
             Map<String, String> vars = new HashMap<>();
 
-            vars.put("APP_NAME", Utils.override(
-                    metadataUpdate.getName(),
-                    metadata.getName()));
-
-            vars.put("APP_VERSION", Utils.override(
-                    metadataUpdate.getVersion(),
-                    metadata.getVersion()));
-
             vars.put("BUILD_TIMESTAMP", Utils.formatIso8601(
                     new Date()));
 
@@ -158,9 +139,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
             metadataUpdate.setVersionNotes(versionNotes);
         }
 
-        assignMetadata(metadata, metadataUpdate);
-
-        report("New metadata: %s", metadata);
+        report("Metadata update: %s", metadataUpdate);
 
         report("Publishing %s to EASE", applicationPackage);
         UploadResult uploadResult = endpoint.uploadFile(update.result.fileUploadURL, applicationPackage);
@@ -175,7 +154,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         }
 
 
-        PublishApplicationResponse publish = ApperianEaseApi.PUBLISHING.publish(update.result.transactionID, metadata, uploadResult.fileID)
+        PublishApplicationResponse publish = ApperianEaseApi.PUBLISHING.publish(update.result.transactionID, metadataUpdate, uploadResult.fileID)
                 .call(endpoint);
         if (publish.hasError()) {
             String errorMessage = publish.getErrorMessage();
