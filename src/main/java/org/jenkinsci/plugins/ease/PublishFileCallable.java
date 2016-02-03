@@ -127,6 +127,10 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
             metadataUpdate.setAuthor(upload.getAuthor());
         }
 
+        if (!Utils.isEmptyString(upload.getVersion())) {
+            metadataUpdate.setAuthor(upload.getVersion());
+        }
+
         String versionNotes = upload.getVersionNotes();
         if (!Utils.isEmptyString(versionNotes)) {
             Map<String, String> vars = new HashMap<>();

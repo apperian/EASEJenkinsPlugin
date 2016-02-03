@@ -43,6 +43,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     private final String username;
     private final String password;
     private final String author;
+    private final String version;
     private final String versionNotes;
     private final boolean signApp;
     private final String credential;
@@ -60,6 +61,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             String appId,
             String filename,
             String author,
+            String version,
             String versionNotes,
             boolean signApp,
             String credential,
@@ -73,6 +75,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         this.appId = Utils.trim(appId);
         this.filename = Utils.trim(filename);
         this.author = Utils.trim(author);
+        this.version = Utils.trim(version);
         this.versionNotes = Utils.trim(versionNotes);
         this.signApp = signApp;
         this.credential = credential;
@@ -95,6 +98,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 null,
                 null,
                 null,
+                null,
                 false,
                 null,
                 false);
@@ -109,6 +113,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                               expandVars.call(appId),
                               expandVars.call(filename),
                               expandVars.call(author),
+                              expandVars.call(version),
                               expandVars.call(versionNotes),
                               signApp,
                               credential,
@@ -149,6 +154,10 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
     public String getAuthor() {
         return author;
+    }
+
+    public String getVersion() {
+        return version;
     }
 
     public String getVersionNotes() {
@@ -282,7 +291,6 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     public Descriptor<EaseUpload> getDescriptor() {
         return new DescriptorImpl();
     }
-
 
     @Extension
     public static final class DescriptorImpl extends Descriptor<EaseUpload> {
