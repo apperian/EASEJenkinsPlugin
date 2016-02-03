@@ -22,7 +22,7 @@ public class PublishFileCallableTest {
 
     public static final EaseUpload EASE_UPLOAD1 =
             new EaseUpload("NORTH_AMERICA", "url1", "url2", "user1", "pass1",
-                    "app1", "filename", "author", "version", true, "cred", false);
+                    "app1", "filename", "author", "1.0", "version", true, "cred", false);
 
     @Test
     public void testSerialization() throws Exception {
