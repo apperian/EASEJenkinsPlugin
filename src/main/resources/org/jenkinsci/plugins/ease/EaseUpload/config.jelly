@@ -35,7 +35,7 @@
       <f:textbox />
     </f:entry>
     <f:entry title="${%Version}" field="version">
-      <f:textboxea />
+      <f:textbox />
     </f:entry>
     <f:entry title="${%Version Notes}" field="versionNotes">
       <f:textbox default="Built at $BUILD_TIMESTAMP" />
