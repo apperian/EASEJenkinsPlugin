@@ -8,10 +8,10 @@
     <f:entry title="${%Production Environment}" field="prodEnv" >
       <f:select clazz="prodEnv" />
     </f:entry>
-    <f:entry title="${%Ease API URL}" field="customEaseUrl" >
+    <f:entry title="${%PHP API URL}" field="customEaseUrl" >
       <f:textbox clazz="fieldCustomURLs" />
     </f:entry>
-    <f:entry title="${%Apperian API URL}" field="customApperianUrl">
+    <f:entry title="${%Python API URL}" field="customApperianUrl">
       <f:textbox clazz="fieldCustomURLs" />
     </f:entry>
     <f:entry title="${%User ID}" field="username">
@@ -42,11 +42,11 @@
     </f:entry>
     <f:entry title="${%Enable}" field="enableApp">
       <f:checkbox />
-       If checked, application will be enabled after publishing
+       Enable application after publishing
     </f:entry>
     <f:entry title="${%Sign}" field="signApp">
       <f:checkbox />
-       If checked, application will be signed after publishing
+       Sign application after publishing
     </f:entry>
     <f:entry title="${%Signing Credentials}" field="credential" with="prodEnv,customEaseUrl,customApperianUrl,username,password,appId" >
       <f:select />
