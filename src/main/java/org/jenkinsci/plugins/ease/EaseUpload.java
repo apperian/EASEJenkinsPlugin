@@ -248,7 +248,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     }
 
     public EaseCredentials createCredentials() {
-        return new EaseCredentials(username, Secret.fromString(password));
+        return new EaseCredentials(username, password);
     }
 
     public ApperianEaseEndpoint tryAuthenticate(boolean ease, boolean apperian, StringBuilder errorMessage) {

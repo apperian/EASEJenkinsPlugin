@@ -23,7 +23,7 @@ public class EaseCredentials {
 
     final List<EaseUser> credentials;
 
-    public EaseCredentials(String username, Secret password) {
+    public EaseCredentials(String username, String password) {
         credentials = new ArrayList<>();
         if (!Utils.isEmptyString(username)) {
             credentials.add(
@@ -67,7 +67,7 @@ public class EaseCredentials {
         for (StandardUsernamePasswordCredentials storedCredential : list) {
             credentials.add(new EaseUser(
                     storedCredential.getUsername(),
-                    storedCredential.getPassword(),
+                    storedCredential.getPassword().getPlainText(),
                     CredentialsNameProvider.name(storedCredential)));
         }
     }
@@ -75,7 +75,7 @@ public class EaseCredentials {
     public boolean authenticate(final JsonHttpEndpoint endpoint) {
         for (EaseUser user : credentials) {
             try {
-                if (endpoint.tryLogin(user.getUsername(), user.getPassword().getPlainText())) {
+                if (endpoint.tryLogin(user.getUsername(), user.getPassword())) {
                     return true;
                 }
             } catch (Exception e) {
