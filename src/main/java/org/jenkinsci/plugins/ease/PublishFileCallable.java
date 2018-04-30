@@ -147,7 +147,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
 
         report("Metadata update: %s", metadataUpdate);
 
-        report("Publishing %s to EASE", applicationPackage);
+        report("Publishing %s to Apperian", applicationPackage);
         UploadResult uploadResult = endpoint.uploadFile(update.result.fileUploadURL, applicationPackage);
         if (uploadResult.hasError()) {
             report("Error: %s", uploadResult.errorMessage);
