@@ -25,7 +25,7 @@ import hudson.util.Function1;
 import net.sf.json.JSONObject;
 
 public class EaseRecorder extends Recorder {
-    public static final String PLUGIN_NAME = "Apperian EASE Plugin";
+    public static final String PLUGIN_NAME = "Apperian Plugin";
 
     private static final Logger logger = Logger.getLogger(EaseRecorder.class.getName());
 

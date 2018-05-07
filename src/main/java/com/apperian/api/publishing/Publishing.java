@@ -4,7 +4,7 @@ import com.apperian.api.metadata.Metadata;
 
 /**
  * API described at:
- * https://help.apperian.com/display/pub/EASE+Publishing+API+Guide
+ * https://help.apperian.com/display/pub/Publishing+API+Guide
  */
 public class Publishing {
     public Publishing() {

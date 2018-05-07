@@ -296,7 +296,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     public static final class DescriptorImpl extends Descriptor<EaseUpload> {
         @Override
         public String getDisplayName() {
-            return "Apperian EASE Upload";
+            return "Apperian Upload";
         }
 
         public ListBoxModel doFillProdEnvItems() {
