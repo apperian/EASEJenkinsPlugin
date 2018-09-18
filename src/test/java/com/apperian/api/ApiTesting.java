@@ -1,34 +1,34 @@
 package com.apperian.api;
 
-public interface ApiTesting {
+public class ApiTesting {
     // TODO JJJ check what value we should use here
-    String API_TOKEN = "api_token";
+    public static String API_TOKEN = "api_token";
 
 
-    ApperianResourceID ORGANIZATION_ID = new ApperianResourceID("5763"); // Rails Reactor
-    ApperianResourceID USER_PSK = new ApperianResourceID("392157");
-    ApperianResourceID CREDENTIALS_PSK = new ApperianResourceID("gFuZNZYDdcbOhOu_TfzisQ"); // who knows
-    ApperianResourceID APP_PSK = new ApperianResourceID("48489");
-    ApperianResourceID APP_ID = new ApperianResourceID("XDnZ9-NxYIxpasODR9M6Yw");
+    public static ApperianResourceID ORGANIZATION_ID = new ApperianResourceID("5763"); // Rails Reactor
+    public static ApperianResourceID USER_PSK = new ApperianResourceID("392157");
+    public static ApperianResourceID CREDENTIALS_PSK = new ApperianResourceID("gFuZNZYDdcbOhOu_TfzisQ"); // who knows
+    public static ApperianResourceID APP_PSK = new ApperianResourceID("48489");
+    public static ApperianResourceID APP_ID = new ApperianResourceID("XDnZ9-NxYIxpasODR9M6Yw");
 
-    String EASE_ENDPOINT_URL = "https://easesvc.apperian.com/ease.interface.php";
-    String APERIAN_ENDPOINT_URL = "https://na01ws.apperian.com/v1";
+    private static String EASE_ENDPOINT_URL = "https://easesvc.apperian.com/ease.interface.php";
+    private static String APPERIAN_ENDPOINT_URL = "https://na01ws.apperian.com/v1";
 
-    ApperianEndpoint APERIAN_ENDPOINT = TestEndpointFactory.apperian();
-    EASEEndpoint EASE_ENDPOINT = TestEndpointFactory.ease();
+    public static boolean areCredentialsSet() {
+        return ApiTesting.getApperianEndpoint().isLoggedIn() && ApiTesting.getEASEEndpoint().isLoggedIn();
+    }
 
-    boolean CREDENTIALS_SET = APERIAN_ENDPOINT.isLoggedIn() && EASE_ENDPOINT.isLoggedIn();
+    // TODO:  Fix this name, makes no sense
+    public static ApperianEndpoint getApperianEndpoint() {
+        ApperianEndpoint result = new ApperianEndpoint(APPERIAN_ENDPOINT_URL);
+        result.checkSessionToken(API_TOKEN);
+        return result;
+    }
 
-    class TestEndpointFactory {
-        public static ApperianEndpoint apperian() {
-            ApperianEndpoint result = new ApperianEndpoint(APERIAN_ENDPOINT_URL);
-            result.checkSessionToken(API_TOKEN);
-            return result;
-        }
-        public static EASEEndpoint ease() {
-            EASEEndpoint result = new EASEEndpoint(EASE_ENDPOINT_URL);
-            result.checkSessionToken(API_TOKEN);
-            return result;
-        }
+    // TODO:  Fix this name, makes no sense
+    public static EASEEndpoint getEASEEndpoint() {
+        EASEEndpoint result = new EASEEndpoint(EASE_ENDPOINT_URL);
+        result.checkSessionToken(API_TOKEN);
+        return result;
     }
 }

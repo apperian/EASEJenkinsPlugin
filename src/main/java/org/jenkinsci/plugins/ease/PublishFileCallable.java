@@ -31,8 +31,9 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
+import org.jenkinsci.remoting.RoleChecker;
 
-public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Serializable {
+public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
     private final static Logger logger = Logger.getLogger(PublishFileCallable.class.getName());
 
     private EaseUpload upload;
@@ -41,6 +42,10 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
     public PublishFileCallable(EaseUpload upload, BuildListener listener) {
         this.upload = upload;
         this.listener = listener;
+    }
+
+    public void checkRoles(RoleChecker var1) throws SecurityException {
+
     }
 
     public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
