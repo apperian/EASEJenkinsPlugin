@@ -14,18 +14,15 @@
     <f:entry title="${%Python API URL}" field="customApperianUrl">
       <f:textbox clazz="fieldCustomURLs" />
     </f:entry>
-    <f:entry title="${%User ID}" field="username">
+    <f:entry title="${%API Token}" field="apiToken">
         <f:textbox />
-    </f:entry>
-    <f:entry title="${%Password}" field="password">
-        <f:password />
     </f:entry>
 
     <f:validateButton
         title="${%Test connection}" progress="${%Testing...}"
-        method="testConnection" with="prodEnv,customEaseUrl,customApperianUrl,username,password" />
+        method="testConnection" with="prodEnv,customEaseUrl,customApperianUrl,apiToken />
 
-    <f:entry title="${%Application}" field="appId" with="prodEnv,customEaseUrl,customApperianUrl,username,password" >
+    <f:entry title="${%Application}" field="appId" with="prodEnv,customEaseUrl,customApperianUrl,apiToken" >
       <f:select />
     </f:entry>
     <f:entry title="${%Filename}" field="filename">
@@ -48,7 +45,7 @@
       <f:checkbox />
        Sign application after publishing
     </f:entry>
-    <f:entry title="${%Signing Credentials}" field="credential" with="prodEnv,customEaseUrl,customApperianUrl,username,password,appId" >
+    <f:entry title="${%Signing Credentials}" field="credential" with="prodEnv,customEaseUrl,customApperianUrl,apiToken,appId" >
       <f:select />
     </f:entry>
 

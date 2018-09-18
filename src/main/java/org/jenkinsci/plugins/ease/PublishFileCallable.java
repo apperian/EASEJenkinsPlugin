@@ -45,7 +45,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
 
     public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
         if (!upload.validateHasAuthFields()) {
-            report("Error: username/password are not set and there is no stored credentials found");
+            report("Error: The api token is not set and no stored credentials were found");
             return false;
         }
 
