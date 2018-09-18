@@ -1,6 +1,6 @@
 package com.apperian.api;
 
-import com.apperian.api.application.ApplicationListRequest;
+import com.apperian.api.users.UserInfoRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 
@@ -34,7 +34,7 @@ public class ApperianEndpoint extends JsonHttpEndpoint {
     @Override
     public void checkSessionToken(String sessionToken) {
         try {
-            ApplicationListRequest request = new ApplicationListRequest();
+            UserInfoRequest request = new UserInfoRequest();
 
             HttpUriRequest httpRequest = request.buildHttpRequest(this, mapper);
 
