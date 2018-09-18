@@ -1,6 +1,6 @@
 package com.apperian.api;
 
-import com.apperian.api.users.AuthenticateUserResponse;
+import com.apperian.api.application.ApplicationListRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 
@@ -20,11 +20,7 @@ public class ApperianEndpoint extends JsonHttpEndpoint {
             int statusCode = response.getStatusLine().getStatusCode();
 
             if (statusCode == 401) {
-                if (responseClass == AuthenticateUserResponse.class) {
-                    return responseClass.cast(AuthenticateUserResponse.buildNoAccessResponse());
-                } else {
-                    throw new RuntimeException("No access");
-                }
+                throw new RuntimeException("No access");
             }
             if (statusCode != 200) {
                 throw new RuntimeException("bad API call, http status: " + response.getStatusLine() + ", request: " + httpRequest);
@@ -34,23 +30,27 @@ public class ApperianEndpoint extends JsonHttpEndpoint {
         }
     }
 
+
     @Override
-    public boolean tryLogin(String email, String password) {
-        AuthenticateUserResponse response;
+    public void checkSessionToken(String sessionToken) {
         try {
-            response = ApperianEaseApi.USERS.authenticateUser(email, password)
-                    .call(this);
+            ApplicationListRequest request = new ApplicationListRequest();
 
-            lastLoginError = response.getErrorMessage();
+            HttpUriRequest httpRequest = request.buildHttpRequest(this, mapper);
 
-            if (response.hasError()) {
-                return false;
+            CloseableHttpResponse response = httpClient.execute(httpRequest);
+            int statusCode = response.getStatusLine().getStatusCode();
+
+            if (statusCode != 200) {
+                throw new RuntimeException("No access");
             }
 
-            sessionToken = response.getToken();
-            return true;
+            // Set the token as it is valid
+            this.sessionToken = sessionToken;
+
         } catch (IOException e) {
             throw new RuntimeException("no network", e);
         }
     }
+
 }

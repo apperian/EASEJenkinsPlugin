@@ -1,8 +1,8 @@
 package com.apperian.api;
 
 public interface ApiTesting {
-    String USER_ID = "oleksiy";
-    String PASSWORD = "";
+    // TODO JJJ check what value we should use here
+    String API_TOKEN = "api_token";
 
 
     ApperianResourceID ORGANIZATION_ID = new ApperianResourceID("5763"); // Rails Reactor
@@ -22,12 +22,12 @@ public interface ApiTesting {
     class TestEndpointFactory {
         public static ApperianEndpoint apperian() {
             ApperianEndpoint result = new ApperianEndpoint(APERIAN_ENDPOINT_URL);
-            result.tryLogin(USER_ID, PASSWORD);
+            result.checkSessionToken(API_TOKEN);
             return result;
         }
         public static EASEEndpoint ease() {
             EASEEndpoint result = new EASEEndpoint(EASE_ENDPOINT_URL);
-            result.tryLogin(USER_ID, PASSWORD);
+            result.checkSessionToken(API_TOKEN);
             return result;
         }
     }

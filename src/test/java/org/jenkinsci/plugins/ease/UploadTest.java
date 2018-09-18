@@ -16,45 +16,29 @@ import hudson.model.BuildListener;
 
 public class UploadTest {
     public static final String URL = "https://easesvc.apperian.eu/ease.interface.php";
-    public static final String USER = "oleksiyp@railsreactor.com";
-    public static final String PWD = "";
+    // TODO JJJ check what value we should use here
+    public static final String API_TOKEN = "api_token";
 
     @ClassRule
     public static JenkinsRule j = new JenkinsRule();
 
     @Test
     public void testAndroid() throws Exception {
-        if (PWD.isEmpty()) {
-            return;
-        }
-
         upload("1EhXFWxikr6erSk1RVHMlw", "android.apk");
     }
 
     @Test
     public void testIOS() throws Exception {
-        if (PWD.isEmpty()) {
-            return;
-        }
-
         upload("1EhXFWxikr6erSk1RVHMlw", "ios.ipa");
     }
 
     @Test
     public void testWinPhoneAppx() throws Exception {
-        if (PWD.isEmpty()) {
-            return;
-        }
-
         upload("1EhXFWxikr6erSk1RVHMlw", "winphone.appx");
     }
 
     @Test
     public void testBlackberry() throws Exception {
-        if (PWD.isEmpty()) {
-            return;
-        }
-
         upload("1EhXFWxikr6erSk1RVHMlw", "blackberry.zip");
     }
 
@@ -63,8 +47,7 @@ public class UploadTest {
                 "EUROPE",
                 null,
                 null,
-                USER,
-                PWD);
+                API_TOKEN);
 
         InputStream res = getClass().getResourceAsStream(filename);
         File tmpFile = new File(filename);

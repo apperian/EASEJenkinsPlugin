@@ -1,6 +1,6 @@
 package com.apperian.api;
 
-import com.apperian.api.publishing.AuthenticateUserResponse;
+import com.apperian.api.publishing.ApplicationListRequest;
 import com.apperian.api.publishing.UploadResult;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpEntity;
@@ -76,21 +76,19 @@ public class EASEEndpoint extends JsonHttpEndpoint {
     }
 
     @Override
-    public boolean tryLogin(String email, String password) {
-        AuthenticateUserResponse response;
+    public void checkSessionToken(String sessionToken) {
         try {
-            response = ApperianEaseApi.PUBLISHING.authenticateUser(email, password)
-                    .call(this);
+            ApplicationListRequest request = new ApplicationListRequest();
 
-            lastLoginError = response.getErrorMessage();
-
-            if (response.hasError()) {
-                return false;
+            HttpUriRequest httpRequest = buildJsonRpcPost(request);
+            try (CloseableHttpResponse response = httpClient.execute(httpRequest)) {
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    throw new RuntimeException("No access");
+                }
             }
 
-            sessionToken = response.result.token;
-
-            return true;
+            // Set the token as it is valid
+            this.sessionToken = sessionToken;
         } catch (IOException e) {
             throw new RuntimeException("no network", e);
         }

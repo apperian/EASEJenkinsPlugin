@@ -1,16 +1,15 @@
 package org.jenkinsci.plugins.ease;
 
 import com.apperian.api.JsonHttpEndpoint;
-import com.apperian.api.publishing.AuthenticateUserResponse;
 import com.cloudbees.plugins.credentials.CredentialsNameProvider;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
-import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import com.cloudbees.plugins.credentials.domains.DomainRequirement;
 import com.cloudbees.plugins.credentials.domains.HostnameRequirement;
 import hudson.security.ACL;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
+import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -23,14 +22,13 @@ public class EaseCredentials {
 
     final List<EaseUser> credentials;
 
-    public EaseCredentials(String username, String password) {
+    public EaseCredentials(String apiToken) {
         credentials = new ArrayList<>();
-        if (!Utils.isEmptyString(username)) {
+        if (!Utils.isEmptyString(apiToken)) {
             credentials.add(
                     new EaseUser(
-                            Utils.trim(username),
-                            password,
-                            "form username/password"));
+                            Utils.trim(apiToken),
+                            "form api token"));
         }
     }
 
@@ -58,26 +56,24 @@ public class EaseCredentials {
     }
 
     private void addCredentials(List<DomainRequirement> domainRequirement) {
-        List<StandardUsernamePasswordCredentials> list = CredentialsProvider.lookupCredentials(
-                StandardUsernamePasswordCredentials.class,
+        List<StringCredentials> list = CredentialsProvider.lookupCredentials(
+            StringCredentials.class,
                 Jenkins.getInstance(),
                 ACL.SYSTEM,
                 domainRequirement);
 
-        for (StandardUsernamePasswordCredentials storedCredential : list) {
+        for (StringCredentials storedCredential : list) {
             credentials.add(new EaseUser(
-                    storedCredential.getUsername(),
-                    storedCredential.getPassword().getPlainText(),
+                    storedCredential.getSecret().getPlainText(),
                     CredentialsNameProvider.name(storedCredential)));
         }
     }
 
-    public boolean authenticate(final JsonHttpEndpoint endpoint) {
+    public boolean checkSessionToken(final JsonHttpEndpoint endpoint) {
         for (EaseUser user : credentials) {
             try {
-                if (endpoint.tryLogin(user.getUsername(), user.getPassword())) {
-                    return true;
-                }
+                endpoint.checkSessionToken(user.getApiToken());
+                return true;
             } catch (Exception e) {
                 String message = "Could not authenticate to '" + endpoint.getUrl() +
                         "', credentials used=" + user.getDescription() +
@@ -96,16 +92,4 @@ public class EaseCredentials {
         return credentials.listIterator().previous().getDescription();
     }
 
-    private static class ErrorAuthenticateUserResponse extends AuthenticateUserResponse {
-        private final String errMsg;
-
-        public ErrorAuthenticateUserResponse(String errMsg) {
-            this.errMsg = errMsg;
-        }
-
-        @Override
-        public String getErrorMessage() {
-            return errMsg;
-        }
-    }
 }

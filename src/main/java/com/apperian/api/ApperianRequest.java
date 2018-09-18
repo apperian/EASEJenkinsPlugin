@@ -17,7 +17,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 
-import com.apperian.api.users.AuthenticateUserRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -78,12 +77,12 @@ public abstract class ApperianRequest {
                 requestWithEntity = (HttpEntityEnclosingRequestBase) request;
                 addEntityToRequest(mapper, headers, requestWithEntity);
             }
-            if (!(this instanceof AuthenticateUserRequest)) {
-                if (endpoint.sessionToken == null) {
-                    throw new RuntimeException("bad session token");
-                }
-                headers.add(new BasicHeader(APIConstants.X_TOKEN_HEADER, endpoint.sessionToken));
+
+            if (endpoint.sessionToken == null) {
+                throw new RuntimeException("bad session token");
             }
+            headers.add(new BasicHeader(APIConstants.X_TOKEN_HEADER, endpoint.sessionToken));
+
             if (!headers.isEmpty()) {
                 request.setHeaders(headers.toArray(new Header[headers.size()]));
             }

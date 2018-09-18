@@ -85,10 +85,11 @@
     </build>
 
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.jenkins-ci.plugins/plain-credentials -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>credentials</artifactId>
-            <version>1.10</version>
+            <artifactId>plain-credentials</artifactId>
+            <version>1.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>

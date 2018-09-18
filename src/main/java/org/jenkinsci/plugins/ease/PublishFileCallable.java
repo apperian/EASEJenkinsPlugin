@@ -57,7 +57,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         boolean shouldAuthApperian = upload.isEnableApp() || upload.isSignApp();
 
         StringBuilder errorMessage = new StringBuilder();
-        ApperianEaseEndpoint endpoint = upload.tryAuthenticate(true,
+        ApperianEaseEndpoint endpoint = upload.createConnection(true,
                                                                shouldAuthApperian,
                                                                errorMessage);
 
