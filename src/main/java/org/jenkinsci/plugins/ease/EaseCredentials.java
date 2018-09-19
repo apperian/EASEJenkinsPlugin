@@ -72,7 +72,7 @@ public class EaseCredentials {
     public boolean checkSessionToken(final JsonHttpEndpoint endpoint) {
         for (EaseUser user : credentials) {
             try {
-                endpoint.checkSessionToken(user.getApiToken());
+                endpoint.checkSessionToken();
                 return true;
             } catch (Exception e) {
                 String message = "Could not authenticate to '" + endpoint.getUrl() +

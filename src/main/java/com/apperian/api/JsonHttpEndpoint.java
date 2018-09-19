@@ -49,7 +49,7 @@ public abstract class JsonHttpEndpoint  implements Closeable {
         return mapper;
     }
 
-    public abstract void checkSessionToken(String sessionToken);
+    public abstract void checkSessionToken();
 
     public void close() throws IOException {
         httpClient.close();

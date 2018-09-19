@@ -16,8 +16,9 @@ import java.io.File;
 import java.io.IOException;
 
 public class EASEEndpoint extends JsonHttpEndpoint {
-    public EASEEndpoint(String url) {
+    public EASEEndpoint(String url, String sessionToken) {
         super(url);
+        this.sessionToken = sessionToken;
     }
 
     <T extends EASEResponse> T doJsonRpc(EASERequest request,
@@ -76,7 +77,7 @@ public class EASEEndpoint extends JsonHttpEndpoint {
     }
 
     @Override
-    public void checkSessionToken(String sessionToken) {
+    public void checkSessionToken() {
         try {
             ApplicationListRequest request = new ApplicationListRequest();
 
@@ -86,9 +87,6 @@ public class EASEEndpoint extends JsonHttpEndpoint {
                     throw new RuntimeException("No access");
                 }
             }
-
-            // Set the token as it is valid
-            this.sessionToken = sessionToken;
         } catch (IOException e) {
             throw new RuntimeException("no network", e);
         }

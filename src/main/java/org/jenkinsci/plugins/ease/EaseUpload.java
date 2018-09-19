@@ -218,18 +218,18 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     public EASEEndpoint createEaseEndpoint() {
         ProductionEnvironment productionEnvironment = ProductionEnvironment.fromNameOrNA(this.prodEnv);
         if (productionEnvironment == ProductionEnvironment.CUSTOM) {
-            return new EASEEndpoint(customEaseUrl);
+            return new EASEEndpoint(customEaseUrl, apiToken);
         } else {
-            return new EASEEndpoint(productionEnvironment.easeUrl);
+            return new EASEEndpoint(productionEnvironment.easeUrl, apiToken);
         }
     }
 
     public ApperianEndpoint createApperianEndpoint() {
         ProductionEnvironment productionEnvironment = ProductionEnvironment.fromNameOrNA(this.prodEnv);
         if (productionEnvironment == ProductionEnvironment.CUSTOM) {
-            return new ApperianEndpoint(customApperianUrl);
+            return new ApperianEndpoint(customApperianUrl, apiToken);
         } else {
-            return new ApperianEndpoint(productionEnvironment.apperianUrl);
+            return new ApperianEndpoint(productionEnvironment.apperianUrl, apiToken);
         }
     }
 

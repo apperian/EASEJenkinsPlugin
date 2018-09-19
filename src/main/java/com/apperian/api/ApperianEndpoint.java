@@ -7,8 +7,9 @@ import org.apache.http.client.methods.HttpUriRequest;
 import java.io.IOException;
 
 public class ApperianEndpoint extends JsonHttpEndpoint {
-    public ApperianEndpoint(String url) {
+    public ApperianEndpoint(String url, String sessionToken) {
         super(url);
+        this.sessionToken = sessionToken;
     }
 
     <T extends ApperianResponse> T doJsonRpc(ApperianRequest request,
@@ -32,7 +33,7 @@ public class ApperianEndpoint extends JsonHttpEndpoint {
 
 
     @Override
-    public void checkSessionToken(String sessionToken) {
+    public void checkSessionToken() {
         try {
             UserInfoRequest request = new UserInfoRequest();
 
@@ -44,9 +45,6 @@ public class ApperianEndpoint extends JsonHttpEndpoint {
             if (statusCode != 200) {
                 throw new RuntimeException("No access");
             }
-
-            // Set the token as it is valid
-            this.sessionToken = sessionToken;
 
         } catch (IOException e) {
             throw new RuntimeException("no network", e);

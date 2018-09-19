@@ -2,8 +2,7 @@ package com.apperian.api;
 
 public class ApiTesting {
     // TODO JJJ check what value we should use here
-    public static String API_TOKEN = "api_token";
-
+    public static String API_TOKEN = null;
 
     public static ApperianResourceID ORGANIZATION_ID = new ApperianResourceID("5763"); // Rails Reactor
     public static ApperianResourceID USER_PSK = new ApperianResourceID("392157");
@@ -20,15 +19,11 @@ public class ApiTesting {
 
     // TODO:  Fix this name, makes no sense
     public static ApperianEndpoint getApperianEndpoint() {
-        ApperianEndpoint result = new ApperianEndpoint(APPERIAN_ENDPOINT_URL);
-        result.checkSessionToken(API_TOKEN);
-        return result;
+        return new ApperianEndpoint(APPERIAN_ENDPOINT_URL, API_TOKEN);
     }
 
     // TODO:  Fix this name, makes no sense
     public static EASEEndpoint getEASEEndpoint() {
-        EASEEndpoint result = new EASEEndpoint(EASE_ENDPOINT_URL);
-        result.checkSessionToken(API_TOKEN);
-        return result;
+        return new EASEEndpoint(EASE_ENDPOINT_URL, API_TOKEN);
     }
 }
