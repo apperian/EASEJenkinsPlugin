@@ -291,8 +291,9 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             ListBoxModel resultListBox = new ListBoxModel();
             EaseCredentials easeCredentials = new EaseCredentials();
             List<EaseUser> credentials = easeCredentials.getCredentials();
+            resultListBox.add("<Select an API token>", "");
             for (EaseUser easeUser : credentials) {
-                resultListBox.add(easeUser.getDescription(), easeUser.getApiToken());
+                resultListBox.add(easeUser.getDescription(), easeUser.getApiTokenId());
             }
             return resultListBox;
         }
@@ -300,7 +301,8 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         public ListBoxModel doFillAppIdItems(@QueryParameter("prodEnv") final String prodEnv,
                                              @QueryParameter("customApperianUrl") String customApperianUrl,
                                              @QueryParameter("customEaseUrl") String customEaseUrl,
-                                             @QueryParameter("apiToken") final String apiToken) {
+                                             @QueryParameter("apiToken") final String apiTokenId) {
+            String apiToken = getApiTokenById(apiTokenId);
             EaseUpload upload = EaseUpload.simpleUpload(prodEnv, customApperianUrl, customEaseUrl, apiToken);
 
             if (!upload.validateHasAuthFields()) {
@@ -337,8 +339,9 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         public ListBoxModel doFillCredentialItems(@QueryParameter("prodEnv") final String prodEnv,
                                                   @QueryParameter("customApperianUrl") String customApperianUrl,
                                                   @QueryParameter("customEaseUrl") String customEaseUrl,
-                                                  @QueryParameter("apiToken") final String apiToken,
+                                                  @QueryParameter("apiToken") final String apiTokenId,
                                                   @QueryParameter("appId") final String appId) {
+            String apiToken = getApiTokenById(apiTokenId);
             EaseUpload upload = EaseUpload.simpleUpload(prodEnv, customApperianUrl, customEaseUrl, apiToken);
 
             if (!upload.validateHasAuthFields()) {
@@ -412,9 +415,9 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         public FormValidation doTestConnection(@QueryParameter("prodEnv") final String prodEnv,
                                                @QueryParameter("customApperianUrl") String customApperianUrl,
                                                @QueryParameter("customEaseUrl") String customEaseUrl,
-                                               @QueryParameter("apiToken") final String apiToken)
+                                               @QueryParameter("apiToken") final String apiTokenId)
                 throws IOException, ServletException {
-
+            String apiToken = getApiTokenById(apiTokenId);
             EaseUpload upload = EaseUpload.simpleUpload(prodEnv, customApperianUrl, customEaseUrl, apiToken);
 
 
@@ -429,6 +432,11 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             }
 
             return FormValidation.ok("Connection OK");
+        }
+
+        private String getApiTokenById(String apiTokenId) {
+            EaseCredentials easeCredentials = new EaseCredentials();
+            return easeCredentials.getCredentialWithId(apiTokenId);
         }
     }
 }

@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.ease;
 
 import com.apperian.api.JsonHttpEndpoint;
 import com.cloudbees.plugins.credentials.CredentialsNameProvider;
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.domains.DomainRequirement;
 import com.cloudbees.plugins.credentials.domains.HostnameRequirement;
@@ -29,10 +30,24 @@ public class EaseCredentials {
 
         for (StringCredentials storedCredential : list) {
             storedCredentials.add(new EaseUser(
-                    storedCredential.getSecret().getPlainText(),
+                    storedCredential.getId(),
                     CredentialsNameProvider.name(storedCredential)));
         }
         return storedCredentials;
+    }
+
+    public String getCredentialWithId(String credentialId) {
+        List<StringCredentials> candidates = CredentialsProvider.lookupCredentials(
+            StringCredentials.class,
+                Jenkins.getInstance(),
+                ACL.SYSTEM);
+
+        StringCredentials credential = CredentialsMatchers.firstOrNull(candidates,                      CredentialsMatchers.withId(credentialId));
+        String secret = null;
+        if (credential != null) {
+            secret = credential.getSecret().getPlainText();
+        }
+        return secret;
     }
 
     public boolean checkSessionToken(final JsonHttpEndpoint endpoint) {
