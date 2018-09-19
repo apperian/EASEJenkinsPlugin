@@ -215,12 +215,12 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     }
 
 
-    public EASEEndpoint createEaseEndpoint() {
+    public EASEEndpoint createEaseEndpoint(String sessionToken) {
         ProductionEnvironment productionEnvironment = ProductionEnvironment.fromNameOrNA(this.prodEnv);
         if (productionEnvironment == ProductionEnvironment.CUSTOM) {
-            return new EASEEndpoint(customEaseUrl, apiToken);
+            return new EASEEndpoint(customEaseUrl, sessionToken);
         } else {
-            return new EASEEndpoint(productionEnvironment.easeUrl, apiToken);
+            return new EASEEndpoint(productionEnvironment.easeUrl, sessionToken);
         }
     }
 
@@ -233,23 +233,13 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         }
     }
 
-    public ApperianEaseEndpoint createEndpoint() {
-        return new ApperianEaseEndpoint(createEaseEndpoint(), createApperianEndpoint());
+    public ApperianEaseEndpoint createEndpoint(String sessionToken) {
+        return new ApperianEaseEndpoint(createEaseEndpoint(sessionToken), createApperianEndpoint());
     }
 
-    public EaseCredentials createCredentials() {
-        return new EaseCredentials(apiToken);
-    }
-
-    public ApperianEaseEndpoint createConnection(boolean ease, boolean apperian, StringBuilder errorMessage) {
-        EaseCredentials credentials = createCredentials();
-        ApperianEaseEndpoint endpoint = createEndpoint();
-
-        try {
-            credentials.lookupStoredCredentials(endpoint);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+    public ApperianEaseEndpoint createConnection(boolean ease, boolean apperian, StringBuilder errorMessage, String sessionToken) {
+        EaseCredentials credentials = new EaseCredentials();
+        ApperianEaseEndpoint endpoint = createEndpoint(sessionToken);
 
         List<String> errs = new ArrayList<>();
         if (ease) {
@@ -297,6 +287,16 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             return resultListBox;
         }
 
+        public ListBoxModel doFillApiTokenItems() {
+            ListBoxModel resultListBox = new ListBoxModel();
+            EaseCredentials easeCredentials = new EaseCredentials();
+            List<EaseUser> credentials = easeCredentials.getCredentials();
+            for (EaseUser easeUser : credentials) {
+                resultListBox.add(easeUser.getDescription(), easeUser.getApiToken());
+            }
+            return resultListBox;
+        }
+
         public ListBoxModel doFillAppIdItems(@QueryParameter("prodEnv") final String prodEnv,
                                              @QueryParameter("customApperianUrl") String customApperianUrl,
                                              @QueryParameter("customEaseUrl") String customEaseUrl,
@@ -308,7 +308,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             }
 
             StringBuilder errorMessage = new StringBuilder();
-            ApperianEaseEndpoint endpoint = upload.createConnection(true, false, errorMessage);
+            ApperianEaseEndpoint endpoint = upload.createConnection(true, false, errorMessage, apiToken);
             if (endpoint == null) {
                 return new ListBoxModel().add("(" + errorMessage + ")");
             }
@@ -348,7 +348,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             boolean hasAppId = !Utils.isEmptyString(appId);
 
             StringBuilder errorMessage = new StringBuilder();
-            ApperianEaseEndpoint endpoint = upload.createConnection(hasAppId, true, errorMessage);
+            ApperianEaseEndpoint endpoint = upload.createConnection(hasAppId, true, errorMessage, apiToken);
             if (endpoint == null) {
                 return new ListBoxModel().add("(" + errorMessage + ")");
             }
@@ -423,7 +423,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             }
 
             StringBuilder errorMessage = new StringBuilder();
-            ApperianEaseEndpoint endpoint = upload.createConnection(true, true, errorMessage);
+            ApperianEaseEndpoint endpoint = upload.createConnection(true, true, errorMessage, apiToken);
             if (endpoint == null) {
                 return FormValidation.error(errorMessage.toString());
             }

@@ -17,7 +17,7 @@
       <f:textbox clazz="fieldCustomURLs" />
     </f:entry>
     <f:entry title="${%API Token}" field="apiToken">
-        <f:textbox />
+        <f:select />
     </f:entry>
 
     <f:validateButton
