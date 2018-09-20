@@ -17,7 +17,7 @@ import hudson.model.BuildListener;
 public class UploadTest {
     public static final String URL = "https://easesvc.apperian.eu/ease.interface.php";
     // TODO JJJ check what value we should use here
-    public static final String API_TOKEN = "api_token";
+    public static final String API_TOKEN = null;
 
     @ClassRule
     public static JenkinsRule j = new JenkinsRule();

@@ -62,14 +62,12 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         boolean shouldAuthApperian = upload.isEnableApp() || upload.isSignApp();
 
         StringBuilder errorMessage = new StringBuilder();
-        String sessionToken = upload.getApiToken();
         ApperianEaseEndpoint endpoint = upload.createConnection(true,
                                                                shouldAuthApperian,
-                                                               errorMessage,
-                                                               sessionToken);
+                                                               errorMessage);
 
         if (endpoint == null) {
-            report("Error: %s, endpoint=%s", errorMessage, upload.createEndpoint(sessionToken));
+            report("Error: %s, endpoint=%s", errorMessage, upload.createEndpoint());
             return false;
         }
 
