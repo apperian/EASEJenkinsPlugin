@@ -142,12 +142,6 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         return apiTokenId;
     }
 
-    public String getPlainApiToken() {
-        EaseCredentials easeCredentials = new EaseCredentials();
-        String apiToken = easeCredentials.getCredentialWithId(apiTokenId);
-        return Utils.trim(apiToken);
-    }
-
     public String getAuthor() {
         return author;
     }
@@ -221,58 +215,6 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     }
 
 
-    public EASEEndpoint createEaseEndpoint(String apiToken) {
-        ProductionEnvironment productionEnvironment = ProductionEnvironment.fromNameOrNA(this.prodEnv);
-        if (productionEnvironment == ProductionEnvironment.CUSTOM) {
-            return new EASEEndpoint(customEaseUrl, apiToken);
-        } else {
-            return new EASEEndpoint(productionEnvironment.easeUrl, apiToken);
-        }
-    }
-
-    public ApperianEndpoint createApperianEndpoint(String apiToken) {
-        ProductionEnvironment productionEnvironment = ProductionEnvironment.fromNameOrNA(this.prodEnv);
-        if (productionEnvironment == ProductionEnvironment.CUSTOM) {
-            return new ApperianEndpoint(customApperianUrl, apiToken);
-        } else {
-            return new ApperianEndpoint(productionEnvironment.apperianUrl, apiToken);
-        }
-    }
-
-    public ApperianEaseEndpoint createEndpoint() {
-        String apiToken = getPlainApiToken();
-        return new ApperianEaseEndpoint(createEaseEndpoint(apiToken), createApperianEndpoint(apiToken));
-    }
-
-    public ApperianEaseEndpoint createConnection(boolean ease, boolean apperian, StringBuilder errorMessage) {
-        EaseCredentials credentials = new EaseCredentials();
-        ApperianEaseEndpoint endpoint = createEndpoint();
-
-        List<String> errs = new ArrayList<>();
-        if (ease) {
-            EASEEndpoint easeEndpoint = endpoint.getEaseEndpoint();
-            if (!credentials.checkSessionToken(easeEndpoint)) {
-                errs.add("ease: " + easeEndpoint.getLastLoginError());
-            }
-        }
-        if (apperian) {
-            ApperianEndpoint apperianEndpoint = endpoint.getApperianEndpoint();
-            if (!credentials.checkSessionToken(apperianEndpoint)) {
-                errs.add("apperian: " + apperianEndpoint.getLastLoginError());
-            }
-        }
-
-        if (!errs.isEmpty()) {
-            if (errs.size() == 1) {
-                errorMessage.append(errs.get(0));
-            } else {
-                errorMessage.append(errs);
-            }
-            return null;
-        }
-
-        return endpoint;
-    }
 
     @Override
     public Descriptor<EaseUpload> getDescriptor() {
@@ -281,6 +223,9 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
     @Extension
     public static final class DescriptorImpl extends Descriptor<EaseUpload> {
+
+        private transient APIManager apiManager = new APIManager();
+
         @Override
         public String getDisplayName() {
             return "Apperian Upload";
@@ -296,8 +241,8 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
         public ListBoxModel doFillApiTokenIdItems() {
             ListBoxModel resultListBox = new ListBoxModel();
-            EaseCredentials easeCredentials = new EaseCredentials();
-            List<EaseUser> credentials = easeCredentials.getCredentials();
+            CredentialsManager credentialsManager = new CredentialsManager();
+            List<EaseUser> credentials = credentialsManager.getCredentials();
             resultListBox.add("<Select an API token>", "");
             for (EaseUser easeUser : credentials) {
                 resultListBox.add(easeUser.getDescription(), easeUser.getApiTokenId());
@@ -316,7 +261,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             }
 
             StringBuilder errorMessage = new StringBuilder();
-            ApperianEaseEndpoint endpoint = upload.createConnection(true, false, errorMessage);
+            ApperianEaseEndpoint endpoint = apiManager.createConnection(upload, true, false, errorMessage);
             if (endpoint == null) {
                 return new ListBoxModel().add("(" + errorMessage + ")");
             }
@@ -356,7 +301,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             boolean hasAppId = !Utils.isEmptyString(appId);
 
             StringBuilder errorMessage = new StringBuilder();
-            ApperianEaseEndpoint endpoint = upload.createConnection(hasAppId, true, errorMessage);
+            ApperianEaseEndpoint endpoint = apiManager.createConnection(upload, hasAppId, true, errorMessage);
             if (endpoint == null) {
                 return new ListBoxModel().add("(" + errorMessage + ")");
             }
@@ -430,7 +375,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             }
 
             StringBuilder errorMessage = new StringBuilder();
-            ApperianEaseEndpoint endpoint = upload.createConnection(true, true, errorMessage);
+            ApperianEaseEndpoint endpoint = apiManager.createConnection(upload, true, true, errorMessage);
             if (endpoint == null) {
                 return FormValidation.error(errorMessage.toString());
             }
