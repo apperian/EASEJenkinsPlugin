@@ -3,16 +3,8 @@ package org.jenkinsci.plugins.ease;
 import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.JsonHttpEndpoint;
 import com.apperian.api.EASEEndpoint;
-import com.cloudbees.plugins.credentials.CredentialsNameProvider;
-import com.cloudbees.plugins.credentials.CredentialsMatchers;
-import com.cloudbees.plugins.credentials.CredentialsProvider;
-import hudson.security.ACL;
-import jenkins.model.Jenkins;
-import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,8 +36,7 @@ public class ApiManager {
             endpoint.checkSessionToken();
             return true;
         } catch (Exception e) {
-            String message = "Could not authenticate to '" + endpoint.getUrl() +
-                    ", error='" + e.getMessage();
+            String message = "Could not authenticate to '" + endpoint.getUrl() + "', error:  " + e.getMessage();
             logger.log(Level.WARNING, message, e);
             endpoint.setLastLoginError(e.getMessage());
         }
