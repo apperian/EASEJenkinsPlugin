@@ -16,33 +16,35 @@ import java.util.logging.Logger;
 public class CredentialsManager {
     static final Logger logger = Logger.getLogger(CredentialsManager.class.getName());
 
-    public List<EaseUser> getCredentials() {
-        final List<EaseUser> storedCredentials = new ArrayList<>();
-        List<StringCredentials> list = CredentialsProvider.lookupCredentials(
-            StringCredentials.class,
-                Jenkins.getInstance(),
-                ACL.SYSTEM);
+    public List<ApiToken> getCredentials() {
+        final List<ApiToken> apiTokens = new ArrayList<>();
+        List<StringCredentials> stringCredentials = fetchStringCredentials();
 
-        for (StringCredentials storedCredential : list) {
-            storedCredentials.add(new EaseUser(
+        for (StringCredentials storedCredential : stringCredentials) {
+            apiTokens.add(new ApiToken(
                     storedCredential.getId(),
                     CredentialsNameProvider.name(storedCredential)));
         }
-        return storedCredentials;
+        return apiTokens;
     }
 
     public String getCredentialWithId(String credentialId) {
-        List<StringCredentials> candidates = CredentialsProvider.lookupCredentials(
-            StringCredentials.class,
-                Jenkins.getInstance(),
-                ACL.SYSTEM);
+        List<StringCredentials> stringCredentials = fetchStringCredentials();
 
-        StringCredentials credential = CredentialsMatchers.firstOrNull(candidates,
+        StringCredentials credential = CredentialsMatchers.firstOrNull(stringCredentials,
                                                                        CredentialsMatchers.withId(credentialId));
         String secret = null;
         if (credential != null) {
             secret = credential.getSecret().getPlainText();
         }
         return secret;
+    }
+
+    private List<StringCredentials> fetchStringCredentials() {
+        return CredentialsProvider.lookupCredentials(
+            StringCredentials.class,
+            Jenkins.getInstance(),
+            ACL.SYSTEM
+        );
     }
 }

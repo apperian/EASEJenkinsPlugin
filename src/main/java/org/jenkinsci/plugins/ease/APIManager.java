@@ -16,36 +16,26 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class APIManager {
-    static final Logger logger = Logger.getLogger(APIManager.class.getName());
+public class ApiManager {
+    static final Logger logger = Logger.getLogger(ApiManager.class.getName());
 
     private CredentialsManager credentialsManager = new CredentialsManager();
 
-    public ApperianEaseEndpoint createConnection(EaseUpload upload, boolean ease, boolean apperian, StringBuilder errorMessage) {
-        APIManager apiManager = new APIManager();
+    public ApperianEaseEndpoint createConnection(EaseUpload upload, boolean ease, boolean apperian) throws ConnectionException {
+        ApiManager apiManager = new ApiManager();
         ApperianEaseEndpoint endpoint = createEndpoint(upload);
 
-        List<String> errs = new ArrayList<>();
         if (ease) {
             EASEEndpoint easeEndpoint = endpoint.getEaseEndpoint();
             if (!apiManager.isConnectionSuccessful(easeEndpoint)) {
-                errs.add("ease: " + easeEndpoint.getLastLoginError());
+                throw new ConnectionException("The connection with EASE is not correct");
             }
         }
         if (apperian) {
             ApperianEndpoint apperianEndpoint = endpoint.getApperianEndpoint();
             if (!apiManager.isConnectionSuccessful(apperianEndpoint)) {
-                errs.add("apperian: " + apperianEndpoint.getLastLoginError());
+                throw new ConnectionException("The connection with Apperian is not correct");
             }
-        }
-
-        if (!errs.isEmpty()) {
-            if (errs.size() == 1) {
-                errorMessage.append(errs.get(0));
-            } else {
-                errorMessage.append(errs);
-            }
-            return null;
         }
 
         return endpoint;

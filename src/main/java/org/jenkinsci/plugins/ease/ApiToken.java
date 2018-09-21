@@ -1,10 +1,10 @@
 package org.jenkinsci.plugins.ease;
 
-public class EaseUser {
+public class ApiToken {
     final String apiTokenId;
     final String description;
 
-    public EaseUser(String apiTokenId, String description) {
+    public ApiToken(String apiTokenId, String description) {
         this.apiTokenId = apiTokenId;
         this.description = description;
     }

@@ -38,7 +38,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
     private EaseUpload upload;
     private final BuildListener listener;
-    private transient APIManager apiManager = new APIManager();
+    private transient ApiManager apiManager = new ApiManager();
 
     public PublishFileCallable(EaseUpload upload, BuildListener listener) {
         this.upload = upload;
@@ -62,14 +62,11 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
         boolean shouldAuthApperian = upload.isEnableApp() || upload.isSignApp();
 
-        StringBuilder errorMessage = new StringBuilder();
-        ApperianEaseEndpoint endpoint = apiManager.createConnection(upload,
-                                                                    true,
-                                                                    shouldAuthApperian,
-                                                                    errorMessage);
-
-        if (endpoint == null) {
-            report("Error: %s", errorMessage);
+        ApperianEaseEndpoint endpoint;
+        try {
+            endpoint = apiManager.createConnection(upload, true, shouldAuthApperian);
+        } catch (ConnectionException e) {
+            report("Error: %s", e.getMessage());
             return false;
         }
 
@@ -153,9 +150,6 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         }
 
         report("Metadata update: %s", metadataUpdate);
-        report("JJJ endpoint session is " + endpoint.getUrl() + " token: " + endpoint.getSessionToken() +
-               " upload-url: " + update.result.fileUploadURL);
-
         report("Publishing %s to Apperian", applicationPackage);
         UploadResult uploadResult = endpoint.uploadFile(update.result.fileUploadURL, applicationPackage);
         if (uploadResult.hasError()) {
