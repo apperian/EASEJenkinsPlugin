@@ -60,11 +60,9 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
             return false;
         }
 
-        boolean shouldAuthApperian = upload.isEnableApp() || upload.isSignApp();
-
         ApperianEaseEndpoint endpoint;
         try {
-            endpoint = apiManager.createConnection(upload, true, shouldAuthApperian);
+            endpoint = apiManager.createConnection(upload);
         } catch (ConnectionException e) {
             report("Error: %s", e.getMessage());
             return false;

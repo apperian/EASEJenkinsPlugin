@@ -257,7 +257,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             }
 
             try {
-                ApperianEaseEndpoint endpoint = apiManager.createConnection(upload, true, false);
+                ApperianEaseEndpoint endpoint = apiManager.createConnection(upload);
 
                 ApplicationListResponse response = ApperianEaseApi.PUBLISHING.list()
                         .call(endpoint.getEaseEndpoint());
@@ -296,7 +296,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
             ApperianEaseEndpoint endpoint;
             try {
-                endpoint = apiManager.createConnection(upload, hasAppId, true);
+                endpoint = apiManager.createConnection(upload);
             } catch (ConnectionException e) {
                 return new ListBoxModel().add("(" + e.getMessage() + ")");
             }
@@ -369,7 +369,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             }
 
             try {
-                apiManager.createConnection(upload, true, true);
+                apiManager.createConnection(upload);
                 return FormValidation.ok("Connection OK");
             } catch (ConnectionException e) {
                 return FormValidation.error(e.getMessage());

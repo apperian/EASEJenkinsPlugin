@@ -21,21 +21,19 @@ public class ApiManager {
 
     private CredentialsManager credentialsManager = new CredentialsManager();
 
-    public ApperianEaseEndpoint createConnection(EaseUpload upload, boolean ease, boolean apperian) throws ConnectionException {
+    public ApperianEaseEndpoint createConnection(EaseUpload upload) throws ConnectionException {
         ApiManager apiManager = new ApiManager();
         ApperianEaseEndpoint endpoint = createEndpoint(upload);
 
-        if (ease) {
-            EASEEndpoint easeEndpoint = endpoint.getEaseEndpoint();
-            if (!apiManager.isConnectionSuccessful(easeEndpoint)) {
-                throw new ConnectionException("The connection with EASE is not correct");
-            }
+        // TODO JJJ We should probably not need to check the connection here, but handle the error properly with exceptions when 401 errors are received.
+        EASEEndpoint easeEndpoint = endpoint.getEaseEndpoint();
+        if (!apiManager.isConnectionSuccessful(easeEndpoint)) {
+            throw new ConnectionException("The connection with EASE is not correct");
         }
-        if (apperian) {
-            ApperianEndpoint apperianEndpoint = endpoint.getApperianEndpoint();
-            if (!apiManager.isConnectionSuccessful(apperianEndpoint)) {
-                throw new ConnectionException("The connection with Apperian is not correct");
-            }
+
+        ApperianEndpoint apperianEndpoint = endpoint.getApperianEndpoint();
+        if (!apiManager.isConnectionSuccessful(apperianEndpoint)) {
+            throw new ConnectionException("The connection with Apperian is not correct");
         }
 
         return endpoint;
