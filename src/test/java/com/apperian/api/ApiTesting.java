@@ -11,7 +11,7 @@ public class ApiTesting {
     public static ApperianResourceID APP_ID = new ApperianResourceID("XDnZ9-NxYIxpasODR9M6Yw");
 
     private static String EASE_ENDPOINT_URL = "https://easesvc.apperian.com/ease.interface.php";
-    private static String APPERIAN_ENDPOINT_URL = "https://na01ws.apperian.com/v1";
+    private static String APPERIAN_ENDPOINT_URL = "https://na01ws.apperian.com";
 
     public static boolean areCredentialsSet() {
         return ApiTesting.getApperianEndpoint().isLoggedIn() && ApiTesting.getEASEEndpoint().isLoggedIn();

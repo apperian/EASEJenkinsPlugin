@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public class ListAllSigningCredentialsRequest extends ApperianRequest {
     public ListAllSigningCredentialsRequest() {
-        super(Type.GET, "/credentials");
+        super(Type.GET, "/v1/credentials");
     }
 
     @Override

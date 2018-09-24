@@ -9,7 +9,7 @@ import com.apperian.api.ApperianResponse;
 
 public class UserInfoRequest extends ApperianRequest {
     public UserInfoRequest() {
-        super(Type.GET, "/users/info");
+        super(Type.GET, "/v2/users/info");
     }
 
     @Override

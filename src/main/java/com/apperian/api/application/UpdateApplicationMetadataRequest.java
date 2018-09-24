@@ -10,7 +10,7 @@ public class UpdateApplicationMetadataRequest extends ApperianRequest {
     Boolean enabled = null;
 
     public UpdateApplicationMetadataRequest(ApperianResourceID applicationId) {
-        super(Type.PUT, "/applications/" + applicationId);
+        super(Type.PUT, "/v2/applications/" + applicationId);
     }
 
     public Boolean getEnabled() {

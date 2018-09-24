@@ -8,7 +8,7 @@ import com.apperian.api.ApperianResourceID;
 
 public class ApplicationListRequest extends ApperianRequest {
     public ApplicationListRequest() {
-        super(Type.GET, "/applications");
+        super(Type.GET, "/v2/applications");
     }
 
     Boolean enabled;

@@ -8,7 +8,7 @@ import com.apperian.api.ApperianResourceID;
 
 public class GetApplicationInfoRequest extends ApperianRequest {
     public GetApplicationInfoRequest(ApperianResourceID applicationId) {
-        super(Type.GET, "/applications/" + applicationId);
+        super(Type.GET, "/v2/applications/" + applicationId);
     }
 
     @Override

@@ -16,7 +16,7 @@ public class SignApplicationRequest extends ApperianRequest {
     SignApplicationRequest(ApperianResourceID applicationId,
                            ApperianResourceID credentialId) {
         super(Type.PUT,
-                "/applications/" +
+                "/v1/applications/" +
                 applicationId + "/credentials/" +
                         credentialId);
     }
