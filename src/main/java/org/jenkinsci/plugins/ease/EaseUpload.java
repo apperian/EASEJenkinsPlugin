@@ -10,12 +10,14 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 
-import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
+import org.jenkinsci.plugins.api.ApiConnection;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import com.apperian.api.ApperianEaseApi;
+import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.ConnectionException;
+import com.apperian.api.EASEEndpoint;
 import com.apperian.api.publishing.ApplicationListResponse;
 import com.apperian.api.signing.ListAllSigningCredentialsResponse;
 import com.apperian.api.signing.PlatformType;
@@ -258,10 +260,10 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             }
 
             try {
-                ApperianEaseEndpoint endpoint = apiManager.createConnection(upload);
+                ApiConnection apiConnection = apiManager.createConnection(upload);
 
                 ApplicationListResponse response = ApperianEaseApi.PUBLISHING.list()
-                        .call(endpoint.getEaseEndpoint());
+                        .call(apiConnection.getEaseEndpoint());
 
                 if (response.hasError()) {
                     return new ListBoxModel().add("(" + response.getErrorMessage() + ")");
@@ -295,9 +297,9 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
             boolean hasAppId = !Utils.isEmptyString(appId);
 
-            ApperianEaseEndpoint endpoint;
+            ApiConnection apiConnection;
             try {
-                endpoint = apiManager.createConnection(upload);
+                apiConnection = apiManager.createConnection(upload);
             } catch (ConnectionException e) {
                 return new ListBoxModel().add("(" + e.getMessage() + ")");
             }
@@ -306,7 +308,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 PlatformType typeFilter = null;
                 if (hasAppId) {
                     ApplicationListResponse response = ApperianEaseApi.PUBLISHING.list()
-                            .call(endpoint.getEaseEndpoint());
+                            .call(apiConnection.getEaseEndpoint());
 
                     if (!response.hasError()) {
                         for (ApplicationListResponse.Application application : response.result.applications) {
@@ -328,7 +330,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
                 ListAllSigningCredentialsResponse response;
                 response = ApperianEaseApi.SIGNING.listCredentials()
-                        .call(endpoint.getApperianEndpoint());
+                        .call(apiConnection.getApperianEndpoint());
 
                 if (response.hasError()) {
                     return new ListBoxModel().add("(" + response + ")");
@@ -370,7 +372,19 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             }
 
             try {
-                apiManager.createConnection(upload);
+                ApiConnection apiConnection = apiManager.createConnection(upload);
+
+                EASEEndpoint easeEndpoint = apiConnection.getEaseEndpoint();
+
+                if (!apiManager.isConnectionSuccessful(easeEndpoint)) {
+                    throw new ConnectionException("The connection with EASE is not correct");
+                }
+
+                ApperianEndpoint apperianEndpoint = apiConnection.getApperianEndpoint();
+                if (!apiManager.isConnectionSuccessful(apperianEndpoint)) {
+                    throw new ConnectionException("The connection with Apperian is not correct");
+                }
+
                 return FormValidation.ok("Connection OK");
             } catch (ConnectionException e) {
                 return FormValidation.error(e.getMessage());

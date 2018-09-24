@@ -3,11 +3,11 @@ package org.jenkinsci.plugins.api;
 import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.EASEEndpoint;
 
-public class ApperianEaseEndpoint {
+public class ApiConnection {
     final EASEEndpoint easeEndpoint;
     final ApperianEndpoint apperianEndpoint;
 
-    public ApperianEaseEndpoint(EASEEndpoint easeEndpoint,
+    public ApiConnection(EASEEndpoint easeEndpoint,
                                 ApperianEndpoint apperianEndpoint) {
         this.easeEndpoint = easeEndpoint;
         this.apperianEndpoint = apperianEndpoint;
@@ -23,7 +23,7 @@ public class ApperianEaseEndpoint {
 
     @Override
     public String toString() {
-        return "ApperianEaseEndpoint{" +
+        return "ApiConnection{" +
                 "easeEndpoint=" + easeEndpoint +
                 ", apperianEndpoint=" + apperianEndpoint +
                 '}';

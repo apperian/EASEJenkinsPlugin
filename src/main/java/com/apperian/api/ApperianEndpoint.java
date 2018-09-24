@@ -29,7 +29,7 @@ public class ApperianEndpoint extends JsonHttpEndpoint {
 
             return request.buildResponseObject(mapper, responseClass, response);
         } catch (IOException e) {
-            throw new ConnectionException("No network", e);
+            throw new ConnectionException("No connection", e);
         }
     }
 
@@ -49,7 +49,7 @@ public class ApperianEndpoint extends JsonHttpEndpoint {
             }
 
         } catch (IOException e) {
-            throw new ConnectionException("No network", e);
+            throw new ConnectionException("No connection", e);
         }
     }
 

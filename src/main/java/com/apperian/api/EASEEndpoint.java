@@ -34,7 +34,7 @@ public class EASEEndpoint extends JsonHttpEndpoint {
 
             return buildResponseObject(responseClass, response);
         } catch (IOException e) {
-            throw new ConnectionException("No network", e);
+            throw new ConnectionException("No connection", e);
         }
     }
 
@@ -62,7 +62,7 @@ public class EASEEndpoint extends JsonHttpEndpoint {
             }
             return result;
         } catch (IOException e) {
-            throw new ConnectionException("No network", e);
+            throw new ConnectionException("No connection", e);
         }
     }
 
@@ -95,7 +95,7 @@ public class EASEEndpoint extends JsonHttpEndpoint {
                 }
             }
         } catch (IOException e) {
-            throw new ConnectionException("No network", e);
+            throw new ConnectionException("No connection", e);
         }
     }
 }

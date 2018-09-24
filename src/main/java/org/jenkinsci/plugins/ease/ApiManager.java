@@ -4,7 +4,7 @@ import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.JsonHttpEndpoint;
 import com.apperian.api.EASEEndpoint;
 import com.apperian.api.ConnectionException;
-import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
+import org.jenkinsci.plugins.api.ApiConnection;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,22 +14,8 @@ public class ApiManager {
 
     private CredentialsManager credentialsManager = new CredentialsManager();
 
-    public ApperianEaseEndpoint createConnection(EaseUpload upload) throws ConnectionException {
-        ApiManager apiManager = new ApiManager();
-        ApperianEaseEndpoint endpoint = createEndpoint(upload);
-
-        // TODO JJJ We should probably not need to check the connection here, but handle the error properly with exceptions when 401 errors are received.
-        EASEEndpoint easeEndpoint = endpoint.getEaseEndpoint();
-        if (!apiManager.isConnectionSuccessful(easeEndpoint)) {
-            throw new ConnectionException("The connection with EASE is not correct");
-        }
-
-        ApperianEndpoint apperianEndpoint = endpoint.getApperianEndpoint();
-        if (!apiManager.isConnectionSuccessful(apperianEndpoint)) {
-            throw new ConnectionException("The connection with Apperian is not correct");
-        }
-
-        return endpoint;
+    public ApiConnection createConnection(EaseUpload upload) throws ConnectionException {
+        return createEndpoint(upload);
     }
 
     public boolean isConnectionSuccessful(final JsonHttpEndpoint endpoint) {
@@ -44,14 +30,14 @@ public class ApiManager {
         return false;
     }
 
-    public ApperianEaseEndpoint createEndpoint(EaseUpload upload) {
+    public ApiConnection createEndpoint(EaseUpload upload) {
         String apiToken = credentialsManager.getCredentialWithId(upload.getApiTokenId());
         String environment = upload.getProdEnv();
         String customEaseUrl = upload.getCustomEaseUrl();
         String customApperianUrl = upload.getCustomApperianUrl();
 
-        return new ApperianEaseEndpoint(createEaseEndpoint(environment, apiToken, customEaseUrl),
-                                        createApperianEndpoint(environment, apiToken, customApperianUrl));
+        return new ApiConnection(createEaseEndpoint(environment, apiToken, customEaseUrl),
+                                 createApperianEndpoint(environment, apiToken, customApperianUrl));
     }
 
     private EASEEndpoint createEaseEndpoint(String environment, String sessionToken, String customEaseUrl) {

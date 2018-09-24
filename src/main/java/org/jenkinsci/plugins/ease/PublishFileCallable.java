@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
+import org.jenkinsci.plugins.api.ApiConnection;
 
 import com.apperian.api.ApperianEaseApi;
 import com.apperian.api.ApperianEndpoint;
@@ -61,15 +61,15 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
             return false;
         }
 
-        ApperianEaseEndpoint endpoint;
+        ApiConnection apiConnection;
         try {
-            endpoint = apiManager.createConnection(upload);
+            apiConnection = apiManager.createConnection(upload);
         } catch (ConnectionException e) {
             report("Error: %s", e.getMessage());
             return false;
         }
 
-        try (EASEEndpoint easeEndpoint = endpoint.getEaseEndpoint()) {
+        try (EASEEndpoint easeEndpoint = apiConnection.getEaseEndpoint()) {
             if (!uploadApp(f, easeEndpoint)) {
                 return false;
             }
@@ -80,7 +80,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
             return false;
         }
 
-        ApperianEndpoint apperianEndpoint = endpoint.getApperianEndpoint();
+        ApperianEndpoint apperianEndpoint = apiConnection.getApperianEndpoint();
 
         try {
             if (upload.isSignApp()) {
