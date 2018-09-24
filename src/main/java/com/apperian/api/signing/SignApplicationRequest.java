@@ -3,6 +3,7 @@ package com.apperian.api.signing;
 import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.ApperianRequest;
 import com.apperian.api.ApperianResourceID;
+import com.apperian.api.ConnectionException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.Header;
@@ -29,7 +30,7 @@ public class SignApplicationRequest extends ApperianRequest {
     }
 
     @Override
-    public SignApplicationResponse call(ApperianEndpoint endpoint) throws IOException {
+    public SignApplicationResponse call(ApperianEndpoint endpoint) throws ConnectionException {
         return doJsonRpc(endpoint, this, SignApplicationResponse.class);
     }
 }

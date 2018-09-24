@@ -41,11 +41,11 @@ public abstract class ApperianRequest {
         return apiPath;
     }
 
-    public abstract ApperianResponse call(ApperianEndpoint endpoint) throws IOException;
+    public abstract ApperianResponse call(ApperianEndpoint endpoint) throws ConnectionException;
 
     protected <T extends ApperianResponse> T doJsonRpc(ApperianEndpoint endpoint,
                                                        ApperianRequest request,
-                                                       Class<T> responseClass) throws IOException {
+                                                       Class<T> responseClass) throws ConnectionException {
         return endpoint.doJsonRpc(request, responseClass);
     }
 

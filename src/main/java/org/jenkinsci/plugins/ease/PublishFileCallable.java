@@ -15,6 +15,7 @@ import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
 import com.apperian.api.ApperianEaseApi;
 import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.ApperianResourceID;
+import com.apperian.api.ConnectionException;
 import com.apperian.api.EASEEndpoint;
 import com.apperian.api.application.Application;
 import com.apperian.api.application.GetApplicationInfoResponse;
@@ -107,7 +108,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
     }
 
     private boolean uploadApp(File applicationPackage,
-                              EASEEndpoint endpoint) throws IOException {
+                              EASEEndpoint endpoint) throws ConnectionException {
 
         String appId = upload.getAppId();
 
@@ -187,7 +188,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
     }
 
     private void signApp(File applicationPackage,
-                         ApperianEndpoint apperianEndpoint) throws IOException {
+                         ApperianEndpoint apperianEndpoint) throws ConnectionException {
         report("Signing application with credential '%s'", upload.getCredential());
         ApperianResourceID appId = new ApperianResourceID(upload.getAppId());
         ApperianResourceID credentialId = new ApperianResourceID(upload.getCredential());
@@ -259,7 +260,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
     }
 
     private void enableApp(File applicationPackage,
-                           ApperianEndpoint apperianEndpoint) throws IOException {
+                           ApperianEndpoint apperianEndpoint) throws ConnectionException {
         report("Enabling application with ID '%s'", upload.getAppId());
         ApperianResourceID appId = new ApperianResourceID(upload.getAppId());
 

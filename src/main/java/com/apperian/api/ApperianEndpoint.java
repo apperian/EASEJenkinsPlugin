@@ -13,27 +13,29 @@ public class ApperianEndpoint extends JsonHttpEndpoint {
     }
 
     <T extends ApperianResponse> T doJsonRpc(ApperianRequest request,
-                                             Class<T> responseClass) throws IOException {
+                                             Class<T> responseClass) throws ConnectionException {
 
-        HttpUriRequest httpRequest = request.buildHttpRequest(this, mapper);
-
-        try (CloseableHttpResponse response = httpClient.execute(httpRequest)) {
+        try {
+            HttpUriRequest httpRequest = request.buildHttpRequest(this, mapper);
+            CloseableHttpResponse response = httpClient.execute(httpRequest);
             int statusCode = response.getStatusLine().getStatusCode();
 
             if (statusCode == 401) {
-                throw new RuntimeException("No access");
+                throw new ConnectionException("No access");
             }
             if (statusCode != 200) {
                 throw new RuntimeException("bad API call, http status: " + response.getStatusLine() + ", request: " + httpRequest);
             }
 
             return request.buildResponseObject(mapper, responseClass, response);
+        } catch (IOException e) {
+            throw new ConnectionException("No network", e);
         }
     }
 
 
     @Override
-    public void checkSessionToken() {
+    public void checkSessionToken() throws ConnectionException {
         try {
             UserInfoRequest request = new UserInfoRequest();
 
@@ -43,11 +45,11 @@ public class ApperianEndpoint extends JsonHttpEndpoint {
             int statusCode = response.getStatusLine().getStatusCode();
 
             if (statusCode != 200) {
-                throw new RuntimeException("No access");
+                throw new ConnectionException("No access");
             }
 
         } catch (IOException e) {
-            throw new RuntimeException("no network", e);
+            throw new ConnectionException("No network", e);
         }
     }
 

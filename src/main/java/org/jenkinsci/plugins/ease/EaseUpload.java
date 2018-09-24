@@ -15,6 +15,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import com.apperian.api.ApperianEaseApi;
+import com.apperian.api.ConnectionException;
 import com.apperian.api.publishing.ApplicationListResponse;
 import com.apperian.api.signing.ListAllSigningCredentialsResponse;
 import com.apperian.api.signing.PlatformType;
@@ -351,8 +352,8 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 }
 
                 return listItems;
-            } catch (IOException e) {
-                return new ListBoxModel().add("(network required)");
+            } catch (ConnectionException e) {
+                return new ListBoxModel().add("(" + e.getMessage() + ")");
             }
 
         }

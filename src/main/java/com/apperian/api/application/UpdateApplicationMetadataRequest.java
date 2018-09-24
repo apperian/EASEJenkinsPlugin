@@ -3,6 +3,7 @@ package com.apperian.api.application;
 import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.ApperianRequest;
 import com.apperian.api.ApperianResourceID;
+import com.apperian.api.ConnectionException;
 
 import java.io.IOException;
 
@@ -24,7 +25,7 @@ public class UpdateApplicationMetadataRequest extends ApperianRequest {
 
 
     @Override
-    public UpdateApplicationMetadataResponse call(ApperianEndpoint endpoint) throws IOException {
+    public UpdateApplicationMetadataResponse call(ApperianEndpoint endpoint) throws ConnectionException {
         return doJsonRpc(endpoint, this, UpdateApplicationMetadataResponse.class);
     }
 }

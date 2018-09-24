@@ -3,6 +3,7 @@ package org.jenkinsci.plugins.ease;
 import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.JsonHttpEndpoint;
 import com.apperian.api.EASEEndpoint;
+import com.apperian.api.ConnectionException;
 import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
 
 import java.util.logging.Level;
