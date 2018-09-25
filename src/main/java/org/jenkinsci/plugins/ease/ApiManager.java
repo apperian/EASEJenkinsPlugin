@@ -3,7 +3,6 @@ package org.jenkinsci.plugins.ease;
 import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.JsonHttpEndpoint;
 import com.apperian.api.EASEEndpoint;
-import com.apperian.api.ConnectionException;
 import org.jenkinsci.plugins.api.ApiConnection;
 
 import java.util.logging.Level;
@@ -12,10 +11,8 @@ import java.util.logging.Logger;
 public class ApiManager {
     static final Logger logger = Logger.getLogger(ApiManager.class.getName());
 
-    private CredentialsManager credentialsManager = new CredentialsManager();
-
-    public ApiConnection createConnection(EaseUpload upload) throws ConnectionException {
-        return createEndpoint(upload);
+    public ApiConnection createConnection(String environment, String easeUrl, String apperianUrl, String apiToken) {
+        return createEndpoint(environment, easeUrl, apperianUrl, apiToken);
     }
 
     public boolean isConnectionSuccessful(final JsonHttpEndpoint endpoint) {
@@ -30,14 +27,9 @@ public class ApiManager {
         return false;
     }
 
-    public ApiConnection createEndpoint(EaseUpload upload) {
-        String apiToken = credentialsManager.getCredentialWithId(upload.getApiTokenId());
-        String environment = upload.getProdEnv();
-        String customEaseUrl = upload.getCustomEaseUrl();
-        String customApperianUrl = upload.getCustomApperianUrl();
-
-        return new ApiConnection(createEaseEndpoint(environment, apiToken, customEaseUrl),
-                                 createApperianEndpoint(environment, apiToken, customApperianUrl));
+    public ApiConnection createEndpoint(String environment, String easeUrl, String apperianUrl, String apiToken) {
+        return new ApiConnection(createEaseEndpoint(environment, apiToken, easeUrl),
+                                 createApperianEndpoint(environment, apiToken, apperianUrl));
     }
 
     private EASEEndpoint createEaseEndpoint(String environment, String sessionToken, String customEaseUrl) {

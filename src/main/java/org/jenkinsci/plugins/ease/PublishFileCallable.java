@@ -40,6 +40,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
     private EaseUpload upload;
     private final BuildListener listener;
     private transient ApiManager apiManager = new ApiManager();
+    private transient CredentialsManager credentialsManager = new CredentialsManager();
 
     public PublishFileCallable(EaseUpload upload, BuildListener listener) {
         this.upload = upload;
@@ -61,13 +62,13 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
             return false;
         }
 
-        ApiConnection apiConnection;
-        try {
-            apiConnection = apiManager.createConnection(upload);
-        } catch (ConnectionException e) {
-            report("Error: %s", e.getMessage());
-            return false;
-        }
+        String env = upload.getProdEnv();
+        String customEaseUrl = upload.getCustomEaseUrl();
+        String customApperianUrl = upload.getCustomApperianUrl();
+        String apiToken = credentialsManager.getCredentialWithId(upload.getApiTokenId());
+
+        ApiConnection apiConnection = apiManager.createConnection(env, customEaseUrl, customApperianUrl, apiToken);
+
 
         try (EASEEndpoint easeEndpoint = apiConnection.getEaseEndpoint()) {
             if (!uploadApp(f, easeEndpoint)) {
