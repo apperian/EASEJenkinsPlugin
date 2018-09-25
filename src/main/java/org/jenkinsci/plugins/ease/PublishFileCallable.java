@@ -61,10 +61,10 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
             return false;
         }
 
-        String env = upload.getProdEnv();
-        String customEaseUrl = upload.getCustomEaseUrl();
-        String customApperianUrl = upload.getCustomApperianUrl();
-        String apiToken = credentialsManager.getCredentialWithId(upload.getApiTokenId());
+        String env = upload.prodEnv;
+        String customEaseUrl = upload.customEaseUrl;
+        String customApperianUrl = upload.customApperianUrl;
+        String apiToken = credentialsManager.getCredentialWithId(upload.apiTokenId);
 
         ApiConnection apiConnection = apiManager.createConnection(env, customEaseUrl, customApperianUrl, apiToken);
 
@@ -80,7 +80,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         }
 
         try {
-            if (upload.isSignApp()) {
+            if (upload.signApp) {
                 signApp(f, apperianEndpoint);
             }
         } catch (Exception ex) {
@@ -91,7 +91,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         }
 
         try {
-            if (upload.isEnableApp()) {
+            if (upload.enableApp) {
                 enableApp(f, apperianEndpoint);
             }
         } catch (Exception ex) {
@@ -106,21 +106,21 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
     private void uploadApp(File appBinary, ApperianEndpoint apperianEndpoint) throws ConnectionException {
 
-        ApperianResourceID appId = new ApperianResourceID(upload.getAppId());
+        ApperianResourceID appId = new ApperianResourceID(upload.appId);
 
         String author = null;
-        if (!Utils.isEmptyString(upload.getAuthor())) {
-            author = upload.getAuthor();
+        if (!Utils.isEmptyString(upload.author)) {
+            author = upload.author;
         }
 
         String version = null;
-        if (!Utils.isEmptyString(upload.getVersion())) {
-            version = upload.getVersion();
+        if (!Utils.isEmptyString(upload.version)) {
+            version = upload.version;
         }
 
         String versionNotes = null;
-        if (!Utils.isEmptyString(upload.getVersionNotes())) {
-            versionNotes = upload.getVersionNotes();
+        if (!Utils.isEmptyString(upload.versionNotes)) {
+            versionNotes = upload.versionNotes;
             Map<String, String> vars = new HashMap<>();
 
             vars.put("BUILD_TIMESTAMP", Utils.formatIso8601(new Date()));
@@ -134,9 +134,9 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
     private void signApp(File applicationPackage,
                          ApperianEndpoint apperianEndpoint) throws ConnectionException {
-        report("Signing application with credential '%s'", upload.getCredential());
-        ApperianResourceID appId = new ApperianResourceID(upload.getAppId());
-        ApperianResourceID credentialId = new ApperianResourceID(upload.getCredential());
+        report("Signing application with credential '%s'", upload.credential);
+        ApperianResourceID appId = new ApperianResourceID(upload.appId);
+        ApperianResourceID credentialId = new ApperianResourceID(upload.credential);
 
 
         SignApplicationResponse response = ApperianEaseApi.SIGNING.signApplication(credentialId, appId)
@@ -206,8 +206,8 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
     private void enableApp(File applicationPackage,
                            ApperianEndpoint apperianEndpoint) throws ConnectionException {
-        report("Enabling application with ID '%s'", upload.getAppId());
-        ApperianResourceID appId = new ApperianResourceID(upload.getAppId());
+        report("Enabling application with ID '%s'", upload.appId);
+        ApperianResourceID appId = new ApperianResourceID(upload.appId);
 
         UpdateApplicationResponse response = ApperianEaseApi.APPLICATIONS.updateApplication(appId, true).call(apperianEndpoint);
     }

@@ -34,20 +34,20 @@ import hudson.util.ListBoxModel;
 public class EaseUpload implements Describable<EaseUpload>, Serializable, Cloneable {
     private static final Logger logger = Logger.getLogger(EaseUpload.class.getName());
 
-    private final String prodEnv;
-    private final String customEaseUrl;
-    private final String customApperianUrl;
-    private final String appId;
-    private final String filename;
-    private final String apiTokenId;
-    private final String author;
-    private final String version;
-    private final String versionNotes;
-    private final boolean signApp;
-    private final String credential;
-    private final boolean enableApp;
+    public String prodEnv;
+    public String customEaseUrl;
+    public String customApperianUrl;
+    public String appId;
+    public String filename;
+    public String apiTokenId;
+    public String author;
+    public String version;
+    public String versionNotes;
+    public boolean signApp;
+    public String credential;
+    public boolean enableApp;
 
-    private FilePath filePath;
+    public FilePath filePath;
 
     @DataBoundConstructor
     public EaseUpload(
@@ -98,88 +98,18 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 false);
     }
 
-    public EaseUpload expand(Function1<String, String> expandVars) {
-        return new EaseUpload(prodEnv,
-                              customEaseUrl,
-                              customApperianUrl,
-                              apiTokenId,
-                              expandVars.call(appId),
-                              expandVars.call(filename),
-                              expandVars.call(author),
-                              expandVars.call(version),
-                              expandVars.call(versionNotes),
-                              signApp,
-                              credential,
-                              enableApp);
-    }
-
-    public String getProdEnv() {
-        return prodEnv;
-    }
-
-    public String getCustomEaseUrl() {
-        return customEaseUrl;
-    }
-
-    public String getCustomApperianUrl() {
-        return customApperianUrl;
-    }
-
-    public FilePath getFilePath() {
-        return filePath;
-    }
-
-    public String getAppId() {
-        return appId;
-    }
-
-    public String getFilename() {
-        return filename;
-    }
-
-    public String getApiTokenId() {
-        return apiTokenId;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public String getVersionNotes() {
-        return versionNotes;
-    }
-
-    public boolean isSignApp() {
-        return signApp;
-    }
-
-    public String getCredential() {
-        return credential;
-    }
-
-    public boolean isEnableApp() {
-        return enableApp;
-    }
-
     public boolean checkOk() {
         return !Utils.isEmptyString(appId) &&
                 validateHasAuthFields() &&
                 !Utils.isEmptyString(filename);
     }
 
-
-
     public boolean searchWorkspace(FilePath workspacePath,
                                    PrintStream buildLog) throws IOException, InterruptedException {
-        String filename = getFilename();
-        FilePath[] paths = workspacePath.list(filename);
+        FilePath[] paths = workspacePath.list(this.filename);
         if (paths.length != 1) {
             buildLog.println("Found " + (paths.length == 0 ? "no files" : " ambiguous list " + Arrays.asList(paths)) +
-                    " as candidates for pattern '" + filename + "'");
+                    " as candidates for pattern '" + this.filename + "'");
             return false;
         }
 
@@ -385,10 +315,10 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         }
 
         private ApiConnection createConnection(EaseUpload upload) {
-            String environment = upload.getProdEnv();
-            String customEaseUrl = upload.getCustomEaseUrl();
-            String customApperianUrl = upload.getCustomApperianUrl();
-            String apiToken = credentialsManager.getCredentialWithId(upload.getApiTokenId());
+            String environment = upload.prodEnv;
+            String customEaseUrl = upload.customEaseUrl;
+            String customApperianUrl = upload.customApperianUrl;
+            String apiToken = credentialsManager.getCredentialWithId(upload.apiTokenId);
             return apiManager.createConnection(environment, customEaseUrl, customApperianUrl, apiToken);
         }
     }

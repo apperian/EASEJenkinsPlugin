@@ -44,10 +44,10 @@ public class PublishFileCallableTest {
         PublishFileCallable deserializedCallable = (PublishFileCallable) objIn.readObject();
 
         Assert.assertNull(deserializedCallable.getLogger());
-        Assert.assertEquals("api_token_id", deserializedCallable.getUpload().getApiTokenId());
-        Assert.assertEquals("app1", deserializedCallable.getUpload().getAppId());
-        Assert.assertEquals("author", deserializedCallable.getUpload().getAuthor());
-        Assert.assertEquals("version", deserializedCallable.getUpload().getVersionNotes());
+        Assert.assertEquals("api_token_id", deserializedCallable.getUpload().apiTokenId);
+        Assert.assertEquals("app1", deserializedCallable.getUpload().appId);
+        Assert.assertEquals("author", deserializedCallable.getUpload().author);
+        Assert.assertEquals("version", deserializedCallable.getUpload().versionNotes);
 
     }
 }

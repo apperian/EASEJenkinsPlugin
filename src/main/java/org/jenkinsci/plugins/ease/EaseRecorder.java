@@ -2,7 +2,6 @@ package org.jenkinsci.plugins.ease;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
@@ -21,7 +20,6 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
-import hudson.util.Function1;
 import net.sf.json.JSONObject;
 
 public class EaseRecorder extends Recorder {
@@ -36,12 +34,13 @@ public class EaseRecorder extends Recorder {
         this.uploads = uploads;
     }
 
-    public List<EaseUpload> getUploads() { return uploads; }
+    public List<EaseUpload> getUploads() {
+        return uploads;
+    }
 
     @Override
     public boolean perform(final AbstractBuild build, Launcher launcher, final BuildListener listener) {
         final PrintStream buildLog = listener.getLogger();
-
 
         if (uploads == null || uploads.isEmpty()) {
             buildLog.println("One of required configuration options is not set");
@@ -49,32 +48,29 @@ public class EaseRecorder extends Recorder {
         }
 
         try {
-            List<EaseUpload> expandedUploads = new ArrayList<>(uploads.size());
-
-            Function1<String, String> expandVarFunctions;
-            expandVarFunctions = new ExpandVariablesFunction(build, listener, buildLog);
+            // TODO:  Consolidate these 'for' loops.
             for (EaseUpload upload : uploads) {
-                expandedUploads.add(upload.expand(expandVarFunctions));
+                expandUploadArgs(upload, build, listener, buildLog);
             }
 
-            for (Iterator<EaseUpload> iterator = expandedUploads.iterator(); iterator.hasNext(); ) {
+            for (Iterator<EaseUpload> iterator = uploads.iterator(); iterator.hasNext(); ) {
                 EaseUpload upload = iterator.next();
                 if (!upload.checkOk()) {
-                    buildLog.println("Additional upload skipped: '" + upload.getFilename() + "' -> appId='" + upload.getAppId() + "', specify appId, filename or url");
+                    buildLog.println("Additional upload skipped: '" + upload.filename + "' -> appId='" + upload.appId + "', specify appId, filename or url");
                     iterator.remove();
                 }
             }
 
             boolean ok = true;
-            for (EaseUpload upload : expandedUploads) {
+            for (EaseUpload upload : uploads) {
                 ok &= upload.searchWorkspace(build.getWorkspace(), buildLog);
             }
             if (!ok) {
                 return false;
             }
 
-            for (EaseUpload upload : expandedUploads) {
-                FilePath path = upload.getFilePath();
+            for (EaseUpload upload : uploads) {
+                FilePath path = upload.filePath;
                 PublishFileCallable callable = new PublishFileCallable(upload, listener);
 
                 if (!path.act(callable)) {
@@ -96,9 +92,25 @@ public class EaseRecorder extends Recorder {
         }
     }
 
+    // TODO:  What does 'expand' do to a variable?  And why do we need it?
+    private void expandUploadArgs(EaseUpload upload, AbstractBuild build, BuildListener listener, PrintStream logger) {
+        try {
+            EnvVars environment = build.getEnvironment(listener);
+            upload.appId = environment.expand(upload.appId);
+            upload.filename = environment.expand(upload.filename);
+            upload.author = environment.expand(upload.author);
+            upload.version = environment.expand(upload.version);
+            upload.versionNotes = environment.expand(upload.versionNotes);
+        } catch (IOException e) {
+            logger.println("Environment expand error: " + e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
     @Override
     public DescriptorImpl getDescriptor() {
-        return (DescriptorImpl)super.getDescriptor();
+        return (DescriptorImpl) super.getDescriptor();
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
@@ -122,33 +134,10 @@ public class EaseRecorder extends Recorder {
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
             save();
-            return super.configure(req,formData);
+            return super.configure(req, formData);
         }
 
     }
 
-    private static class ExpandVariablesFunction implements Function1<String, String> {
-        private final AbstractBuild build;
-        private final BuildListener listener;
-        private final PrintStream logger;
-
-        public ExpandVariablesFunction(AbstractBuild build, BuildListener listener, PrintStream logger) {
-            this.build = build;
-            this.listener = listener;
-            this.logger = logger;
-        }
-
-        public String call(String value) {
-            try {
-                EnvVars environment = build.getEnvironment(listener);
-                return environment.expand(value);
-            } catch (IOException e) {
-                logger.println("Environment expand error: " + e);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            return value;
-        }
-    }
 }
 
