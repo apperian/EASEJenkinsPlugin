@@ -16,55 +16,39 @@ import hudson.model.BuildListener;
 
 public class UploadTest {
     public static final String URL = "https://easesvc.apperian.eu/ease.interface.php";
-    public static final String USER = "oleksiyp@railsreactor.com";
-    public static final String PWD = "";
+    // TODO JJJ check what value we should use here
+    public static final String API_TOKEN = null;
 
     @ClassRule
     public static JenkinsRule j = new JenkinsRule();
 
-    @Test
-    public void testAndroid() throws Exception {
-        if (PWD.isEmpty()) {
-            return;
-        }
-
-        upload("1EhXFWxikr6erSk1RVHMlw", "android.apk");
-    }
-
-    @Test
-    public void testIOS() throws Exception {
-        if (PWD.isEmpty()) {
-            return;
-        }
-
-        upload("1EhXFWxikr6erSk1RVHMlw", "ios.ipa");
-    }
-
-    @Test
-    public void testWinPhoneAppx() throws Exception {
-        if (PWD.isEmpty()) {
-            return;
-        }
-
-        upload("1EhXFWxikr6erSk1RVHMlw", "winphone.appx");
-    }
-
-    @Test
-    public void testBlackberry() throws Exception {
-        if (PWD.isEmpty()) {
-            return;
-        }
-
-        upload("1EhXFWxikr6erSk1RVHMlw", "blackberry.zip");
-    }
+    // TODO:  Get these working again.  They were not being run before we switched to using the API token.
+//    @Test
+//    public void testAndroid() throws Exception {
+//        upload("1EhXFWxikr6erSk1RVHMlw", "android.apk");
+//    }
+//
+//    @Test
+//    public void testIOS() throws Exception {
+//        upload("1EhXFWxikr6erSk1RVHMlw", "ios.ipa");
+//    }
+//
+//    @Test
+//    public void testWinPhoneAppx() throws Exception {
+//        upload("1EhXFWxikr6erSk1RVHMlw", "winphone.appx");
+//    }
+//
+//    @Test
+//    public void testBlackberry() throws Exception {
+//        upload("1EhXFWxikr6erSk1RVHMlw", "blackberry.zip");
+//    }
 
     private void upload(String appId, String filename) throws IOException, InterruptedException {
         EaseUpload upload = EaseUpload.simpleUpload(
                 "EUROPE",
                 null,
                 null,
-                USER,
-                PWD);
+                API_TOKEN);
 
         InputStream res = getClass().getResourceAsStream(filename);
         File tmpFile = new File(filename);
@@ -81,7 +65,7 @@ public class UploadTest {
 
         PublishFileCallable callable = new PublishFileCallable(upload,
                                                                listener);
-        Assert.assertTrue("upload succeeds", callable.invoke(tmpFile, null));
+        Assert.assertTrue("Upload Failed!", callable.invoke(tmpFile, null));
         if (res != null) {
             tmpFile.delete();
         }

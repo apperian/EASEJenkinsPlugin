@@ -1,6 +1,6 @@
 package com.apperian.api;
 
-import com.apperian.api.publishing.AuthenticateUserResponse;
+import com.apperian.api.publishing.ApplicationListRequest;
 import com.apperian.api.publishing.UploadResult;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpEntity;
@@ -16,45 +16,53 @@ import java.io.File;
 import java.io.IOException;
 
 public class EASEEndpoint extends JsonHttpEndpoint {
-    public EASEEndpoint(String url) {
+    public EASEEndpoint(String url, String sessionToken) {
         super(url);
+        this.sessionToken = sessionToken;
     }
 
     <T extends EASEResponse> T doJsonRpc(EASERequest request,
-                                         Class<T> responseClass) throws IOException {
+                                         Class<T> responseClass) throws ConnectionException {
 
-        HttpUriRequest httpRequest = buildJsonRpcPost(request);
-        try (CloseableHttpResponse response = httpClient.execute(httpRequest)) {
+        try{
+            HttpUriRequest httpRequest = buildJsonRpcPost(request);
+            CloseableHttpResponse response = httpClient.execute(httpRequest);
             if (response.getStatusLine().getStatusCode() != 200) {
-                throw new RuntimeException("bad API call, http status: " + response.getStatusLine() + ", request: " + httpRequest);
+                throw new ConnectionException("bad API call, http status: " + response.getStatusLine() +
+                                              ", request: " + httpRequest);
             }
 
             return buildResponseObject(responseClass, response);
+        } catch (IOException e) {
+            throw new ConnectionException("No connection", e);
         }
     }
 
-    public UploadResult uploadFile(String uploadUrl, File file) throws IOException {
-        HttpPost post = new HttpPost(uploadUrl);
+    public UploadResult uploadFile(String uploadUrl, File file) throws ConnectionException {
+        try {
+            HttpPost post = new HttpPost(uploadUrl);
 
-        FileBody appFileBody = new FileBody(file);
+            FileBody appFileBody = new FileBody(file);
 
-        HttpEntity multipartEntity = MultipartEntityBuilder.create()
-                .addPart("LUuploadFile", appFileBody)
-                .build();
+            HttpEntity multipartEntity = MultipartEntityBuilder.create()
+                    .addPart("LUuploadFile", appFileBody)
+                    .build();
 
 
-        post.setEntity(multipartEntity);
+            post.setEntity(multipartEntity);
 
-        try (CloseableHttpResponse response = httpClient.execute(post)) {
+            CloseableHttpResponse response = httpClient.execute(post);
             String body = EntityUtils.toString(response.getEntity());
             UploadResult result;
-            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                result = new UploadResult();
-                result.errorMessage = body;
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != HttpStatus.SC_OK) {
+                throw new ConnectionException("Error uploading binary. Result code: " + statusCode + ". Body: " + body);
             } else {
                 result = mapper.readValue(body, UploadResult.class);
             }
             return result;
+        } catch (IOException e) {
+            throw new ConnectionException("No connection", e);
         }
     }
 
@@ -76,23 +84,18 @@ public class EASEEndpoint extends JsonHttpEndpoint {
     }
 
     @Override
-    public boolean tryLogin(String email, String password) {
-        AuthenticateUserResponse response;
+    public void checkSessionToken() throws ConnectionException {
         try {
-            response = ApperianEaseApi.PUBLISHING.authenticateUser(email, password)
-                    .call(this);
+            ApplicationListRequest request = new ApplicationListRequest();
 
-            lastLoginError = response.getErrorMessage();
-
-            if (response.hasError()) {
-                return false;
+            HttpUriRequest httpRequest = buildJsonRpcPost(request);
+            try (CloseableHttpResponse response = httpClient.execute(httpRequest)) {
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    throw new ConnectionException("No access");
+                }
             }
-
-            sessionToken = response.result.token;
-
-            return true;
         } catch (IOException e) {
-            throw new RuntimeException("no network", e);
+            throw new ConnectionException("No connection", e);
         }
     }
 }

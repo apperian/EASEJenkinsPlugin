@@ -1,0 +1,50 @@
+package org.jenkinsci.plugins.ease;
+
+import com.apperian.api.JsonHttpEndpoint;
+import com.cloudbees.plugins.credentials.CredentialsNameProvider;
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import hudson.security.ACL;
+import jenkins.model.Jenkins;
+import org.jenkinsci.plugins.plaincredentials.StringCredentials;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class CredentialsManager {
+    static final Logger logger = Logger.getLogger(CredentialsManager.class.getName());
+
+    public List<ApiToken> getCredentials() {
+        final List<ApiToken> apiTokens = new ArrayList<>();
+        List<StringCredentials> stringCredentials = fetchStringCredentials();
+
+        for (StringCredentials storedCredential : stringCredentials) {
+            apiTokens.add(new ApiToken(
+                    storedCredential.getId(),
+                    CredentialsNameProvider.name(storedCredential)));
+        }
+        return apiTokens;
+    }
+
+    public String getCredentialWithId(String credentialId) {
+        List<StringCredentials> stringCredentials = fetchStringCredentials();
+
+        StringCredentials credential = CredentialsMatchers.firstOrNull(stringCredentials,
+                                                                       CredentialsMatchers.withId(credentialId));
+        String secret = null;
+        if (credential != null) {
+            secret = credential.getSecret().getPlainText();
+        }
+        return secret;
+    }
+
+    private List<StringCredentials> fetchStringCredentials() {
+        return CredentialsProvider.lookupCredentials(
+            StringCredentials.class,
+            Jenkins.getInstance(),
+            ACL.SYSTEM
+        );
+    }
+}

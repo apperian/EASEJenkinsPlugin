@@ -14,7 +14,7 @@ public class ApplicationsTest {
         }
 
         ApplicationListResponse response = ApperianEaseApi.APPLICATIONS.list()
-                .call(ApiTesting.APERIAN_ENDPOINT);
+                .call(ApiTesting.getApperianEndpoint());
 
         TestUtil.assertNoError(response);
         Assert.assertNotNull(response.getApplications());
@@ -29,7 +29,7 @@ public class ApplicationsTest {
         UpdateApplicationMetadataResponse response;
         response = ApperianEaseApi.APPLICATIONS.updateApplicationMetadata(ApiTesting.APP_PSK)
                 .setEnabled(true)
-                .call(ApiTesting.APERIAN_ENDPOINT);
+                .call(ApiTesting.getApperianEndpoint());
 
         TestUtil.assertNoError(response);
         Assert.assertTrue(response.updateResult);

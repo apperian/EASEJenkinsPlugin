@@ -10,11 +10,12 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
+import org.jenkinsci.plugins.api.ApiConnection;
 
 import com.apperian.api.ApperianEaseApi;
 import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.ApperianResourceID;
+import com.apperian.api.ConnectionException;
 import com.apperian.api.EASEEndpoint;
 import com.apperian.api.application.Application;
 import com.apperian.api.application.GetApplicationInfoResponse;
@@ -31,21 +32,28 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
+import org.jenkinsci.remoting.RoleChecker;
 
-public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Serializable {
+public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
     private final static Logger logger = Logger.getLogger(PublishFileCallable.class.getName());
 
     private EaseUpload upload;
     private final BuildListener listener;
+    private transient ApiManager apiManager = new ApiManager();
+    private transient CredentialsManager credentialsManager = new CredentialsManager();
 
     public PublishFileCallable(EaseUpload upload, BuildListener listener) {
         this.upload = upload;
         this.listener = listener;
     }
 
+    public void checkRoles(RoleChecker var1) throws SecurityException {
+
+    }
+
     public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
         if (!upload.validateHasAuthFields()) {
-            report("Error: username/password are not set and there is no stored credentials found");
+            report("Error: The api token is not set and no stored credentials were found");
             return false;
         }
 
@@ -54,19 +62,15 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
             return false;
         }
 
-        boolean shouldAuthApperian = upload.isEnableApp() || upload.isSignApp();
+        String env = upload.getProdEnv();
+        String customEaseUrl = upload.getCustomEaseUrl();
+        String customApperianUrl = upload.getCustomApperianUrl();
+        String apiToken = credentialsManager.getCredentialWithId(upload.getApiTokenId());
 
-        StringBuilder errorMessage = new StringBuilder();
-        ApperianEaseEndpoint endpoint = upload.tryAuthenticate(true,
-                                                               shouldAuthApperian,
-                                                               errorMessage);
+        ApiConnection apiConnection = apiManager.createConnection(env, customEaseUrl, customApperianUrl, apiToken);
 
-        if (endpoint == null) {
-            report("Error: %s, endpoint=%s", errorMessage, upload.createEndpoint());
-            return false;
-        }
 
-        try (EASEEndpoint easeEndpoint = endpoint.getEaseEndpoint()) {
+        try (EASEEndpoint easeEndpoint = apiConnection.getEaseEndpoint()) {
             if (!uploadApp(f, easeEndpoint)) {
                 return false;
             }
@@ -77,7 +81,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
             return false;
         }
 
-        ApperianEndpoint apperianEndpoint = endpoint.getApperianEndpoint();
+        ApperianEndpoint apperianEndpoint = apiConnection.getApperianEndpoint();
 
         try {
             if (upload.isSignApp()) {
@@ -105,7 +109,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
     }
 
     private boolean uploadApp(File applicationPackage,
-                              EASEEndpoint endpoint) throws IOException {
+                              EASEEndpoint endpoint) throws ConnectionException {
 
         String appId = upload.getAppId();
 
@@ -146,7 +150,6 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         }
 
         report("Metadata update: %s", metadataUpdate);
-
         report("Publishing %s to Apperian", applicationPackage);
         UploadResult uploadResult = endpoint.uploadFile(update.result.fileUploadURL, applicationPackage);
         if (uploadResult.hasError()) {
@@ -186,7 +189,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
     }
 
     private void signApp(File applicationPackage,
-                         ApperianEndpoint apperianEndpoint) throws IOException {
+                         ApperianEndpoint apperianEndpoint) throws ConnectionException {
         report("Signing application with credential '%s'", upload.getCredential());
         ApperianResourceID appId = new ApperianResourceID(upload.getAppId());
         ApperianResourceID credentialId = new ApperianResourceID(upload.getCredential());
@@ -258,7 +261,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
     }
 
     private void enableApp(File applicationPackage,
-                           ApperianEndpoint apperianEndpoint) throws IOException {
+                           ApperianEndpoint apperianEndpoint) throws ConnectionException {
         report("Enabling application with ID '%s'", upload.getAppId());
         ApperianResourceID appId = new ApperianResourceID(upload.getAppId());
 

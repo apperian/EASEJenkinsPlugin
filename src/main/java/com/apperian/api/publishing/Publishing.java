@@ -10,10 +10,6 @@ public class Publishing {
     public Publishing() {
     }
 
-    public AuthenticateUserRequest authenticateUser(String username, String password) {
-        return new AuthenticateUserRequest(username, password);
-    }
-
     public ApplicationListRequest list() {
         return new ApplicationListRequest();
     }

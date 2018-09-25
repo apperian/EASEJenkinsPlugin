@@ -13,7 +13,7 @@ public class PublishingTest {
         }
 
         ApplicationListResponse response = ApperianEaseApi.PUBLISHING.list()
-                .call(ApiTesting.EASE_ENDPOINT);
+                .call(ApiTesting.getEASEEndpoint());
 
         TestUtil.assertNoError(response);
     }

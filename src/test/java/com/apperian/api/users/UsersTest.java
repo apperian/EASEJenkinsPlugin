@@ -13,6 +13,6 @@ public class UsersTest {
             return;
         }
 
-        assertNotNull(ApiTesting.APERIAN_ENDPOINT.getSessionToken());
+        assertNotNull(ApiTesting.getApperianEndpoint().getSessionToken());
     }
 }

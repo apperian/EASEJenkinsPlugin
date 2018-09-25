@@ -31,11 +31,11 @@ public abstract class EASERequest {
         return method;
     }
 
-    public abstract EASEResponse call(EASEEndpoint endpoint) throws IOException;
+    public abstract EASEResponse call(EASEEndpoint endpoint) throws ConnectionException;
 
     protected <T extends EASEResponse> T doJsonRpc(EASEEndpoint endpoint,
                                                    EASERequest request,
-                                                   Class<T> responseClass) throws IOException {
+                                                   Class<T> responseClass) throws ConnectionException {
         return endpoint.doJsonRpc(request, responseClass);
     }
 }

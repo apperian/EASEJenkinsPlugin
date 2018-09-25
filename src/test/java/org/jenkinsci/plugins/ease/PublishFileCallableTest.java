@@ -21,7 +21,7 @@ public class PublishFileCallableTest {
     public static JenkinsRule j = new JenkinsRule();
 
     public static final EaseUpload EASE_UPLOAD1 =
-            new EaseUpload("NORTH_AMERICA", "url1", "url2", "user1", "pass1",
+            new EaseUpload("NORTH_AMERICA", "url1", "url2", "api_token_id",
                     "app1", "filename", "author", "1.0", "version", true, "cred", false);
 
     @Test
@@ -44,8 +44,7 @@ public class PublishFileCallableTest {
         PublishFileCallable deserializedCallable = (PublishFileCallable) objIn.readObject();
 
         Assert.assertNull(deserializedCallable.getLogger());
-        Assert.assertEquals("user1", deserializedCallable.getUpload().getUsername());
-        Assert.assertEquals("pass1", deserializedCallable.getUpload().getPassword());
+        Assert.assertEquals("api_token_id", deserializedCallable.getUpload().getApiTokenId());
         Assert.assertEquals("app1", deserializedCallable.getUpload().getAppId());
         Assert.assertEquals("author", deserializedCallable.getUpload().getAuthor());
         Assert.assertEquals("version", deserializedCallable.getUpload().getVersionNotes());
