@@ -19,11 +19,10 @@ import com.apperian.api.ConnectionException;
 import com.apperian.api.EASEEndpoint;
 import com.apperian.api.application.Application;
 import com.apperian.api.application.GetApplicationInfoResponse;
-import com.apperian.api.application.UpdateApplicationMetadataResponse;
+import com.apperian.api.application.UpdateApplicationResponse;
+import com.apperian.api.application.Application.Version;
 import com.apperian.api.metadata.Metadata;
 import com.apperian.api.metadata.MetadataExtractor;
-import com.apperian.api.publishing.PublishApplicationResponse;
-import com.apperian.api.publishing.UpdateApplicationResponse;
 import com.apperian.api.publishing.UploadResult;
 import com.apperian.api.signing.SignApplicationResponse;
 import com.apperian.api.signing.SigningStatus;
@@ -69,19 +68,16 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
         ApiConnection apiConnection = apiManager.createConnection(env, customEaseUrl, customApperianUrl, apiToken);
 
+        ApperianEndpoint apperianEndpoint = apiConnection.getApperianEndpoint();
 
-        try (EASEEndpoint easeEndpoint = apiConnection.getEaseEndpoint()) {
-            if (!uploadApp(f, easeEndpoint)) {
-                return false;
-            }
+        try {
+            uploadApp(f, apperianEndpoint);
         } catch (Exception ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
             report("General plugin problem : %s", ex);
             ex.printStackTrace(getLogger());
             return false;
         }
-
-        ApperianEndpoint apperianEndpoint = apiConnection.getApperianEndpoint();
 
         try {
             if (upload.isSignApp()) {
@@ -108,84 +104,32 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         return true;
     }
 
-    private boolean uploadApp(File applicationPackage,
-                              EASEEndpoint endpoint) throws ConnectionException {
+    private void uploadApp(File appBinary, ApperianEndpoint apperianEndpoint) throws ConnectionException {
 
-        String appId = upload.getAppId();
+        ApperianResourceID appId = new ApperianResourceID(upload.getAppId());
 
-        UpdateApplicationResponse update = ApperianEaseApi.PUBLISHING.update(appId)
-                .call(endpoint);
-
-        if (update.hasError()) {
-            String errorMessage = update.getErrorMessage();
-            report("Error: %s, appId=%s", errorMessage, appId);
-            return false;
-        }
-
-        Metadata metadata = update.result.EASEmetadata;
-        report("Metadata from server: %s", metadata);
-
-        Metadata metadataUpdate = new Metadata(new HashMap<String, String>());
-
-        metadataUpdate.setName(metadata.getName());
-
+        String author = null;
         if (!Utils.isEmptyString(upload.getAuthor())) {
-            metadataUpdate.setAuthor(upload.getAuthor());
+            author = upload.getAuthor();
         }
 
+        String version = null;
         if (!Utils.isEmptyString(upload.getVersion())) {
-            metadataUpdate.setVersion(upload.getVersion());
+            version = upload.getVersion();
         }
 
-        String versionNotes = upload.getVersionNotes();
-        if (!Utils.isEmptyString(versionNotes)) {
+        String versionNotes = null;
+        if (!Utils.isEmptyString(upload.getVersionNotes())) {
+            versionNotes = upload.getVersionNotes();
             Map<String, String> vars = new HashMap<>();
 
-            vars.put("BUILD_TIMESTAMP", Utils.formatIso8601(
-                    new Date()));
+            vars.put("BUILD_TIMESTAMP", Utils.formatIso8601(new Date()));
 
             versionNotes = Util.replaceMacro(versionNotes, vars);
-
-            metadataUpdate.setVersionNotes(versionNotes);
         }
 
-        report("Metadata update: %s", metadataUpdate);
-        report("Publishing %s to Apperian", applicationPackage);
-        UploadResult uploadResult = endpoint.uploadFile(update.result.fileUploadURL, applicationPackage);
-        if (uploadResult.hasError()) {
-            report("Error: %s", uploadResult.errorMessage);
-            return false;
-        }
-
-        if (uploadResult.fileID == null) {
-            report("Error: Upload file ID is null. Publish transaction not finished");
-            return false;
-        }
-
-
-        PublishApplicationResponse publish = ApperianEaseApi.PUBLISHING.publish(update.result.transactionID, metadataUpdate, uploadResult.fileID)
-                .call(endpoint);
-        if (publish.hasError()) {
-            String errorMessage = publish.getErrorMessage();
-            report(errorMessage);
-            return false;
-        }
-
-        if (!appId.equals(publish.result.appID)) {
-            report("Error: File uploaded but confirmational appId is wrong");
-            return false;
-        }
-
-        report("DONE! Uploaded %s to %s for appId=%s", applicationPackage.getName(), endpoint, appId);
-        return true;
-    }
-
-    private void assignMetadata(Metadata metadata, Metadata metadataUpdate) {
-        for (String key : metadataUpdate.getValues().keySet()) {
-            String value = metadataUpdate.getValues().get(key);
-            report("Setting %s metadata to '%s'", key, value);
-            metadata.getValues().put(key, value);
-        }
+        report("Updating application binary. Author: %s - Version: %s, Version Notes: %s", author, version, versionNotes);
+        UpdateApplicationResponse updateResponse = ApperianEaseApi.APPLICATIONS.updateApplication(appId, appBinary, author, version, versionNotes).call(apperianEndpoint);
     }
 
     private void signApp(File applicationPackage,
@@ -265,33 +209,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         report("Enabling application with ID '%s'", upload.getAppId());
         ApperianResourceID appId = new ApperianResourceID(upload.getAppId());
 
-        UpdateApplicationMetadataResponse response;
-        response = ApperianEaseApi.APPLICATIONS.updateApplicationMetadata(appId)
-                .setEnabled(true)
-                .call(apperianEndpoint);
-
-        if (response.hasError()) {
-            throw new RuntimeException(response.getErrorMessage());
-        }
-    }
-
-    private Metadata extractMetadataFromFile(File file) {
-        report("Extracting from dist archive '%s'", file.getName());
-
-        Metadata metadata = new Metadata(new HashMap<String, String>());
-
-        boolean extracted = false;
-        for (MetadataExtractor extractor : MetadataExtractor.allExtractors(file)) {
-            if (extractor.extractTo(metadata, file, getLogger())) {
-                extracted = true;
-                break;
-            }
-        }
-        if (!extracted) {
-            report("Couldn't find metadata extractor for '%s'", file.getName());
-        }
-
-        return metadata;
+        UpdateApplicationResponse response = ApperianEaseApi.APPLICATIONS.updateApplication(appId, true).call(apperianEndpoint);
     }
 
     public EaseUpload getUpload() {

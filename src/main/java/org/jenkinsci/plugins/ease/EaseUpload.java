@@ -266,10 +266,6 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 ApplicationListResponse response = ApperianEaseApi.PUBLISHING.list()
                         .call(apiConnection.getEaseEndpoint());
 
-                if (response.hasError()) {
-                    return new ListBoxModel().add("(" + response.getErrorMessage() + ")");
-                }
-
                 ApplicationListResponse.Application[] apps = response.result.applications;
                 ListBoxModel listItems = new ListBoxModel();
                 for (ApplicationListResponse.Application app : apps) {

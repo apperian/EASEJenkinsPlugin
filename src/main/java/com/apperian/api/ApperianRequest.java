@@ -1,5 +1,6 @@
 package com.apperian.api;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,11 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 
@@ -55,6 +60,10 @@ public abstract class ApperianRequest {
     }
 
     public HttpUriRequest buildHttpRequest(ApperianEndpoint endpoint, ObjectMapper mapper) {
+        return buildHttpRequest(endpoint, mapper, null, null);
+    }
+
+    public HttpUriRequest buildHttpRequest(ApperianEndpoint endpoint, ObjectMapper mapper, String file_field, File file) {
         HttpRequestBase request = null;
         switch (type) {
             case POST:
@@ -75,7 +84,30 @@ public abstract class ApperianRequest {
             if (request instanceof HttpEntityEnclosingRequestBase) {
                 HttpEntityEnclosingRequestBase requestWithEntity;
                 requestWithEntity = (HttpEntityEnclosingRequestBase) request;
-                addEntityToRequest(mapper, headers, requestWithEntity);
+                if (file == null) {
+                    addEntityToRequest(mapper, headers, requestWithEntity);
+                } else {
+                    // Multipart upload
+                    String jsonData = mapper.writeValueAsString(takeRequestJsonObject());
+
+                    StringBody jsonBody = new StringBody(jsonData, ContentType.MULTIPART_FORM_DATA);
+                    FileBody appFileBody = new FileBody(file);
+
+                    MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
+                    HttpEntity multipartEntity = multipartEntityBuilder
+                    .addPart(file_field, appFileBody)
+                    // TODO JJJ jsonbody is not correct (it is not serializing the appropriate values)
+                    .addPart("data", jsonBody)
+                    .build();
+
+                    if (request instanceof HttpPut) {
+                        ((HttpPut) request).setEntity(multipartEntity);
+                    } else if (request instanceof HttpPost){
+                        ((HttpPost) request).setEntity(multipartEntity);
+                    } else {
+                        throw new UnsupportedOperationException("Incorrect method for uploading a file");
+                    }
+                }
             }
 
             if (endpoint.sessionToken == null) {

@@ -26,12 +26,11 @@ public class ApplicationsTest {
             return;
         }
 
-        UpdateApplicationMetadataResponse response;
-        response = ApperianEaseApi.APPLICATIONS.updateApplicationMetadata(ApiTesting.APP_PSK)
-                .setEnabled(true)
+        UpdateApplicationResponse response;
+        response = ApperianEaseApi.APPLICATIONS.updateApplication(ApiTesting.APP_ID, true)
                 .call(ApiTesting.getApperianEndpoint());
 
         TestUtil.assertNoError(response);
-        Assert.assertTrue(response.updateResult);
+        Assert.assertEquals(response.application.id, ApiTesting.APP_ID);
     }
 }

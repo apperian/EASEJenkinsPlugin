@@ -43,7 +43,6 @@ public class ApplicationListResponse extends EASEResponse {
     public String toString() {
         return "ApplicationListResponse{" +
                 "applications=" + Arrays.toString(result.applications) +
-                (hasError() ? ", error='" + getError() + '\'' : "") +
                 '}';
     }
 }
