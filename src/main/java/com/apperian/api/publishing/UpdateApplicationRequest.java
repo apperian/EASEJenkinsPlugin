@@ -1,6 +1,7 @@
 package com.apperian.api.publishing;
 
 import com.apperian.api.APIConstants;
+import com.apperian.api.ConnectionException;
 import com.apperian.api.EASEEndpoint;
 import com.apperian.api.EASERequest;
 
@@ -16,7 +17,7 @@ public class UpdateApplicationRequest extends EASERequest {
     }
 
     @Override
-    public UpdateApplicationResponse call(EASEEndpoint endpoint) throws IOException {
+    public UpdateApplicationResponse call(EASEEndpoint endpoint) throws ConnectionException {
         this.params.token = endpoint.getSessionToken();
         return doJsonRpc(endpoint, this, UpdateApplicationResponse.class);
     }

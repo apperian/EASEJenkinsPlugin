@@ -7,8 +7,4 @@ package com.apperian.api.users;
 public class Users {
     public Users() {
     }
-
-    public AuthenticateUserRequest authenticateUser(String userId, String password) {
-        return new AuthenticateUserRequest(userId, password);
-    }
 }

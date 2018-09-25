@@ -1,9 +1,9 @@
 package org.jenkinsci.plugins.ease;
 
 public enum ProductionEnvironment {
-    NORTH_AMERICA("North America", "https://na01ws.apperian.com/v1", "https://easesvc.apperian.com/ease.interface.php"),
-    EUROPE("Europe", "https://eu01ws.apperian.eu/v1", "https://easesvc.apperian.eu/ease.interface.php"),
-    CUSTOM("Custom URLs", "https://___.apperian.eu/v1", "https://easesvc.apperian.__/ease.interface.php"),;
+    NORTH_AMERICA("North America", "https://na01ws.apperian.com", "https://easesvc.apperian.com/ease.interface.php"),
+    EUROPE("Europe", "https://eu01ws.apperian.eu", "https://easesvc.apperian.eu/ease.interface.php"),
+    CUSTOM("Custom URLs", "https://___.apperian.eu", "https://easesvc.apperian.__/ease.interface.php"),;
 
     public static final ProductionEnvironment DEFAULT_PRODUCTION_ENVIRONMENT = NORTH_AMERICA;
 

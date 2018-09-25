@@ -5,7 +5,7 @@ import com.apperian.api.signing.SigningStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Application {
-    @JsonProperty("psk")
+    @JsonProperty("id")
     ApperianResourceID id;
 
     Version version;

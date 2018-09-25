@@ -1,6 +1,7 @@
 package com.apperian.api.publishing;
 
 import com.apperian.api.APIConstants;
+import com.apperian.api.ConnectionException;
 import com.apperian.api.EASEEndpoint;
 import com.apperian.api.EASERequest;
 import com.apperian.api.metadata.Metadata;
@@ -20,7 +21,7 @@ public class PublishApplicationRequest extends EASERequest {
     }
 
     @Override
-    public PublishApplicationResponse call(EASEEndpoint endpoint) throws IOException {
+    public PublishApplicationResponse call(EASEEndpoint endpoint) throws ConnectionException {
         this.params.token = endpoint.getSessionToken();
         return doJsonRpc(endpoint, this, PublishApplicationResponse.class);
     }

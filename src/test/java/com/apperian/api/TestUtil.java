@@ -12,8 +12,8 @@ public class TestUtil {
     }
 
     public static boolean shouldSkipIntegrationTests() {
-        if (!ApiTesting.CREDENTIALS_SET) {
-            System.out.println("Credentials not set: " + ApiTesting.EASE_ENDPOINT.getLastLoginError());
+        if (!ApiTesting.areCredentialsSet()) {
+            System.out.println("Credentials not set: " + ApiTesting.getEASEEndpoint().getLastLoginError());
             return true;
         }
         return false;

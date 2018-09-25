@@ -1,56 +1,56 @@
 package com.apperian.api;
 
-import com.apperian.api.users.AuthenticateUserResponse;
+import com.apperian.api.users.UserInfoRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 
 import java.io.IOException;
 
 public class ApperianEndpoint extends JsonHttpEndpoint {
-    public ApperianEndpoint(String url) {
+    public ApperianEndpoint(String url, String sessionToken) {
         super(url);
+        this.sessionToken = sessionToken;
     }
 
     <T extends ApperianResponse> T doJsonRpc(ApperianRequest request,
-                                             Class<T> responseClass) throws IOException {
+                                             Class<T> responseClass) throws ConnectionException {
 
-        HttpUriRequest httpRequest = request.buildHttpRequest(this, mapper);
-
-        try (CloseableHttpResponse response = httpClient.execute(httpRequest)) {
+        try {
+            HttpUriRequest httpRequest = request.buildHttpRequest(this, mapper);
+            CloseableHttpResponse response = httpClient.execute(httpRequest);
             int statusCode = response.getStatusLine().getStatusCode();
 
             if (statusCode == 401) {
-                if (responseClass == AuthenticateUserResponse.class) {
-                    return responseClass.cast(AuthenticateUserResponse.buildNoAccessResponse());
-                } else {
-                    throw new RuntimeException("No access");
-                }
+                throw new ConnectionException("No access");
             }
             if (statusCode != 200) {
                 throw new RuntimeException("bad API call, http status: " + response.getStatusLine() + ", request: " + httpRequest);
             }
 
             return request.buildResponseObject(mapper, responseClass, response);
+        } catch (IOException e) {
+            throw new ConnectionException("No connection", e);
         }
     }
+
 
     @Override
-    public boolean tryLogin(String email, String password) {
-        AuthenticateUserResponse response;
+    public void checkSessionToken() throws ConnectionException {
         try {
-            response = ApperianEaseApi.USERS.authenticateUser(email, password)
-                    .call(this);
+            UserInfoRequest request = new UserInfoRequest();
 
-            lastLoginError = response.getErrorMessage();
+            HttpUriRequest httpRequest = request.buildHttpRequest(this, mapper);
 
-            if (response.hasError()) {
-                return false;
+            CloseableHttpResponse response = httpClient.execute(httpRequest);
+            int statusCode = response.getStatusLine().getStatusCode();
+
+            if (statusCode != 200) {
+                throw new ConnectionException("No access");
             }
 
-            sessionToken = response.getToken();
-            return true;
         } catch (IOException e) {
-            throw new RuntimeException("no network", e);
+            throw new ConnectionException("No connection", e);
         }
     }
+
 }
