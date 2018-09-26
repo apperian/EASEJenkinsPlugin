@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -46,24 +47,29 @@ public abstract class ApperianRequest {
         return apiPath;
     }
 
-    public abstract ApperianResponse call(ApperianEndpoint endpoint) throws ConnectionException;
-
-    protected <T extends ApperianResponse> T doJsonRpc(ApperianEndpoint endpoint,
-                                                       ApperianRequest request,
+    protected <T extends ApperianResponse> T makeRequest(ApperianEndpoint endpoint,
+                                                       Map<String, Object> data,
                                                        Class<T> responseClass) throws ConnectionException {
-        return endpoint.doJsonRpc(request, responseClass);
+        return endpoint.makeRequest(this, data, responseClass);
     }
 
-
-    protected Object takeRequestJsonObject() {
-        return this;
+    protected <T extends ApperianResponse> T uploadFile(ApperianEndpoint endpoint,
+                                                        String fileField,
+                                                        File file,
+                                                        Map<String, Object> data,
+                                                        Class<T> responseClass) throws ConnectionException {
+        return endpoint.uploadFile(this, fileField, file, data, responseClass);
     }
 
-    public HttpUriRequest buildHttpRequest(ApperianEndpoint endpoint, ObjectMapper mapper) {
-        return buildHttpRequest(endpoint, mapper, null, null);
+    public HttpUriRequest buildHttpRequest(ApperianEndpoint endpoint, ObjectMapper mapper, Map<String, Object> data) {
+        return buildHttpRequest(endpoint, mapper, data, null, null);
     }
 
-    public HttpUriRequest buildHttpRequest(ApperianEndpoint endpoint, ObjectMapper mapper, String file_field, File file) {
+    public HttpUriRequest buildHttpRequest(ApperianEndpoint endpoint,
+                                           ObjectMapper mapper,
+                                           Map<String, Object> data,
+                                           String file_field,
+                                           File file) {
         HttpRequestBase request = null;
         switch (type) {
             case POST:
@@ -85,20 +91,30 @@ public abstract class ApperianRequest {
                 HttpEntityEnclosingRequestBase requestWithEntity;
                 requestWithEntity = (HttpEntityEnclosingRequestBase) request;
                 if (file == null) {
-                    addEntityToRequest(mapper, headers, requestWithEntity);
+                    if (data != null) {
+                        // Add the json data
+                        String requestAsString = mapper.writeValueAsString(data);
+                        StringEntity entity = new StringEntity(requestAsString, APIConstants.REQUEST_CHARSET);
+                        requestWithEntity.setEntity(entity);
+                        headers.add(APIConstants.CONTENT_TYPE_JSON_HEADER);
+                    }
                 } else {
                     // Multipart upload
-                    String jsonData = mapper.writeValueAsString(takeRequestJsonObject());
-
-                    StringBody jsonBody = new StringBody(jsonData, ContentType.MULTIPART_FORM_DATA);
-                    FileBody appFileBody = new FileBody(file);
+                    String jsonData = mapper.writeValueAsString(data);
 
                     MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
-                    HttpEntity multipartEntity = multipartEntityBuilder
-                    .addPart(file_field, appFileBody)
-                    // TODO JJJ jsonbody is not correct (it is not serializing the appropriate values)
-                    .addPart("data", jsonBody)
-                    .build();
+
+                    // Add the binary
+                    FileBody appFileBody = new FileBody(file);
+                    multipartEntityBuilder.addPart(file_field, appFileBody);
+
+                    if (data != null) {
+                        // Add the json data
+                        StringBody jsonBody = new StringBody(jsonData, ContentType.MULTIPART_FORM_DATA);
+                        multipartEntityBuilder.addPart("data", jsonBody);
+                    }
+
+                    HttpEntity multipartEntity = multipartEntityBuilder.build();
 
                     if (request instanceof HttpPut) {
                         ((HttpPut) request).setEntity(multipartEntity);
@@ -110,9 +126,6 @@ public abstract class ApperianRequest {
                 }
             }
 
-            if (endpoint.sessionToken == null) {
-                throw new RuntimeException("bad session token");
-            }
             headers.add(new BasicHeader(APIConstants.X_TOKEN_HEADER, endpoint.sessionToken));
 
             if (!headers.isEmpty()) {
@@ -122,16 +135,6 @@ public abstract class ApperianRequest {
             throw new RuntimeException("Request marshaling error", ex);
         }
         return request;
-    }
-
-    protected void addEntityToRequest(ObjectMapper mapper,
-                                      List<Header> headers,
-                                      HttpEntityEnclosingRequestBase requestWithEntity) throws JsonProcessingException {
-
-        String requestAsString = mapper.writeValueAsString(takeRequestJsonObject());
-        StringEntity entity = new StringEntity(requestAsString, APIConstants.REQUEST_CHARSET);
-        headers.add(APIConstants.CONTENT_TYPE_JSON_HEADER);
-        requestWithEntity.setEntity(entity);
     }
 
     public <T extends ApperianResponse> T buildResponseObject(ObjectMapper mapper, Class<T> responseClass, CloseableHttpResponse response) throws IOException {

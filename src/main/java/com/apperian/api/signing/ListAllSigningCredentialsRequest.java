@@ -12,9 +12,8 @@ public class ListAllSigningCredentialsRequest extends ApperianRequest {
         super(Type.GET, "/v1/credentials");
     }
 
-    @Override
     public ListAllSigningCredentialsResponse call(ApperianEndpoint endpoint) throws ConnectionException {
-        return doJsonRpc(endpoint, this, ListAllSigningCredentialsResponse.class);
+        return makeRequest(endpoint, null, ListAllSigningCredentialsResponse.class);
     }
 
     @Override

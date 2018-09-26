@@ -8,44 +8,19 @@ import com.apperian.api.metadata.Metadata;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 public class UpdateApplicationRequest extends ApperianRequest {
-    private transient File appBinary;
-    private String author;
-    private String version;
-    private String versionNotes;
-    private boolean enabled;
 
     public UpdateApplicationRequest(ApperianResourceID applicationId) {
         super(Type.POST, "/v1/applications/" + applicationId);
     }
 
-    public void setAppBinary(File appBinary) {
-        this.appBinary = appBinary;
+    public UpdateApplicationResponse call(ApperianEndpoint endpoint, Map<String, Object> data, File appBinary) throws ConnectionException {
+        return uploadFile(endpoint, "app_file", appBinary, data, UpdateApplicationResponse.class);
     }
 
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public void setVersionNotes(String versionNotes) {
-        this.versionNotes = versionNotes;
-    }
-
-    public boolean getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    @Override
-    public UpdateApplicationResponse call(ApperianEndpoint endpoint) throws ConnectionException {
-        return endpoint.uploadFile(this,  "app_file", appBinary, UpdateApplicationResponse.class);
+    public UpdateApplicationResponse call(ApperianEndpoint endpoint, Map<String, Object> data) throws ConnectionException {
+        return makeRequest(endpoint, data, UpdateApplicationResponse.class);
     }
 }

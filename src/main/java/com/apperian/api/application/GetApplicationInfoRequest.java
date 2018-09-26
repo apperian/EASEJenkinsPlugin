@@ -12,8 +12,7 @@ public class GetApplicationInfoRequest extends ApperianRequest {
         super(Type.GET, "/v2/applications/" + applicationId);
     }
 
-    @Override
     public GetApplicationInfoResponse call(ApperianEndpoint endpoint) throws ConnectionException {
-        return doJsonRpc(endpoint, this, GetApplicationInfoResponse.class);
+        return makeRequest(endpoint, null, GetApplicationInfoResponse.class);
     }
 }

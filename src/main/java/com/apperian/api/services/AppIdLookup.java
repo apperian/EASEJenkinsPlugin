@@ -18,8 +18,7 @@ public class AppIdLookup {
     }
 
     public ApperianResourceID lookupAppId(String easeId) throws ConnectionException{
-        ApplicationListResponse response = ApperianEaseApi.APPLICATIONS.list()
-                .call(endpoint);
+        ApplicationListResponse response = ApperianEaseApi.APPLICATIONS.list(endpoint);
 
         List<Application> apps = response.getApplications();
         if (apps == null) {

@@ -129,7 +129,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         }
 
         report("Updating application binary. Author: %s - Version: %s, Version Notes: %s", author, version, versionNotes);
-        UpdateApplicationResponse updateResponse = ApperianEaseApi.APPLICATIONS.updateApplication(appId, appBinary, author, version, versionNotes).call(apperianEndpoint);
+        ApperianEaseApi.APPLICATIONS.updateApplication(apperianEndpoint, appId, appBinary, author, version, versionNotes);
     }
 
     private void signApp(File applicationPackage,
@@ -167,13 +167,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
                 break;
             }
 
-            GetApplicationInfoResponse appInfoResponse;
-            appInfoResponse = ApperianEaseApi.APPLICATIONS.getApplicationInfo(appId)
-                                                          .call(apperianEndpoint);
-
-            if (appInfoResponse.hasError()) {
-                throw new RuntimeException(appInfoResponse.getErrorMessage());
-            }
+            GetApplicationInfoResponse appInfoResponse = ApperianEaseApi.APPLICATIONS.getApplicationInfo(apperianEndpoint, appId);
 
             Application application = appInfoResponse.getApplication();
             if (application == null || application.getVersion() == null) {
@@ -209,7 +203,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         report("Enabling application with ID '%s'", upload.appId);
         ApperianResourceID appId = new ApperianResourceID(upload.appId);
 
-        UpdateApplicationResponse response = ApperianEaseApi.APPLICATIONS.updateApplication(appId, true).call(apperianEndpoint);
+        ApperianEaseApi.APPLICATIONS.updateApplication(apperianEndpoint, appId, true);
     }
 
     public EaseUpload getUpload() {

@@ -12,14 +12,11 @@ public class ApplicationListRequest extends ApperianRequest {
         super(Type.GET, "/v2/applications");
     }
 
-    Boolean enabled;
-
     public ApplicationListRequest(ApperianResourceID applicationId) {
         super(Type.PUT, "/application/" + applicationId);
     }
 
-    @Override
     public ApplicationListResponse call(ApperianEndpoint endpoint) throws ConnectionException {
-        return doJsonRpc(endpoint, this, ApplicationListResponse.class);
+        return makeRequest(endpoint, null, ApplicationListResponse.class);
     }
 }

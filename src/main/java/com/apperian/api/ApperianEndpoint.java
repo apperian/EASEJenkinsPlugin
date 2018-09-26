@@ -16,6 +16,7 @@ import org.apache.http.util.EntityUtils;
 import java.io.File;
 import java.io.IOException;
 import java.lang.UnsupportedOperationException;
+import java.util.Map;
 
 public class ApperianEndpoint extends JsonHttpEndpoint {
     public ApperianEndpoint(String url, String sessionToken) {
@@ -23,11 +24,12 @@ public class ApperianEndpoint extends JsonHttpEndpoint {
         this.sessionToken = sessionToken;
     }
 
-    <T extends ApperianResponse> T doJsonRpc(ApperianRequest request,
-                                             Class<T> responseClass) throws ConnectionException {
+    protected <T extends ApperianResponse> T makeRequest(ApperianRequest request,
+                                               Map<String, Object> data,
+                                               Class<T> responseClass) throws ConnectionException {
 
         try {
-            HttpUriRequest httpRequest = request.buildHttpRequest(this, mapper);
+            HttpUriRequest httpRequest = request.buildHttpRequest(this, mapper, data);
             CloseableHttpResponse response = httpClient.execute(httpRequest);
             int statusCode = response.getStatusLine().getStatusCode();
 
@@ -44,10 +46,14 @@ public class ApperianEndpoint extends JsonHttpEndpoint {
         }
     }
 
-    public <T extends ApperianResponse> T uploadFile(ApperianRequest request, String file_field, File file, Class<T> responseClass) throws ConnectionException {
+    protected <T extends ApperianResponse> T uploadFile(ApperianRequest request,
+                                                     String file_field,
+                                                     File file,
+                                                     Map<String, Object> data,
+                                                     Class<T> responseClass) throws ConnectionException {
         try {
 
-            HttpUriRequest httpRequest = request.buildHttpRequest(this, mapper, file_field, file);
+            HttpUriRequest httpRequest = request.buildHttpRequest(this, mapper, data, file_field, file);
 
             CloseableHttpResponse response = httpClient.execute(httpRequest);
 
@@ -67,7 +73,7 @@ public class ApperianEndpoint extends JsonHttpEndpoint {
         try {
             UserInfoRequest request = new UserInfoRequest();
 
-            HttpUriRequest httpRequest = request.buildHttpRequest(this, mapper);
+            HttpUriRequest httpRequest = request.buildHttpRequest(this, mapper, null);
 
             CloseableHttpResponse response = httpClient.execute(httpRequest);
             int statusCode = response.getStatusLine().getStatusCode();

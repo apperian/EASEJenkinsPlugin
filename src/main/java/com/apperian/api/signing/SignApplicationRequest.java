@@ -22,15 +22,7 @@ public class SignApplicationRequest extends ApperianRequest {
                         credentialId);
     }
 
-    @Override
-    protected void addEntityToRequest(ObjectMapper mapper,
-                                      List<Header> headers,
-                                      HttpEntityEnclosingRequestBase requestWithEntity)
-            throws JsonProcessingException {
-    }
-
-    @Override
     public SignApplicationResponse call(ApperianEndpoint endpoint) throws ConnectionException {
-        return doJsonRpc(endpoint, this, SignApplicationResponse.class);
+        return makeRequest(endpoint, null, SignApplicationResponse.class);
     }
 }
