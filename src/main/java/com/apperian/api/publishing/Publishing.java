@@ -1,6 +1,5 @@
 package com.apperian.api.publishing;
 
-import com.apperian.api.metadata.Metadata;
 
 /**
  * API described at:

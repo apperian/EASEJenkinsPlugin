@@ -21,8 +21,6 @@ import com.apperian.api.application.Application;
 import com.apperian.api.application.GetApplicationInfoResponse;
 import com.apperian.api.application.UpdateApplicationResponse;
 import com.apperian.api.application.Application.Version;
-import com.apperian.api.metadata.Metadata;
-import com.apperian.api.metadata.MetadataExtractor;
 import com.apperian.api.publishing.UploadResult;
 import com.apperian.api.signing.SignApplicationResponse;
 import com.apperian.api.signing.SigningStatus;

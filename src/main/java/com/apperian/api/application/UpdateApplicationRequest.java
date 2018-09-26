@@ -4,7 +4,6 @@ import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.ApperianRequest;
 import com.apperian.api.ApperianResourceID;
 import com.apperian.api.ConnectionException;
-import com.apperian.api.metadata.Metadata;
 
 import java.io.File;
 import java.io.IOException;
