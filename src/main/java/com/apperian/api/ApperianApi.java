@@ -1,19 +1,23 @@
-package com.apperian.api.application;
+package com.apperian.api;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.apperian.api.ApperianEndpoint;
-import com.apperian.api.ApperianResourceID;
-import com.apperian.api.ConnectionException;
+import com.apperian.api.application.ApplicationListRequest;
+import com.apperian.api.application.ApplicationListResponse;
+import com.apperian.api.application.GetApplicationInfoRequest;
+import com.apperian.api.application.GetApplicationInfoResponse;
+import com.apperian.api.application.UpdateApplicationRequest;
+import com.apperian.api.application.UpdateApplicationResponse;
+import com.apperian.api.signing.ListAllSigningCredentialsRequest;
+import com.apperian.api.signing.ListAllSigningCredentialsResponse;
+import com.apperian.api.signing.SignApplicationRequest;
+import com.apperian.api.signing.SignApplicationResponse;
 
-/**
- * API described at:
- * https://help.apperian.com/display/pub/Applications+API
- */
-public class Applications {
-    public ApplicationListResponse list(ApperianEndpoint endpoint) throws ConnectionException {
+public class ApperianApi {
+
+    public ApplicationListResponse listApplications(ApperianEndpoint endpoint) throws ConnectionException {
         ApplicationListRequest request = new ApplicationListRequest();
         return request.call(endpoint);
     }
@@ -45,6 +49,16 @@ public class Applications {
     public GetApplicationInfoResponse getApplicationInfo(ApperianEndpoint endpoint, ApperianResourceID applicationId) throws ConnectionException {
         GetApplicationInfoRequest request =  new GetApplicationInfoRequest(applicationId);
         return request.call(endpoint);
+    }
+
+    public ListAllSigningCredentialsResponse listCredentials(ApperianEndpoint endpoint) throws ConnectionException {
+        return new ListAllSigningCredentialsRequest().call(endpoint);
+    }
+
+    public SignApplicationResponse signApplication(ApperianEndpoint endpoint,
+                                                   ApperianResourceID credentialsId,
+                                                   ApperianResourceID applicationId) throws ConnectionException {
+        return new SignApplicationRequest(applicationId, credentialsId).call(endpoint);
     }
 
 }

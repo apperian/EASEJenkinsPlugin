@@ -14,7 +14,8 @@ import org.jenkinsci.plugins.api.ApiConnection;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
-import com.apperian.api.ApperianEaseApi;
+import com.apperian.api.ApperianApi;
+import com.apperian.api.ApperianApi;
 import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.ConnectionException;
 import com.apperian.api.application.AppType;
@@ -148,6 +149,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     public static final class DescriptorImpl extends Descriptor<EaseUpload> {
 
         private transient ApiManager apiManager = new ApiManager();
+        private transient ApperianApi apperianApi = new ApperianApi();
         private transient CredentialsManager credentialsManager = new CredentialsManager();
 
         @Override
@@ -187,7 +189,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
             try {
                 ApperianEndpoint apperianEndpoint = apiConnection.getApperianEndpoint();
-                ApplicationListResponse response = ApperianEaseApi.APPLICATIONS.list(apperianEndpoint);
+                ApplicationListResponse response = apperianApi.listApplications(apperianEndpoint);
 
                 List<Application> apps = response.getApplications();
                 ListBoxModel listItems = new ListBoxModel();
@@ -224,7 +226,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 PlatformType typeFilter = null;
                 if (hasAppId) {
                     ApperianEndpoint apperianEndpoint = apiConnection.getApperianEndpoint();
-                    ApplicationListResponse response = ApperianEaseApi.APPLICATIONS.list(apperianEndpoint);
+                    ApplicationListResponse response = apperianApi.listApplications(apperianEndpoint);
 
                     for (Application application : response.getApplications()) {
                         if (appId.trim().equals(application.getId().getId())) {
@@ -243,9 +245,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 }
 
 
-                ListAllSigningCredentialsResponse response;
-                response = ApperianEaseApi.SIGNING.listCredentials()
-                        .call(apiConnection.getApperianEndpoint());
+                ListAllSigningCredentialsResponse response = apperianApi.listCredentials(apiConnection.getApperianEndpoint());
 
                 ListBoxModel listItems = new ListBoxModel();
                 DateFormat format = SimpleDateFormat.getDateInstance(DateFormat.SHORT);

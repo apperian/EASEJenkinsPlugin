@@ -1,13 +1,15 @@
 package com.apperian.api.signing;
 
-import com.apperian.api.ApperianEaseApi;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.apperian.api.ApiTesting;
+import com.apperian.api.ApperianApi;
 import com.apperian.api.TestUtil;
 
 public class SigningTest {
+    private ApperianApi apperianApi = new ApperianApi();
+
     @Test
     public void testListCredentials() throws Exception {
         if (TestUtil.shouldSkipIntegrationTests()) {
@@ -16,8 +18,7 @@ public class SigningTest {
 
         ListAllSigningCredentialsResponse response;
 
-        response = ApperianEaseApi.SIGNING.listCredentials()
-                .call(ApiTesting.getApperianEndpoint());
+        response = apperianApi.listCredentials(ApiTesting.getApperianEndpoint());
 
         Assert.assertNotNull(response.getCredentials());
     }
@@ -30,8 +31,7 @@ public class SigningTest {
 
         SignApplicationResponse response;
 
-        response = ApperianEaseApi.SIGNING.signApplication(ApiTesting.CREDENTIALS_PSK, ApiTesting.APP_ID)
-                .call(ApiTesting.getApperianEndpoint());
+        response = apperianApi.signApplication(ApiTesting.getApperianEndpoint(), ApiTesting.CREDENTIALS_PSK, ApiTesting.APP_ID);
 
         Assert.assertNotNull(response.getStatus());
     }

@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 import org.jenkinsci.plugins.api.ApiConnection;
 
-import com.apperian.api.ApperianEaseApi;
+import com.apperian.api.ApperianApi;
 import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.ApperianResourceID;
 import com.apperian.api.ConnectionException;
@@ -35,6 +35,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
     private EaseUpload upload;
     private final BuildListener listener;
     private transient ApiManager apiManager = new ApiManager();
+    private transient ApperianApi apperianApi = new ApperianApi();
     private transient CredentialsManager credentialsManager = new CredentialsManager();
 
     public PublishFileCallable(EaseUpload upload, BuildListener listener) {
@@ -124,7 +125,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         }
 
         report("Updating application binary. Author: %s - Version: %s, Version Notes: %s", author, version, versionNotes);
-        ApperianEaseApi.APPLICATIONS.updateApplication(apperianEndpoint, appId, appBinary, author, version, versionNotes);
+        apperianApi.updateApplication(apperianEndpoint, appId, appBinary, author, version, versionNotes);
     }
 
     private void signApp(File applicationPackage,
@@ -134,8 +135,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         ApperianResourceID credentialId = new ApperianResourceID(upload.credential);
 
 
-        SignApplicationResponse response = ApperianEaseApi.SIGNING.signApplication(credentialId, appId)
-                                          .call(apperianEndpoint);
+        SignApplicationResponse response = apperianApi.signApplication(apperianEndpoint, credentialId, appId);
 
         SigningStatus signingStatus = response.getStatus();
         String details = response.getStatusDetails();
@@ -158,7 +158,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
                 break;
             }
 
-            GetApplicationInfoResponse appInfoResponse = ApperianEaseApi.APPLICATIONS.getApplicationInfo(apperianEndpoint, appId);
+            GetApplicationInfoResponse appInfoResponse = apperianApi.getApplicationInfo(apperianEndpoint, appId);
 
             Application application = appInfoResponse.getApplication();
             if (application == null || application.getVersion() == null) {
@@ -194,7 +194,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         report("Enabling application with ID '%s'", upload.appId);
         ApperianResourceID appId = new ApperianResourceID(upload.appId);
 
-        ApperianEaseApi.APPLICATIONS.updateApplication(apperianEndpoint, appId, true);
+        apperianApi.updateApplication(apperianEndpoint, appId, true);
     }
 
     public EaseUpload getUpload() {

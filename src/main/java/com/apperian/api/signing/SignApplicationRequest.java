@@ -14,7 +14,7 @@ import java.util.List;
 
 public class SignApplicationRequest extends ApperianRequest {
 
-    SignApplicationRequest(ApperianResourceID applicationId,
+    public SignApplicationRequest(ApperianResourceID applicationId,
                            ApperianResourceID credentialId) {
         super(Type.PUT,
                 "/v1/applications/" +
