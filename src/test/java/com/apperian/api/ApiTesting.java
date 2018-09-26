@@ -1,7 +1,6 @@
 package com.apperian.api;
 
 public class ApiTesting {
-    // TODO JJJ check what value we should use here
     public static String API_TOKEN = null;
 
     public static ApperianResourceID ORGANIZATION_ID = new ApperianResourceID("5763"); // Rails Reactor
@@ -14,16 +13,11 @@ public class ApiTesting {
     private static String APPERIAN_ENDPOINT_URL = "https://na01ws.apperian.com";
 
     public static boolean areCredentialsSet() {
-        return ApiTesting.getApperianEndpoint().isLoggedIn() && ApiTesting.getEASEEndpoint().isLoggedIn();
+        return ApiTesting.getApperianEndpoint().isLoggedIn();
     }
 
     // TODO:  Fix this name, makes no sense
     public static ApperianEndpoint getApperianEndpoint() {
         return new ApperianEndpoint(APPERIAN_ENDPOINT_URL, API_TOKEN);
-    }
-
-    // TODO:  Fix this name, makes no sense
-    public static EASEEndpoint getEASEEndpoint() {
-        return new EASEEndpoint(EASE_ENDPOINT_URL, API_TOKEN);
     }
 }

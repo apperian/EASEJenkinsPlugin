@@ -1,6 +1,5 @@
 package com.apperian.api;
 
-import com.apperian.api.publishing.UploadResult;
 import com.apperian.api.users.UserInfoRequest;
 
 import org.apache.commons.httpclient.HttpStatus;
@@ -68,7 +67,6 @@ public class ApperianEndpoint extends JsonHttpEndpoint {
         }
     }
 
-    @Override
     public void checkSessionToken() throws ConnectionException {
         try {
             UserInfoRequest request = new UserInfoRequest();

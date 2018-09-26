@@ -2,7 +2,6 @@ package org.jenkinsci.plugins.ease;
 
 import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.JsonHttpEndpoint;
-import com.apperian.api.EASEEndpoint;
 import org.jenkinsci.plugins.api.ApiConnection;
 
 import java.util.logging.Level;
@@ -11,11 +10,11 @@ import java.util.logging.Logger;
 public class ApiManager {
     static final Logger logger = Logger.getLogger(ApiManager.class.getName());
 
-    public ApiConnection createConnection(String environment, String easeUrl, String apperianUrl, String apiToken) {
-        return createEndpoint(environment, easeUrl, apperianUrl, apiToken);
+    public ApiConnection createConnection(String environment, String apperianUrl, String apiToken) {
+        return createEndpoint(environment, apperianUrl, apiToken);
     }
 
-    public boolean isConnectionSuccessful(final JsonHttpEndpoint endpoint) {
+    public boolean isConnectionSuccessful(final ApperianEndpoint endpoint) {
         try {
             endpoint.checkSessionToken();
             return true;
@@ -27,18 +26,8 @@ public class ApiManager {
         return false;
     }
 
-    public ApiConnection createEndpoint(String environment, String easeUrl, String apperianUrl, String apiToken) {
-        return new ApiConnection(createEaseEndpoint(environment, apiToken, easeUrl),
-                                 createApperianEndpoint(environment, apiToken, apperianUrl));
-    }
-
-    private EASEEndpoint createEaseEndpoint(String environment, String sessionToken, String customEaseUrl) {
-        ProductionEnvironment productionEnvironment = ProductionEnvironment.fromNameOrNA(environment);
-        if (productionEnvironment == ProductionEnvironment.CUSTOM) {
-            return new EASEEndpoint(customEaseUrl, sessionToken);
-        } else {
-            return new EASEEndpoint(productionEnvironment.easeUrl, sessionToken);
-        }
+    public ApiConnection createEndpoint(String environment, String apperianUrl, String apiToken) {
+        return new ApiConnection(createApperianEndpoint(environment, apiToken, apperianUrl));
     }
 
     private ApperianEndpoint createApperianEndpoint(String environment, String sessionToken, String customApperianUrl) {

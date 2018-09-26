@@ -15,7 +15,6 @@ public class ApplicationsTest {
 
         ApplicationListResponse response = ApperianEaseApi.APPLICATIONS.list(ApiTesting.getApperianEndpoint());
 
-        TestUtil.assertNoError(response);
         Assert.assertNotNull(response.getApplications());
     }
 
@@ -28,7 +27,6 @@ public class ApplicationsTest {
         UpdateApplicationResponse response;
         response = ApperianEaseApi.APPLICATIONS.updateApplication(ApiTesting.getApperianEndpoint(), ApiTesting.APP_ID, true);
 
-        TestUtil.assertNoError(response);
-        Assert.assertEquals(response.application.id, ApiTesting.APP_ID);
+        Assert.assertEquals(response.application.getId(), ApiTesting.APP_ID);
     }
 }

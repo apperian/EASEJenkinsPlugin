@@ -16,7 +16,6 @@ import hudson.model.BuildListener;
 
 public class UploadTest {
     public static final String URL = "https://easesvc.apperian.eu/ease.interface.php";
-    // TODO JJJ check what value we should use here
     public static final String API_TOKEN = null;
 
     @ClassRule
@@ -46,7 +45,6 @@ public class UploadTest {
     private void upload(String appId, String filename) throws IOException, InterruptedException {
         EaseUpload upload = EaseUpload.simpleUpload(
                 "EUROPE",
-                null,
                 null,
                 API_TOKEN);
 

@@ -16,12 +16,10 @@ import com.apperian.api.ApperianEaseApi;
 import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.ApperianResourceID;
 import com.apperian.api.ConnectionException;
-import com.apperian.api.EASEEndpoint;
 import com.apperian.api.application.Application;
 import com.apperian.api.application.GetApplicationInfoResponse;
 import com.apperian.api.application.UpdateApplicationResponse;
 import com.apperian.api.application.Application.Version;
-import com.apperian.api.publishing.UploadResult;
 import com.apperian.api.signing.SignApplicationResponse;
 import com.apperian.api.signing.SigningStatus;
 
@@ -60,11 +58,10 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         }
 
         String env = upload.prodEnv;
-        String customEaseUrl = upload.customEaseUrl;
         String customApperianUrl = upload.customApperianUrl;
         String apiToken = credentialsManager.getCredentialWithId(upload.apiTokenId);
 
-        ApiConnection apiConnection = apiManager.createConnection(env, customEaseUrl, customApperianUrl, apiToken);
+        ApiConnection apiConnection = apiManager.createConnection(env, customApperianUrl, apiToken);
 
         ApperianEndpoint apperianEndpoint = apiConnection.getApperianEndpoint();
 
@@ -139,10 +136,6 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
         SignApplicationResponse response = ApperianEaseApi.SIGNING.signApplication(credentialId, appId)
                                           .call(apperianEndpoint);
-
-        if (response.hasError()) {
-            throw new RuntimeException(response.getErrorMessage());
-        }
 
         SigningStatus signingStatus = response.getStatus();
         String details = response.getStatusDetails();

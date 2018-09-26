@@ -19,8 +19,6 @@ public class SigningTest {
         response = ApperianEaseApi.SIGNING.listCredentials()
                 .call(ApiTesting.getApperianEndpoint());
 
-        TestUtil.assertNoError(response);
-
         Assert.assertNotNull(response.getCredentials());
     }
 
@@ -35,7 +33,6 @@ public class SigningTest {
         response = ApperianEaseApi.SIGNING.signApplication(ApiTesting.CREDENTIALS_PSK, ApiTesting.APP_ID)
                 .call(ApiTesting.getApperianEndpoint());
 
-        TestUtil.assertNoError(response);
         Assert.assertNotNull(response.getStatus());
     }
 

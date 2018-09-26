@@ -21,7 +21,7 @@ public class PublishFileCallableTest {
     public static JenkinsRule j = new JenkinsRule();
 
     public static final EaseUpload EASE_UPLOAD1 =
-            new EaseUpload("NORTH_AMERICA", "url1", "url2", "api_token_id",
+            new EaseUpload("NORTH_AMERICA", "url1", "api_token_id",
                     "app1", "filename", "author", "1.0", "version", true, "cred", false);
 
     @Test
