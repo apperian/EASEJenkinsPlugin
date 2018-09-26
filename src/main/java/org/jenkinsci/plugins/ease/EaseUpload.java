@@ -245,12 +245,12 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 }
 
 
-                ListAllSigningCredentialsResponse response = apperianApi.listCredentials(apiConnection.getApperianEndpoint());
+                List<SigningCredential> credentials = apperianApi.listCredentials(apiConnection.getApperianEndpoint());
 
                 ListBoxModel listItems = new ListBoxModel();
                 DateFormat format = SimpleDateFormat.getDateInstance(DateFormat.SHORT);
 
-                for (SigningCredential credential : response.getCredentials()) {
+                for (SigningCredential credential : credentials) {
                     if (typeFilter != null) {
                         if (!typeFilter.equals(credential.getPlatform())) {
                             continue;

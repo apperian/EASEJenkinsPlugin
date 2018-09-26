@@ -29,9 +29,8 @@ public class ApplicationsTest {
             return;
         }
 
-        UpdateApplicationResponse response;
-        response = apperianApi.updateApplication(ApiTesting.getApperianEndpoint(), ApiTesting.APP_ID, true);
+        Application app = apperianApi.updateApplication(ApiTesting.getApperianEndpoint(), ApiTesting.APP_ID, true);
 
-        Assert.assertEquals(response.application.getId(), ApiTesting.APP_ID);
+        Assert.assertEquals(app.getId(), ApiTesting.APP_ID);
     }
 }

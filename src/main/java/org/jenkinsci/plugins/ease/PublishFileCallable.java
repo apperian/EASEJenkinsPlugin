@@ -17,8 +17,6 @@ import com.apperian.api.ApperianEndpoint;
 import com.apperian.api.ApperianResourceID;
 import com.apperian.api.ConnectionException;
 import com.apperian.api.application.Application;
-import com.apperian.api.application.GetApplicationInfoResponse;
-import com.apperian.api.application.UpdateApplicationResponse;
 import com.apperian.api.application.Application.Version;
 import com.apperian.api.signing.SignApplicationResponse;
 import com.apperian.api.signing.SigningStatus;
@@ -158,9 +156,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
                 break;
             }
 
-            GetApplicationInfoResponse appInfoResponse = apperianApi.getApplicationInfo(apperianEndpoint, appId);
-
-            Application application = appInfoResponse.getApplication();
+            Application application = apperianApi.getApplicationInfo(apperianEndpoint, appId);
             if (application == null || application.getVersion() == null) {
                 throw new RuntimeException("Failed to get application " + appId + " signigng status");
             }

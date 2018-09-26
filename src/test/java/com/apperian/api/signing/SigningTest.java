@@ -3,6 +3,8 @@ package com.apperian.api.signing;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.List;
+
 import com.apperian.api.ApiTesting;
 import com.apperian.api.ApperianApi;
 import com.apperian.api.TestUtil;
@@ -18,9 +20,9 @@ public class SigningTest {
 
         ListAllSigningCredentialsResponse response;
 
-        response = apperianApi.listCredentials(ApiTesting.getApperianEndpoint());
+        List<SigningCredential> credentials = apperianApi.listCredentials(ApiTesting.getApperianEndpoint());
 
-        Assert.assertNotNull(response.getCredentials());
+        Assert.assertNotNull(credentials);
     }
 
     @Test
