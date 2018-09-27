@@ -1,13 +1,12 @@
 package com.apperian.api.application;
 
-import com.apperian.api.ApperianResourceID;
 import com.apperian.api.signing.PlatformType;
 import com.apperian.api.signing.SigningStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Application {
     @JsonProperty("id")
-    private ApperianResourceID id;
+    private String id;
 
     @JsonProperty("type")
     private int type;
@@ -45,7 +44,7 @@ public class Application {
         }
     }
 
-    public ApperianResourceID getId() {
+    public String getId() {
         return id;
     }
 

@@ -1,27 +1,24 @@
 package com.apperian.api;
 
-import org.apache.http.message.BasicHeader;
+public class APIConstants {
 
-import java.util.concurrent.atomic.AtomicLong;
+    public static final String REQUEST_CHARSET = "UTF-8";
 
-public interface APIConstants {
-    String AUTHENTICATE_USER_METHOD = "com.apperian.eas.user.authenticateuser";
-    String GET_LIST_METHOD = "com.apperian.eas.apps.getlist";
-    String UPDATE_METHOD = "com.apperian.eas.apps.update";
-    String PUBLISH_METHOD = "com.apperian.eas.apps.publish";
+    public static final String X_TOKEN_HEADER = "X-TOKEN";
 
-    int ERROR_CODE_GENERIC = 1;
-    int ERROR_CODE_SESSION_EXPIRED = 666;
-    int ERROR_CODE_MISSING_PARAMETER = -32602;
+    public static final String CONTENT_TYPE_HEADER = "Content-Type";
 
-    String JSON_RPC_VERSION = "2.0";
-    String API_VERSION = "1.0";
-    String REQUEST_CHARSET = "UTF-8";
+    public static final String JSON_CONTENT_TYPE = "application/json";
 
-    AtomicLong ID_GENERATOR = new AtomicLong();
-    String ERROR_FIELD_DETAILED_MESSAGE = "detailedMessage";
+    public static final String LIST_APPS_URL_PATH = "/v2/applications";
 
-    String X_TOKEN_HEADER = "X-TOKEN";
+    public static final String UPDATE_APPS_URL_PATH = "/v1/applications/";
 
-    BasicHeader CONTENT_TYPE_JSON_HEADER = new BasicHeader("Content-Type", "application/json");
+    public static final String GET_APP_URL_PATH = "/v2/applications/%s";
+
+    public static final String GET_CREDENTIALS_URL_PATH = "/v1/credentials";
+
+    public static final String SIGN_APP_URL_PATH = "/v1/applications/%s/credentials/%s";
+
+    public static final String GET_USER_INFO_URL_PATH = "/v2/users/info";
 }

@@ -1,11 +1,10 @@
 package com.apperian.api.signing;
 
-import com.apperian.api.ApperianResourceID;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SigningCredential {
     @JsonProperty("psk")
-    ApperianResourceID credentialId;
+    String credentialId;
 
     @JsonProperty("description")
     String description;
@@ -16,7 +15,7 @@ public class SigningCredential {
     @JsonProperty("platform")
     PlatformType platform;
 
-    public ApperianResourceID getCredentialId() {
+    public String getCredentialId() {
         return credentialId;
     }
 

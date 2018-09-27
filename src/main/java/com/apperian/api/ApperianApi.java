@@ -4,39 +4,36 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.apperian.api.application.Application;
-import com.apperian.api.application.ApplicationListRequest;
 import com.apperian.api.application.ApplicationListResponse;
-import com.apperian.api.application.GetApplicationInfoRequest;
 import com.apperian.api.application.GetApplicationInfoResponse;
-import com.apperian.api.application.UpdateApplicationRequest;
 import com.apperian.api.application.UpdateApplicationResponse;
-import com.apperian.api.signing.ListAllSigningCredentialsRequest;
 import com.apperian.api.signing.ListAllSigningCredentialsResponse;
-import com.apperian.api.signing.SignApplicationRequest;
 import com.apperian.api.signing.SignApplicationResponse;
 import com.apperian.api.signing.SigningCredential;
+import com.apperian.api.users.UserInfoResponse;
 
 public class ApperianApi {
 
-    static final Logger logger = Logger.getLogger(ApperianApi.class.getName());
-
-    private ApperianEndpoint endpoint;
+    private ApiClient apiClient;
 
     public ApperianApi(String baseUrl, String sessionToken) {
-        this.endpoint = new ApperianEndpoint(baseUrl, sessionToken);
+        this.apiClient = new ApiClient(baseUrl, sessionToken);
     }
 
     public List<Application> listApplications() throws ConnectionException {
-        ApplicationListRequest request = new ApplicationListRequest();
-        return request.call(endpoint).getApplications();
+        RequestDetails requestDetails = new RequestDetails.Builder()
+            .withPath(APIConstants.LIST_APPS_URL_PATH)
+            .build();
+        return apiClient.makeRequest(requestDetails, ApplicationListResponse.class).getApplications();
     }
 
-    public Application updateApplication(ApperianResourceID applicationId, File appBinary, String author, String version, String versionNotes) throws ConnectionException {
-        UpdateApplicationRequest request = new UpdateApplicationRequest(applicationId);
+    public Application updateApplication(String applicationId,
+                                         File appBinary,
+                                         String author,
+                                         String version,
+                                         String versionNotes) throws ConnectionException {
 
         Map<String, Object> data = new HashMap<>();
         if (author != null) {
@@ -49,41 +46,57 @@ public class ApperianApi {
             data.put("version_note", versionNotes);
         }
 
-        return request.call(endpoint, data, appBinary).getApplication();
+        RequestDetails requestDetails = new RequestDetails.Builder()
+            .withMethod(RequestMethod.POST)
+            .withPath(APIConstants.UPDATE_APPS_URL_PATH)
+            .withData(data)
+            .withFile("app_file", appBinary)
+            .build();
+        return apiClient.makeRequest(requestDetails, UpdateApplicationResponse.class).getApplication();
     }
 
-    public Application updateApplication(ApperianResourceID applicationId, boolean enabled) throws ConnectionException {
-        UpdateApplicationRequest request = new UpdateApplicationRequest(applicationId);
+    public Application updateApplication(String applicationId, boolean enabled) throws ConnectionException {
+
         Map<String, Object> data = new HashMap<>();
         data.put("enabled", enabled);
-        return request.call(endpoint, data).getApplication();
+
+        RequestDetails requestDetails = new RequestDetails.Builder()
+            .withMethod(RequestMethod.POST)
+            .withPath(APIConstants.UPDATE_APPS_URL_PATH)
+            .withData(data)
+            .build();
+        return apiClient.makeRequest(requestDetails, UpdateApplicationResponse.class).getApplication();
     }
 
-    public Application getApplicationInfo(ApperianResourceID applicationId) throws ConnectionException {
-        GetApplicationInfoRequest request =  new GetApplicationInfoRequest(applicationId);
-        return request.call(endpoint).getApplication();
+    public Application getApplicationInfo(String appId) throws ConnectionException {
+        RequestDetails requestDetails = new RequestDetails.Builder()
+            .withPath(APIConstants.GET_APP_URL_PATH, appId)
+            .build();
+        return apiClient.makeRequest(requestDetails, GetApplicationInfoResponse.class).getApplication();
     }
 
     public List<SigningCredential> listCredentials() throws ConnectionException {
-        return new ListAllSigningCredentialsRequest().call(endpoint).getCredentials();
+        RequestDetails requestDetails = new RequestDetails.Builder()
+            .withPath(APIConstants.GET_CREDENTIALS_URL_PATH)
+            .build();
+
+        return apiClient.makeRequest(requestDetails, ListAllSigningCredentialsResponse.class).getCredentials();
     }
 
-    // TODO JJJ this should not return a response (try to isolate the network from the api consumer)
-    public SignApplicationResponse signApplication(ApperianResourceID credentialsId,
-                                                   ApperianResourceID applicationId) throws ConnectionException {
-        return new SignApplicationRequest(applicationId, credentialsId).call(endpoint);
+    public SignApplicationResponse signApplication(String credentialsId, String appId) throws ConnectionException {
+        RequestDetails requestDetails = new RequestDetails.Builder()
+            .withMethod(RequestMethod.PUT)
+            .withPath(APIConstants.SIGN_APP_URL_PATH, appId, credentialsId)
+            .build();
+        return apiClient.makeRequest(requestDetails, SignApplicationResponse.class);
     }
 
-    public boolean isConnectionSuccessful() {
-        try {
-            endpoint.checkSessionToken();
-            return true;
-        } catch (Exception e) {
-            String message = "Could not authenticate to '" + endpoint.getUrl() + "', error:  " + e.getMessage();
-            logger.log(Level.WARNING, message, e);
-            endpoint.setLastLoginError(e.getMessage());
-        }
-        return false;
+    public UserInfoResponse getUserDetails() throws ConnectionException {
+        RequestDetails requestDetails = new RequestDetails.Builder()
+            .withPath(APIConstants.GET_USER_INFO_URL_PATH)
+            .build();
+
+        return apiClient.makeRequest(requestDetails, UserInfoResponse.class);
     }
 
 }

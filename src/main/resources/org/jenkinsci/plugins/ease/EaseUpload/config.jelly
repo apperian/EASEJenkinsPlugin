@@ -10,7 +10,7 @@
     <f:entry title="${%Production Environment}" field="prodEnv" >
       <f:select clazz="prodEnv" />
     </f:entry>
-    <f:entry title="${%Python API URL}" field="customApperianUrl">
+    <f:entry title="${%API URL}" field="customApperianUrl">
       <f:textbox clazz="fieldCustomURLs" />
     </f:entry>
     <f:entry title="${%API Token}" field="apiTokenId">

@@ -186,7 +186,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 for (Application app : apps) {
                     Version version = app.getVersion();
                     listItems.add(version.getAppName() + " v:" + version.getVersionNum() + " type:" + app.getTypeName(),
-                            app.getId().getId());
+                            app.getId());
                 }
                 return listItems;
             } catch (ConnectionException e) {
@@ -218,7 +218,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                     List<Application> apps = apperianApi.listApplications();
 
                     for (Application application : apps) {
-                        if (appId.trim().equals(application.getId().getId())) {
+                        if (appId.trim().equals(application.getId())) {
                             if (!application.isAppTypeSupportedByPlugin()) {
                                 continue;
                             }
@@ -249,8 +249,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                     listItems.add(credential.getDescription() +
                             " exp:" + Utils.transformDate(credential.getExpirationDate()) +
                             (typeFilter == null ? " platform:" + credential.getPlatform().getDisplayName() : ""),
-
-                            credential.getCredentialId().getId());
+                            credential.getCredentialId());
                 }
 
                 return listItems;
@@ -273,10 +272,8 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             ApperianApi apperianApi = createConnection(upload);
 
             try {
-                if (!apperianApi.isConnectionSuccessful()) {
-                    throw new ConnectionException("The connection with Apperian is not correct");
-                }
-
+                // To check the connection we just use the endpoint to get the user details to see if it works
+                apperianApi.getUserDetails();
                 return FormValidation.ok("Connection OK");
             } catch (ConnectionException e) {
                 return FormValidation.error(e.getMessage());

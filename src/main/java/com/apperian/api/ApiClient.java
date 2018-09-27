@@ -2,9 +2,16 @@ package com.apperian.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -15,76 +22,88 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
+import org.jenkinsci.plugins.ease.Utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+public class ApiClient {
 
-public abstract class ApperianRequest {
-    public enum Type {
-        GET, PUT, POST
+    private String baseUrl;
+
+    private String sessionToken;
+
+    private CloseableHttpClient httpClient;
+
+    private ObjectMapper mapper;
+
+    public ApiClient(String baseUrl, String sessionToken) {
+        this.baseUrl = baseUrl;
+        this.sessionToken = sessionToken;
+        httpClient = Utils.configureProxy(HttpClients.custom()).build();
+        mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    private final Type type;
-    private final String apiPath;
+    public <T extends ApperianResponse> T makeRequest(RequestDetails requestDetails,
+                                                         Class<T> responseClass) throws ConnectionException {
 
-    public ApperianRequest(Type type, String apiPath) {
-        this.type = type;
-        this.apiPath = apiPath;
+        try {
+            HttpUriRequest httpRequest = buildHttpRequest(requestDetails);
+            CloseableHttpResponse response = httpClient.execute(httpRequest);
+            int statusCode = response.getStatusLine().getStatusCode();
+
+            if (statusCode == 401) {
+                throw new ConnectionException("No access");
+            }
+            if (statusCode != 200) {
+                throw new RuntimeException("bad API call, http status: " + response.getStatusLine() + ", request: " + httpRequest);
+            }
+
+            return buildResponseObject(responseClass, response);
+        } catch (IOException e) {
+            throw new ConnectionException("No connection", e);
+        }
     }
 
-    public Type getType() {
-        return type;
-    }
-
-    public String getApiPath() {
-        return apiPath;
-    }
-
-    protected <T extends ApperianResponse> T makeRequest(ApperianEndpoint endpoint,
-                                                       Map<String, Object> data,
-                                                       Class<T> responseClass) throws ConnectionException {
-        return endpoint.makeRequest(this, data, responseClass);
-    }
-
-    protected <T extends ApperianResponse> T uploadFile(ApperianEndpoint endpoint,
-                                                        String fileField,
-                                                        File file,
-                                                        Map<String, Object> data,
-                                                        Class<T> responseClass) throws ConnectionException {
-        return endpoint.uploadFile(this, fileField, file, data, responseClass);
-    }
-
-    public HttpUriRequest buildHttpRequest(ApperianEndpoint endpoint, ObjectMapper mapper, Map<String, Object> data) {
-        return buildHttpRequest(endpoint, mapper, data, null, null);
-    }
-
-    public HttpUriRequest buildHttpRequest(ApperianEndpoint endpoint,
-                                           ObjectMapper mapper,
-                                           Map<String, Object> data,
-                                           String file_field,
-                                           File file) {
+    private HttpUriRequest buildHttpRequest(RequestDetails requestDetails) throws ConnectionException {
         HttpRequestBase request = null;
-        switch (type) {
+        RequestMethod method = requestDetails.getMethod();
+        String urlPath = requestDetails.getPath();
+        Map<String, Object> data = requestDetails.getData();
+        String fileField = requestDetails.getFileField();
+        File file = requestDetails.getFile();
+
+        String url;
+        try {
+            URL apiURL = new URL(baseUrl);
+            url = new URL(apiURL, urlPath).toString();
+
+        } catch (MalformedURLException e) {
+            throw new ConnectionException("Malformed URL for the API: " + baseUrl);
+        }
+
+        switch (method) {
+            case GET:
+                request = new HttpGet(url);
+                break;
             case POST:
-                request = new HttpPost(endpoint.url + apiPath);
+                request = new HttpPost(url);
                 break;
             case PUT:
-                request = new HttpPut(endpoint.url + apiPath);
+                request = new HttpPut(url);
                 break;
-            case GET:
-                request = new HttpGet(endpoint.url + apiPath);
-                break;
+            default:
+                throw new UnsupportedOperationException("Unsupported operation: " + method);
         }
-        if (request == null) {
-            throw new UnsupportedOperationException("http method " + type);
-        }
+
         try {
             List<Header> headers = new ArrayList<>();
             if (request instanceof HttpEntityEnclosingRequestBase) {
@@ -96,7 +115,9 @@ public abstract class ApperianRequest {
                         String requestAsString = mapper.writeValueAsString(data);
                         StringEntity entity = new StringEntity(requestAsString, APIConstants.REQUEST_CHARSET);
                         requestWithEntity.setEntity(entity);
-                        headers.add(APIConstants.CONTENT_TYPE_JSON_HEADER);
+                        BasicHeader jsonHeader = new BasicHeader(APIConstants.CONTENT_TYPE_HEADER,
+                                                                 APIConstants.JSON_CONTENT_TYPE);
+                        headers.add(jsonHeader);
                     }
                 } else {
                     // Multipart upload
@@ -106,7 +127,7 @@ public abstract class ApperianRequest {
 
                     // Add the binary
                     FileBody appFileBody = new FileBody(file);
-                    multipartEntityBuilder.addPart(file_field, appFileBody);
+                    multipartEntityBuilder.addPart(fileField, appFileBody);
 
                     if (data != null) {
                         // Add the json data
@@ -126,7 +147,7 @@ public abstract class ApperianRequest {
                 }
             }
 
-            headers.add(new BasicHeader(APIConstants.X_TOKEN_HEADER, endpoint.sessionToken));
+            headers.add(new BasicHeader(APIConstants.X_TOKEN_HEADER, sessionToken));
 
             if (!headers.isEmpty()) {
                 request.setHeaders(headers.toArray(new Header[headers.size()]));
@@ -137,9 +158,10 @@ public abstract class ApperianRequest {
         return request;
     }
 
-    public <T extends ApperianResponse> T buildResponseObject(ObjectMapper mapper, Class<T> responseClass, CloseableHttpResponse response) throws IOException {
+    private <T extends ApperianResponse> T buildResponseObject(Class<T> responseClass, CloseableHttpResponse response) throws IOException {
         HttpEntity entity = response.getEntity();
         String responseString = EntityUtils.toString(entity);
         return mapper.readValue(responseString, responseClass);
     }
+
 }
