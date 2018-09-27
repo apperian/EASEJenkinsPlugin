@@ -5,14 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.apperian.api.application.Application;
-import com.apperian.api.application.ApplicationListResponse;
-import com.apperian.api.application.GetApplicationInfoResponse;
-import com.apperian.api.application.UpdateApplicationResponse;
-import com.apperian.api.signing.ListAllSigningCredentialsResponse;
+import com.apperian.api.applications.Application;
+import com.apperian.api.applications.GetApplicationResponse;
+import com.apperian.api.applications.GetApplicationsResponse;
+import com.apperian.api.applications.UpdateApplicationResponse;
+import com.apperian.api.signing.GetSigningCredentialsResponse;
 import com.apperian.api.signing.SignApplicationResponse;
 import com.apperian.api.signing.SigningCredential;
-import com.apperian.api.users.UserInfoResponse;
+import com.apperian.api.users.GetUserResponse;
+import com.apperian.api.users.User;
 
 public class ApperianApi {
 
@@ -26,7 +27,7 @@ public class ApperianApi {
         RequestDetails requestDetails = new RequestDetails.Builder()
             .withPath(APIConstants.LIST_APPS_URL_PATH)
             .build();
-        return apiClient.makeRequest(requestDetails, ApplicationListResponse.class).getApplications();
+        return apiClient.makeRequest(requestDetails, GetApplicationsResponse.class).getApplications();
     }
 
     public Application updateApplication(String applicationId,
@@ -48,7 +49,7 @@ public class ApperianApi {
 
         RequestDetails requestDetails = new RequestDetails.Builder()
             .withMethod(RequestMethod.POST)
-            .withPath(APIConstants.UPDATE_APPS_URL_PATH)
+            .withPath(APIConstants.UPDATE_APP_URL_PATH, applicationId)
             .withData(data)
             .withFile("app_file", appBinary)
             .build();
@@ -62,7 +63,7 @@ public class ApperianApi {
 
         RequestDetails requestDetails = new RequestDetails.Builder()
             .withMethod(RequestMethod.POST)
-            .withPath(APIConstants.UPDATE_APPS_URL_PATH)
+            .withPath(APIConstants.UPDATE_APP_URL_PATH, applicationId)
             .withData(data)
             .build();
         return apiClient.makeRequest(requestDetails, UpdateApplicationResponse.class).getApplication();
@@ -72,7 +73,7 @@ public class ApperianApi {
         RequestDetails requestDetails = new RequestDetails.Builder()
             .withPath(APIConstants.GET_APP_URL_PATH, appId)
             .build();
-        return apiClient.makeRequest(requestDetails, GetApplicationInfoResponse.class).getApplication();
+        return apiClient.makeRequest(requestDetails, GetApplicationResponse.class).getApplication();
     }
 
     public List<SigningCredential> listCredentials() throws ConnectionException {
@@ -80,7 +81,7 @@ public class ApperianApi {
             .withPath(APIConstants.GET_CREDENTIALS_URL_PATH)
             .build();
 
-        return apiClient.makeRequest(requestDetails, ListAllSigningCredentialsResponse.class).getCredentials();
+        return apiClient.makeRequest(requestDetails, GetSigningCredentialsResponse.class).getCredentials();
     }
 
     public SignApplicationResponse signApplication(String credentialsId, String appId) throws ConnectionException {
@@ -91,12 +92,12 @@ public class ApperianApi {
         return apiClient.makeRequest(requestDetails, SignApplicationResponse.class);
     }
 
-    public UserInfoResponse getUserDetails() throws ConnectionException {
+    public User getUserDetails() throws ConnectionException {
         RequestDetails requestDetails = new RequestDetails.Builder()
             .withPath(APIConstants.GET_USER_INFO_URL_PATH)
             .build();
 
-        return apiClient.makeRequest(requestDetails, UserInfoResponse.class);
+        return apiClient.makeRequest(requestDetails, GetUserResponse.class).getUser();
     }
 
 }

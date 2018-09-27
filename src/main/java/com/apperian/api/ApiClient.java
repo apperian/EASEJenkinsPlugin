@@ -3,8 +3,6 @@ package com.apperian.api;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +20,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -52,8 +49,7 @@ public class ApiClient {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    public <T extends ApperianResponse> T makeRequest(RequestDetails requestDetails,
-                                                         Class<T> responseClass) throws ConnectionException {
+    public <T> T makeRequest(RequestDetails requestDetails, Class<T> responseClass) throws ConnectionException {
 
         try {
             HttpUriRequest httpRequest = buildHttpRequest(requestDetails);
@@ -158,7 +154,7 @@ public class ApiClient {
         return request;
     }
 
-    private <T extends ApperianResponse> T buildResponseObject(Class<T> responseClass, CloseableHttpResponse response) throws IOException {
+    private <T> T buildResponseObject(Class<T> responseClass, CloseableHttpResponse response) throws IOException {
         HttpEntity entity = response.getEntity();
         String responseString = EntityUtils.toString(entity);
         return mapper.readValue(responseString, responseClass);

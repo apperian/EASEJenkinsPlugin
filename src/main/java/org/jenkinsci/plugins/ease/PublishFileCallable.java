@@ -11,22 +11,23 @@ import java.util.logging.Logger;
 
 import com.apperian.api.ApperianApi;
 import com.apperian.api.ConnectionException;
-import com.apperian.api.application.Application;
+import com.apperian.api.applications.Application;
 import com.apperian.api.signing.SignApplicationResponse;
 import com.apperian.api.signing.SigningStatus;
+
+import org.jenkinsci.remoting.RoleChecker;
 
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
-import org.jenkinsci.remoting.RoleChecker;
 
 public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
     private final static Logger logger = Logger.getLogger(PublishFileCallable.class.getName());
 
     private EaseUpload upload;
     private final BuildListener listener;
-    private transient ApiManager apiManager = new ApiManager();
+    private transient ApperianApiFactory apperianApiFactory = new ApperianApiFactory();
     private transient CredentialsManager credentialsManager = new CredentialsManager();
 
     public PublishFileCallable(EaseUpload upload, BuildListener listener) {
@@ -53,7 +54,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         String customApperianUrl = upload.customApperianUrl;
         String apiToken = credentialsManager.getCredentialWithId(upload.apiTokenId);
 
-        ApperianApi apperianApi = apiManager.createConnection(env, customApperianUrl, apiToken);
+        ApperianApi apperianApi = apperianApiFactory.create(env, customApperianUrl, apiToken);
 
         try {
             uploadApp(f, apperianApi);

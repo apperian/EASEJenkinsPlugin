@@ -1,6 +1,5 @@
-package com.apperian.api.application;
+package com.apperian.api.applications;
 
-import com.apperian.api.signing.PlatformType;
 import com.apperian.api.signing.SigningStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -81,11 +80,4 @@ public class Application {
         return version;
     }
 
-    @Override
-    public String toString() {
-        return "Application{" +
-                "id=" + id +
-                '}';
-    }
 }
-// TODO add other attributes from here https://help.apperian.com/pages/viewpage.action?pageId=3441084

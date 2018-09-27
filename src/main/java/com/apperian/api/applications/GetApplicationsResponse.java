@@ -1,10 +1,8 @@
-package com.apperian.api.application;
-
-import com.apperian.api.ApperianResponse;
+package com.apperian.api.applications;
 
 import java.util.List;
 
-public class ApplicationListResponse extends ApperianResponse {
+public class GetApplicationsResponse {
     List<Application> applications;
 
     public List<Application> getApplications() {

@@ -1,17 +1,17 @@
 package org.jenkinsci.plugins.ease;
 
-import com.apperian.api.JsonHttpEndpoint;
-import com.cloudbees.plugins.credentials.CredentialsNameProvider;
-import com.cloudbees.plugins.credentials.CredentialsMatchers;
-import com.cloudbees.plugins.credentials.CredentialsProvider;
-import hudson.security.ACL;
-import jenkins.model.Jenkins;
-import org.jenkinsci.plugins.plaincredentials.StringCredentials;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
+import com.cloudbees.plugins.credentials.CredentialsNameProvider;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+
+import org.jenkinsci.plugins.plaincredentials.StringCredentials;
+
+import hudson.security.ACL;
+import jenkins.model.Jenkins;
 
 public class CredentialsManager {
     static final Logger logger = Logger.getLogger(CredentialsManager.class.getName());

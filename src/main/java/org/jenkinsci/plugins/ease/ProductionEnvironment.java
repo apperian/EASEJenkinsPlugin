@@ -7,11 +7,11 @@ public enum ProductionEnvironment {
 
     public static final ProductionEnvironment DEFAULT_PRODUCTION_ENVIRONMENT = NORTH_AMERICA;
 
-    String apperianUrl;
-    String easeUrl;
-    String title;
+    private String apperianUrl;
+    private String easeUrl;
+    private String title;
 
-    ProductionEnvironment(String title, String apperianUrl) {
+    private ProductionEnvironment(String title, String apperianUrl) {
         this.title = title;
         this.apperianUrl = apperianUrl;
     }

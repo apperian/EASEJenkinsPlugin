@@ -8,18 +8,19 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
+import javax.servlet.ServletException;
 
 import com.apperian.api.ApperianApi;
 import com.apperian.api.ConnectionException;
-import com.apperian.api.application.AppType;
-import com.apperian.api.application.Application;
-import com.apperian.api.application.Application.Version;
+import com.apperian.api.applications.AppType;
+import com.apperian.api.applications.Application;
+import com.apperian.api.applications.Application.Version;
 import com.apperian.api.signing.PlatformType;
 import com.apperian.api.signing.SigningCredential;
+
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 
 import hudson.Extension;
 import hudson.FilePath;
@@ -142,7 +143,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     @Extension
     public static final class DescriptorImpl extends Descriptor<EaseUpload> {
 
-        private transient ApiManager apiManager = new ApiManager();
+        private transient ApperianApiFactory apperianApiFactory = new ApperianApiFactory();
         private transient CredentialsManager credentialsManager = new CredentialsManager();
 
         @Override
@@ -178,7 +179,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 return new ListBoxModel().add("(credentials required)");
             }
 
-            ApperianApi apperianApi = createConnection(upload);
+            ApperianApi apperianApi = createApperianApi(upload);
 
             try {
                 List<Application> apps = apperianApi.listApplications();
@@ -209,7 +210,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
             boolean hasAppId = !Utils.isEmptyString(appId);
 
-            ApperianApi apperianApi = createConnection(upload);
+            ApperianApi apperianApi = createApperianApi(upload);
 
             try {
 
@@ -269,7 +270,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 return FormValidation.error("Api token and production environment should be provided");
             }
 
-            ApperianApi apperianApi = createConnection(upload);
+            ApperianApi apperianApi = createApperianApi(upload);
 
             try {
                 // To check the connection we just use the endpoint to get the user details to see if it works
@@ -280,11 +281,11 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             }
         }
 
-        private  ApperianApi createConnection(EaseUpload upload) {
+        private  ApperianApi createApperianApi(EaseUpload upload) {
             String environment = upload.prodEnv;
             String customApperianUrl = upload.customApperianUrl;
             String apiToken = credentialsManager.getCredentialWithId(upload.apiTokenId);
-            return apiManager.createConnection(environment, customApperianUrl, apiToken);
+            return apperianApiFactory.create(environment, customApperianUrl, apiToken);
         }
     }
 }

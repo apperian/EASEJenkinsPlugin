@@ -1,13 +1,13 @@
 package com.apperian.api.signing;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.util.List;
 
 import com.apperian.api.ApiTesting;
 import com.apperian.api.ApperianApi;
 import com.apperian.api.TestUtil;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class SigningTest {
 
@@ -16,8 +16,6 @@ public class SigningTest {
         if (TestUtil.shouldSkipIntegrationTests()) {
             return;
         }
-
-        ListAllSigningCredentialsResponse response;
 
         ApperianApi apperianApi = ApiTesting.getApperianApi();
         List<SigningCredential> credentials = apperianApi.listCredentials();

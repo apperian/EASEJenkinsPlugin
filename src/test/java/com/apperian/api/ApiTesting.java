@@ -9,7 +9,6 @@ public class ApiTesting {
     public static String APP_PSK = new String("48489");
     public static String APP_ID = new String("XDnZ9-NxYIxpasODR9M6Yw");
 
-    private static String EASE_ENDPOINT_URL = "https://easesvc.apperian.com/ease.interface.php";
     private static String APPERIAN_ENDPOINT_URL = "https://na01ws.apperian.com";
 
     public static boolean areCredentialsSet() {

@@ -30,13 +30,4 @@ public class SigningCredential {
     public PlatformType getPlatform() {
         return platform;
     }
-
-    @Override public String toString() {
-        return "SigningCredential{" +
-               "credentialId=" + credentialId +
-               ", description='" + description + '\'' +
-               ", expirationDate=" + expirationDate +
-               ", platform=" + platform +
-               '}';
-    }
 }

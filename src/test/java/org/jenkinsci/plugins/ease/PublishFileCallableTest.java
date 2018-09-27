@@ -1,5 +1,8 @@
 package org.jenkinsci.plugins.ease;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.withSettings;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -12,9 +15,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.mockito.Mockito;
 
 import hudson.model.BuildListener;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.withSettings;
 
 public class PublishFileCallableTest {
     @ClassRule

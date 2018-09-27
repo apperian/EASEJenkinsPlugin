@@ -9,7 +9,6 @@ import org.apache.commons.fileupload.util.Streams;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.ClassRule;
-import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import hudson.model.BuildListener;

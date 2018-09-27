@@ -1,4 +1,4 @@
-package com.apperian.api.application;
+package com.apperian.api.applications;
 
 public enum AppType {
     IOS(0, "iOS"),

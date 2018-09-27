@@ -1,10 +1,11 @@
-package com.apperian.api.application;
+package com.apperian.api.applications;
 
 import java.util.List;
 
 import com.apperian.api.ApiTesting;
 import com.apperian.api.ApperianApi;
 import com.apperian.api.TestUtil;
+
 import org.junit.Assert;
 import org.junit.Test;
 

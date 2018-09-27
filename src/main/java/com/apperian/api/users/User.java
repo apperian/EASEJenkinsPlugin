@@ -1,9 +1,12 @@
 package com.apperian.api.users;
 
-import com.apperian.api.ApperianResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class UserInfoResponse extends ApperianResponse {
+public class User {
     @JsonProperty("id")
     private String id;
+
+    public String getId() {
+        return id;
+    }
 }
