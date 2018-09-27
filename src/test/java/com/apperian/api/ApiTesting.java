@@ -13,11 +13,10 @@ public class ApiTesting {
     private static String APPERIAN_ENDPOINT_URL = "https://na01ws.apperian.com";
 
     public static boolean areCredentialsSet() {
-        return ApiTesting.getApperianEndpoint().isLoggedIn();
+        return API_TOKEN != null;
     }
 
-    // TODO:  Fix this name, makes no sense
-    public static ApperianEndpoint getApperianEndpoint() {
-        return new ApperianEndpoint(APPERIAN_ENDPOINT_URL, API_TOKEN);
+    public static ApperianApi getApperianApi() {
+        return new ApperianApi(APPERIAN_ENDPOINT_URL, API_TOKEN);
     }
 }

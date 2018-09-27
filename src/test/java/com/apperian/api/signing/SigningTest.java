@@ -10,7 +10,6 @@ import com.apperian.api.ApperianApi;
 import com.apperian.api.TestUtil;
 
 public class SigningTest {
-    private ApperianApi apperianApi = new ApperianApi();
 
     @Test
     public void testListCredentials() throws Exception {
@@ -20,7 +19,8 @@ public class SigningTest {
 
         ListAllSigningCredentialsResponse response;
 
-        List<SigningCredential> credentials = apperianApi.listCredentials(ApiTesting.getApperianEndpoint());
+        ApperianApi apperianApi = ApiTesting.getApperianApi();
+        List<SigningCredential> credentials = apperianApi.listCredentials();
 
         Assert.assertNotNull(credentials);
     }
@@ -31,9 +31,8 @@ public class SigningTest {
             return;
         }
 
-        SignApplicationResponse response;
-
-        response = apperianApi.signApplication(ApiTesting.getApperianEndpoint(), ApiTesting.CREDENTIALS_PSK, ApiTesting.APP_ID);
+        ApperianApi apperianApi = ApiTesting.getApperianApi();
+        SignApplicationResponse response = apperianApi.signApplication(ApiTesting.CREDENTIALS_PSK, ApiTesting.APP_ID);
 
         Assert.assertNotNull(response.getStatus());
     }

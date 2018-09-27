@@ -3,18 +3,12 @@ package com.apperian.api;
 import com.apperian.api.users.UserInfoRequest;
 
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.util.EntityUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.UnsupportedOperationException;
 import java.util.Map;
 
 public class ApperianEndpoint extends JsonHttpEndpoint {

@@ -1,5 +1,7 @@
 package com.apperian.api.application;
 
+import java.util.List;
+
 import com.apperian.api.ApiTesting;
 import com.apperian.api.ApperianApi;
 import com.apperian.api.TestUtil;
@@ -8,19 +10,17 @@ import org.junit.Test;
 
 public class ApplicationsTest {
 
-    private ApperianApi apperianApi = new ApperianApi();
-
     @Test
     public void testListApps() throws Exception {
         if (TestUtil.shouldSkipIntegrationTests()) {
             return;
         }
 
+        ApperianApi apperianApi = ApiTesting.getApperianApi();
 
+        List<Application> apps = apperianApi.listApplications();
 
-        ApplicationListResponse response = apperianApi.listApplications(ApiTesting.getApperianEndpoint());
-
-        Assert.assertNotNull(response.getApplications());
+        Assert.assertNotNull(apps);
     }
 
     @Test
@@ -28,8 +28,8 @@ public class ApplicationsTest {
         if (TestUtil.shouldSkipIntegrationTests()) {
             return;
         }
-
-        Application app = apperianApi.updateApplication(ApiTesting.getApperianEndpoint(), ApiTesting.APP_ID, true);
+        ApperianApi apperianApi = ApiTesting.getApperianApi();
+        Application app = apperianApi.updateApplication(ApiTesting.APP_ID, true);
 
         Assert.assertEquals(app.getId(), ApiTesting.APP_ID);
     }

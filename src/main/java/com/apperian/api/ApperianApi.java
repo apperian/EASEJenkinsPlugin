@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.apperian.api.application.Application;
 import com.apperian.api.application.ApplicationListRequest;
@@ -20,12 +22,20 @@ import com.apperian.api.signing.SigningCredential;
 
 public class ApperianApi {
 
-    public ApplicationListResponse listApplications(ApperianEndpoint endpoint) throws ConnectionException {
-        ApplicationListRequest request = new ApplicationListRequest();
-        return request.call(endpoint);
+    static final Logger logger = Logger.getLogger(ApperianApi.class.getName());
+
+    private ApperianEndpoint endpoint;
+
+    public ApperianApi(String baseUrl, String sessionToken) {
+        this.endpoint = new ApperianEndpoint(baseUrl, sessionToken);
     }
 
-    public Application updateApplication(ApperianEndpoint endpoint, ApperianResourceID applicationId, File appBinary, String author, String version, String versionNotes) throws ConnectionException {
+    public List<Application> listApplications() throws ConnectionException {
+        ApplicationListRequest request = new ApplicationListRequest();
+        return request.call(endpoint).getApplications();
+    }
+
+    public Application updateApplication(ApperianResourceID applicationId, File appBinary, String author, String version, String versionNotes) throws ConnectionException {
         UpdateApplicationRequest request = new UpdateApplicationRequest(applicationId);
 
         Map<String, Object> data = new HashMap<>();
@@ -42,27 +52,38 @@ public class ApperianApi {
         return request.call(endpoint, data, appBinary).getApplication();
     }
 
-    public Application updateApplication(ApperianEndpoint endpoint, ApperianResourceID applicationId, boolean enabled) throws ConnectionException {
+    public Application updateApplication(ApperianResourceID applicationId, boolean enabled) throws ConnectionException {
         UpdateApplicationRequest request = new UpdateApplicationRequest(applicationId);
         Map<String, Object> data = new HashMap<>();
         data.put("enabled", enabled);
         return request.call(endpoint, data).getApplication();
     }
 
-    public Application getApplicationInfo(ApperianEndpoint endpoint, ApperianResourceID applicationId) throws ConnectionException {
+    public Application getApplicationInfo(ApperianResourceID applicationId) throws ConnectionException {
         GetApplicationInfoRequest request =  new GetApplicationInfoRequest(applicationId);
         return request.call(endpoint).getApplication();
     }
 
-    public List<SigningCredential> listCredentials(ApperianEndpoint endpoint) throws ConnectionException {
+    public List<SigningCredential> listCredentials() throws ConnectionException {
         return new ListAllSigningCredentialsRequest().call(endpoint).getCredentials();
     }
 
     // TODO JJJ this should not return a response (try to isolate the network from the api consumer)
-    public SignApplicationResponse signApplication(ApperianEndpoint endpoint,
-                                                   ApperianResourceID credentialsId,
+    public SignApplicationResponse signApplication(ApperianResourceID credentialsId,
                                                    ApperianResourceID applicationId) throws ConnectionException {
         return new SignApplicationRequest(applicationId, credentialsId).call(endpoint);
+    }
+
+    public boolean isConnectionSuccessful() {
+        try {
+            endpoint.checkSessionToken();
+            return true;
+        } catch (Exception e) {
+            String message = "Could not authenticate to '" + endpoint.getUrl() + "', error:  " + e.getMessage();
+            logger.log(Level.WARNING, message, e);
+            endpoint.setLastLoginError(e.getMessage());
+        }
+        return false;
     }
 
 }
