@@ -34,15 +34,6 @@ public class Utils {
         return url == null ? "" : url.trim();
     }
 
-    public static String override(String ...args) {
-        for (String arg : args) {
-            if (!Utils.isEmptyString(arg)) {
-                return arg;
-            }
-        }
-        return "";
-    }
-
     public static boolean isValidURL(String url) {
         try {
             new URL(url);

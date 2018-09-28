@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Logger;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -24,8 +23,6 @@ import net.sf.json.JSONObject;
 
 public class EaseRecorder extends Recorder {
     public static final String PLUGIN_NAME = "Apperian Plugin";
-
-    private static final Logger logger = Logger.getLogger(EaseRecorder.class.getName());
 
     private final List<EaseUpload> uploads;
 
@@ -55,7 +52,7 @@ public class EaseRecorder extends Recorder {
 
             for (Iterator<EaseUpload> iterator = uploads.iterator(); iterator.hasNext(); ) {
                 EaseUpload upload = iterator.next();
-                if (!upload.checkOk()) {
+                if (!upload.isConfigurationValid()) {
                     buildLog.println("Additional upload skipped: '" + upload.filename + "' -> appId='" + upload.appId + "', specify appId, filename or url");
                     iterator.remove();
                 }

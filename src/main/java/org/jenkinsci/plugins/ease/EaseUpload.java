@@ -3,8 +3,6 @@ package org.jenkinsci.plugins.ease;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -30,6 +28,9 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 
 public class EaseUpload implements Describable<EaseUpload>, Serializable, Cloneable {
+
+    private static final long serialVersionUID = 1L;
+
     private static final Logger logger = Logger.getLogger(EaseUpload.class.getName());
 
     public String prodEnv;
@@ -91,7 +92,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 false);
     }
 
-    public boolean checkOk() {
+    public boolean isConfigurationValid() {
         return !Utils.isEmptyString(appId) &&
                 validateHasAuthFields() &&
                 !Utils.isEmptyString(filename);
@@ -132,8 +133,6 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
         return true;
     }
-
-
 
     @Override
     public Descriptor<EaseUpload> getDescriptor() {
@@ -238,7 +237,6 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 List<SigningCredential> credentials = apperianApi.listCredentials();
 
                 ListBoxModel listItems = new ListBoxModel();
-                DateFormat format = SimpleDateFormat.getDateInstance(DateFormat.SHORT);
 
                 for (SigningCredential credential : credentials) {
                     if (typeFilter != null) {

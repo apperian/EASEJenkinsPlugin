@@ -29,7 +29,7 @@ public class RequestDetails {
 
         public Builder withPath(String path, String... arguments) {
             if (arguments.length > 0) {
-                requestDetails.path = String.format(path, arguments);
+                requestDetails.path = String.format(path, (Object[]) arguments);
             } else {
                 requestDetails.path = path;
             }

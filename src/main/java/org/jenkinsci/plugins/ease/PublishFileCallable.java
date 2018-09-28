@@ -23,6 +23,8 @@ import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
 
 public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
+    private static final long serialVersionUID = 1L;
+
     private final static Logger logger = Logger.getLogger(PublishFileCallable.class.getName());
 
     private EaseUpload upload;
@@ -45,7 +47,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
             return false;
         }
 
-        if (!upload.checkOk()) {
+        if (!upload.isConfigurationValid()) {
             report("Error: all required upload parameters should be set: auth, appId and filename");
             return false;
         }
@@ -122,7 +124,6 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         report("Signing application with credential '%s'", upload.credential);
         String appId = new String(upload.appId);
         String credentialId = new String(upload.credential);
-
 
         SignApplicationResponse response = apperianApi.signApplication(credentialId, appId);
 
