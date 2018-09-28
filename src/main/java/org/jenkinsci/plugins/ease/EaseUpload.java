@@ -33,19 +33,19 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
     private static final Logger logger = Logger.getLogger(EaseUpload.class.getName());
 
-    public String prodEnv;
-    public String customApperianUrl;
-    public String appId;
-    public String filename;
-    public String apiTokenId;
-    public String author;
-    public String version;
-    public String versionNotes;
-    public boolean signApp;
-    public String credential;
-    public boolean enableApp;
+    private String prodEnv;
+    private String customApperianUrl;
+    private String appId;
+    private String filename;
+    private String apiTokenId;
+    private String author;
+    private String version;
+    private String versionNotes;
+    private boolean signApp;
+    private String credential;
+    private boolean enableApp;
 
-    public FilePath filePath;
+    private FilePath filePath;
 
     @DataBoundConstructor
     public EaseUpload(
@@ -90,6 +90,86 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 false,
                 null,
                 false);
+    }
+
+    public String getProdEnv() {
+        return prodEnv;
+    }
+
+    public String getCustomApperianUrl() {
+        return customApperianUrl;
+    }
+
+    public String getAppId() {
+        return appId;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public String getApiTokenId() {
+        return apiTokenId;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public String getVersionNotes() {
+        return versionNotes;
+    }
+
+    public boolean isSignApp() {
+        return signApp;
+    }
+
+    public String getCredential() {
+        return credential;
+    }
+
+    public boolean isEnableApp() {
+        return enableApp;
+    }
+
+    public FilePath getFilePath() {
+        return filePath;
+    }
+
+    public void setAppId(String appId) {
+        this.appId = appId;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public void setVersionNotes(String versionNotes) {
+        this.versionNotes = versionNotes;
+    }
+
+    public void setEnableApp(boolean enableApp) {
+        this.enableApp = enableApp;
+    }
+
+    public void setSignApp(boolean signApp) {
+        this.signApp = signApp;
+    }
+
+    public void setCredential(String credential) {
+        this.credential = credential;
     }
 
     public boolean isConfigurationValid() {

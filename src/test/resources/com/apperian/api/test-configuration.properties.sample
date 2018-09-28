@@ -1,0 +1,13 @@
+# To execute the integration tests, clone this file (removing the .sample suffix) and populate the appropriate values.
+
+# Apperian API base URL.
+APPERIAN_API_URL=
+
+# Api Token for a user with enough privileges to upload apps.
+API_TOKEN=
+
+# Id of an Android app to upload the binary to.
+ANDROID_APP_ID=
+
+# Credentials Id stored in Apperian to sign an Android application.
+ANDROID_CREDENTIALS_ID=

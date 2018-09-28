@@ -1,60 +1,60 @@
 package org.jenkinsci.plugins.ease;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
-import org.apache.commons.fileupload.util.Streams;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+import com.apperian.api.ApiTesting;
+
 import org.easymock.EasyMock;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.mockito.Mockito;
 
 import hudson.model.BuildListener;
 
 public class UploadTest {
-    public static final String URL = "https://easesvc.apperian.eu/ease.interface.php";
-    public static final String API_TOKEN = null;
+
+    private static final String FOO_API_KEY_ID = "foo_api_key_id";
+
+    @Before
+    public void beforeMethod() {
+        // Skip tests if the properties file has not been configured.
+        assumeTrue(ApiTesting.PROPERTIES_FILE_EXISTS);
+    }
 
     @ClassRule
     public static JenkinsRule j = new JenkinsRule();
 
-    // TODO:  Get these working again.  They were not being run before we switched to using the API token.
-//    @Test
-//    public void testAndroid() throws Exception {
-//        upload("1EhXFWxikr6erSk1RVHMlw", "android.apk");
-//    }
-//
-//    @Test
-//    public void testIOS() throws Exception {
-//        upload("1EhXFWxikr6erSk1RVHMlw", "ios.ipa");
-//    }
-//
-//    @Test
-//    public void testWinPhoneAppx() throws Exception {
-//        upload("1EhXFWxikr6erSk1RVHMlw", "winphone.appx");
-//    }
-//
-//    @Test
-//    public void testBlackberry() throws Exception {
-//        upload("1EhXFWxikr6erSk1RVHMlw", "blackberry.zip");
-//    }
+    @Test
+    public void testAndroid() throws Exception {
+        upload(ApiTesting.ANDROID_APP_ID, "android.apk");
+    }
 
-    private void upload(String appId, String filename) throws IOException, InterruptedException {
+    private void upload(String appId, String filename) throws IOException, InterruptedException, URISyntaxException {
         EaseUpload upload = EaseUpload.simpleUpload(
-                "EUROPE",
-                null,
-                API_TOKEN);
+                "CUSTOM",
+                ApiTesting.APPERIAN_API_URL,
+                FOO_API_KEY_ID);
 
-        InputStream res = getClass().getResourceAsStream(filename);
-        File tmpFile = new File(filename);
-        if (res != null) {
-            try (FileOutputStream out = new FileOutputStream(tmpFile);
-                        InputStream in = res) {
-                Streams.copy(in, out, false);
-            }
-        }
+        upload.setAppId(appId);
+        upload.setEnableApp(true);
+        upload.setSignApp(true);
+        upload.setFilename(filename);
+        upload.setVersion("1.0.1");
+        upload.setVersionNotes("Built at $BUILD_TIMESTAMP");
+        upload.setCredential(ApiTesting.ANDROID_CREDENTIALS_ID);
+
+        File appBinary = new File(getClass().getResource(filename).toURI());
+        assertNotNull(appBinary);
+        assertTrue(appBinary.exists());
 
         BuildListener listener = EasyMock.createMock(BuildListener.class);
         EasyMock.expect(listener.getLogger()).andReturn(System.out).anyTimes();
@@ -62,9 +62,11 @@ public class UploadTest {
 
         PublishFileCallable callable = new PublishFileCallable(upload,
                                                                listener);
-        Assert.assertTrue("Upload Failed!", callable.invoke(tmpFile, null));
-        if (res != null) {
-            tmpFile.delete();
-        }
+
+
+        CredentialsManager credentialsManagerMock = Mockito.mock(CredentialsManager.class);
+        Mockito.when(credentialsManagerMock.getCredentialWithId(FOO_API_KEY_ID)).thenReturn(ApiTesting.API_TOKEN);
+        callable.setCredentialsManager(credentialsManagerMock);
+        Assert.assertTrue("Upload Failed!", callable.invoke(appBinary, null));
     }
 }

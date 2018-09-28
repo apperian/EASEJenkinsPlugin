@@ -1,21 +1,49 @@
 package com.apperian.api;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 public class ApiTesting {
-    public static String API_TOKEN = null;
+    private static final String PROPERTIES_FILE_NAME = "com/apperian/api/test-configuration.properties";
 
-    public static String ORGANIZATION_ID = new String("5763"); // Rails Reactor
-    public static String USER_PSK = new String("392157");
-    public static String CREDENTIALS_PSK = new String("gFuZNZYDdcbOhOu_TfzisQ"); // who knows
-    public static String APP_PSK = new String("48489");
-    public static String APP_ID = new String("XDnZ9-NxYIxpasODR9M6Yw");
+    public static final boolean PROPERTIES_FILE_EXISTS;
+    public static final String API_TOKEN;
+    public static final String ANDROID_CREDENTIALS_ID;
+    public static final String ANDROID_APP_ID;
+    public static final String APPERIAN_API_URL;
 
-    private static String APPERIAN_ENDPOINT_URL = "https://na01ws.apperian.com";
+    static {
+        // Configure testing values from the properties file (if found).
+        String apiToken = null;
+        String credentialsId = null;
+        String appId = null;
+        String apiUrl = null;
 
-    public static boolean areCredentialsSet() {
-        return API_TOKEN != null;
+        InputStream stream = ApiTesting.class.getClassLoader().getResourceAsStream(PROPERTIES_FILE_NAME);
+        if (stream == null) {
+            PROPERTIES_FILE_EXISTS = false;
+        } else {
+            PROPERTIES_FILE_EXISTS = true;
+            Properties properties = new Properties();
+            try {
+                properties.load(stream);
+                apiToken = properties.getProperty("API_TOKEN");
+                credentialsId = properties.getProperty("ANDROID_CREDENTIALS_ID");
+                appId = properties.getProperty("ANDROID_APP_ID");
+                apiUrl = properties.getProperty("APPERIAN_API_URL");
+            } catch (IOException e) {
+                throw new RuntimeException("Error parsing test-configuration.properties", e);
+            }
+        }
+
+        API_TOKEN = apiToken;
+        ANDROID_CREDENTIALS_ID = credentialsId;
+        ANDROID_APP_ID = appId;
+        APPERIAN_API_URL = apiUrl;
     }
 
     public static ApperianApi getApperianApi() {
-        return new ApperianApi(APPERIAN_ENDPOINT_URL, API_TOKEN);
+        return new ApperianApi(APPERIAN_API_URL, API_TOKEN);
     }
 }

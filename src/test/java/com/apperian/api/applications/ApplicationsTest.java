@@ -1,22 +1,26 @@
 package com.apperian.api.applications;
 
+import static org.junit.Assume.assumeTrue;
+
 import java.util.List;
 
 import com.apperian.api.ApiTesting;
 import com.apperian.api.ApperianApi;
-import com.apperian.api.TestUtil;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 public class ApplicationsTest {
 
+    @Before
+    public void beforeMethod() {
+        // Skip tests if the properties file has not been configured.
+        assumeTrue(ApiTesting.PROPERTIES_FILE_EXISTS);
+    }
+
     @Test
     public void testListApps() throws Exception {
-        if (TestUtil.shouldSkipIntegrationTests()) {
-            return;
-        }
-
         ApperianApi apperianApi = ApiTesting.getApperianApi();
 
         List<Application> apps = apperianApi.listApplications();
@@ -26,12 +30,9 @@ public class ApplicationsTest {
 
     @Test
     public void testEnableApp() throws Exception {
-        if (TestUtil.shouldSkipIntegrationTests()) {
-            return;
-        }
         ApperianApi apperianApi = ApiTesting.getApperianApi();
-        Application app = apperianApi.updateApplication(ApiTesting.APP_ID, true);
+        Application app = apperianApi.updateApplication(ApiTesting.ANDROID_APP_ID, true);
 
-        Assert.assertEquals(app.getId(), ApiTesting.APP_ID);
+        Assert.assertEquals(app.getId(), ApiTesting.ANDROID_APP_ID);
     }
 }

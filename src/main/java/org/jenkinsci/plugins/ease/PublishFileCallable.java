@@ -1,5 +1,7 @@
 package org.jenkinsci.plugins.ease;
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -52,15 +54,15 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
             return false;
         }
 
-        String env = upload.prodEnv;
-        String customApperianUrl = upload.customApperianUrl;
-        String apiToken = credentialsManager.getCredentialWithId(upload.apiTokenId);
+        String env = upload.getProdEnv();
+        String customApperianUrl = upload.getCustomApperianUrl();
+        String apiToken = credentialsManager.getCredentialWithId(upload.getApiTokenId());
 
         ApperianApi apperianApi = apperianApiFactory.create(env, customApperianUrl, apiToken);
 
         try {
             uploadApp(f, apperianApi);
-        } catch (Exception ex) {
+        } catch (ConnectionException ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
             report("General plugin problem : %s", ex);
             ex.printStackTrace(getLogger());
@@ -68,10 +70,10 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         }
 
         try {
-            if (upload.signApp) {
+            if (upload.isSignApp()) {
                 signApp(apperianApi);
             }
-        } catch (Exception ex) {
+        } catch (ConnectionException ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
             report("Error signing application: %s", ex);
             ex.printStackTrace(getLogger());
@@ -79,10 +81,10 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         }
 
         try {
-            if (upload.enableApp) {
+            if (upload.isEnableApp()) {
                 enableApp(apperianApi);
             }
-        } catch (Exception ex) {
+        } catch (ConnectionException ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
             report("Error enabling application: %s", ex);
             ex.printStackTrace(getLogger());
@@ -92,23 +94,27 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         return true;
     }
 
+    public void setCredentialsManager(CredentialsManager credentialsManager) {
+        this.credentialsManager = credentialsManager;
+    }
+
     private void uploadApp(File appBinary, ApperianApi apperianApi) throws ConnectionException {
 
-        String appId = new String(upload.appId);
+        String appId = new String(upload.getAppId());
 
         String author = null;
-        if (!Utils.isEmptyString(upload.author)) {
-            author = upload.author;
+        if (!Utils.isEmptyString(upload.getAuthor())) {
+            author = upload.getAuthor();
         }
 
         String version = null;
-        if (!Utils.isEmptyString(upload.version)) {
-            version = upload.version;
+        if (!Utils.isEmptyString(upload.getVersion())) {
+            version = upload.getVersion();
         }
 
         String versionNotes = null;
-        if (!Utils.isEmptyString(upload.versionNotes)) {
-            versionNotes = upload.versionNotes;
+        if (!Utils.isEmptyString(upload.getVersionNotes())) {
+            versionNotes = upload.getVersionNotes();
             Map<String, String> vars = new HashMap<>();
 
             vars.put("BUILD_TIMESTAMP", Utils.formatIso8601(new Date()));
@@ -117,13 +123,13 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         }
 
         report("Updating application binary. Author: %s - Version: %s, Version Notes: %s", author, version, versionNotes);
-        apperianApi.updateApplication(appId, appBinary, author, version, versionNotes);
+        apperianApi.createNewVersion(appId, appBinary, author, version, versionNotes);
     }
 
     private void signApp(ApperianApi apperianApi) throws ConnectionException {
-        report("Signing application with credential '%s'", upload.credential);
-        String appId = new String(upload.appId);
-        String credentialId = new String(upload.credential);
+        report("Signing application with credential '%s'", upload.getCredential());
+        String appId = new String(upload.getAppId());
+        String credentialId = new String(upload.getCredential());
 
         SignApplicationResponse response = apperianApi.signApplication(credentialId, appId);
 
@@ -155,6 +161,11 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
             signingStatus = application.getVersion().getStatus();
             details = getStatusDetails(application);
+        }
+
+        if (signingStatus == SigningStatus.ERROR) {
+            fail("Error signing the application: " + details);
+        } else {
             report(details);
         }
     }
@@ -178,8 +189,8 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
     }
 
     private void enableApp(ApperianApi apperianApi) throws ConnectionException {
-        report("Enabling application with ID '%s'", upload.appId);
-        String appId = new String(upload.appId);
+        report("Enabling application with ID '%s'", upload.getAppId());
+        String appId = new String(upload.getAppId());
 
         apperianApi.updateApplication(appId, true);
     }

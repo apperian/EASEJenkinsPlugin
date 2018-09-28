@@ -105,14 +105,14 @@ public class ApiClient {
             if (request instanceof HttpEntityEnclosingRequestBase) {
                 HttpEntityEnclosingRequestBase requestWithEntity;
                 requestWithEntity = (HttpEntityEnclosingRequestBase) request;
-                if (file == null) {
+                if (fileField == null) {
                     if (data != null) {
                         // Add the json data
                         String requestAsString = mapper.writeValueAsString(data);
-                        StringEntity entity = new StringEntity(requestAsString, APIConstants.REQUEST_CHARSET);
+                        StringEntity entity = new StringEntity(requestAsString, ApiConstants.REQUEST_CHARSET);
                         requestWithEntity.setEntity(entity);
-                        BasicHeader jsonHeader = new BasicHeader(APIConstants.CONTENT_TYPE_HEADER,
-                                                                 APIConstants.JSON_CONTENT_TYPE);
+                        BasicHeader jsonHeader = new BasicHeader(ApiConstants.CONTENT_TYPE_HEADER,
+                                                                 ApiConstants.JSON_CONTENT_TYPE);
                         headers.add(jsonHeader);
                     }
                 } else {
@@ -143,7 +143,7 @@ public class ApiClient {
                 }
             }
 
-            headers.add(new BasicHeader(APIConstants.X_TOKEN_HEADER, sessionToken));
+            headers.add(new BasicHeader(ApiConstants.X_TOKEN_HEADER, sessionToken));
 
             if (!headers.isEmpty()) {
                 request.setHeaders(headers.toArray(new Header[headers.size()]));

@@ -53,7 +53,8 @@ public class EaseRecorder extends Recorder {
             for (Iterator<EaseUpload> iterator = uploads.iterator(); iterator.hasNext(); ) {
                 EaseUpload upload = iterator.next();
                 if (!upload.isConfigurationValid()) {
-                    buildLog.println("Additional upload skipped: '" + upload.filename + "' -> appId='" + upload.appId + "', specify appId, filename or url");
+                    buildLog.println("Additional upload skipped: '" + upload.getFilename() +
+                                     "' -> appId='" + upload.getAppId() + "', specify appId, filename or url");
                     iterator.remove();
                 }
             }
@@ -67,7 +68,7 @@ public class EaseRecorder extends Recorder {
             }
 
             for (EaseUpload upload : uploads) {
-                FilePath path = upload.filePath;
+                FilePath path = upload.getFilePath();
                 PublishFileCallable callable = new PublishFileCallable(upload, listener);
 
                 if (!path.act(callable)) {
@@ -93,11 +94,11 @@ public class EaseRecorder extends Recorder {
     private void expandUploadArgs(EaseUpload upload, AbstractBuild build, BuildListener listener, PrintStream logger) {
         try {
             EnvVars environment = build.getEnvironment(listener);
-            upload.appId = environment.expand(upload.appId);
-            upload.filename = environment.expand(upload.filename);
-            upload.author = environment.expand(upload.author);
-            upload.version = environment.expand(upload.version);
-            upload.versionNotes = environment.expand(upload.versionNotes);
+            upload.setAppId(environment.expand(upload.getAppId()));
+            upload.setFilename(environment.expand(upload.getFilename()));
+            upload.setAuthor(environment.expand(upload.getAuthor()));
+            upload.setVersion(environment.expand(upload.getVersion()));
+            upload.setVersionNotes(environment.expand(upload.getVersionNotes()));
         } catch (IOException e) {
             logger.println("Environment expand error: " + e);
         } catch (InterruptedException e) {
