@@ -2,7 +2,6 @@ package org.jenkinsci.plugins.ease;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Iterator;
 import java.util.List;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -38,6 +37,12 @@ public class EaseRecorder extends Recorder {
     @Override
     public boolean perform(final AbstractBuild build, Launcher launcher, final BuildListener listener) {
         final PrintStream buildLog = listener.getLogger();
+        final EnvVars environment;
+        try {
+            environment = build.getEnvironment(listener);
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException("Error getting Jenkins environment", e);
+        }
 
         if (uploads == null || uploads.isEmpty()) {
             buildLog.println("One of required configuration options is not set");
@@ -46,13 +51,18 @@ public class EaseRecorder extends Recorder {
 
         try {
             for (EaseUpload upload : uploads) {
-                applyEnvVariables(upload, build, listener, buildLog);
-
                 if (!upload.isConfigurationValid()) {
                     buildLog.println("Additional upload skipped: '" + upload.getFilename() +
                                      "' -> appId='" + upload.getAppId() + "', invalid configuration");
                     return false;
                 }
+
+                Formatter<String> envVariablesFormatter = new Formatter<String>() {
+                    public String format(String value) {
+                        return environment.expand(value);
+                    }
+                };
+                upload.setEnvVariablesFormatter(envVariablesFormatter);
 
                 if (!upload.searchFileInWorkspace(build.getWorkspace(), buildLog)) {
                     return false;
@@ -76,22 +86,6 @@ public class EaseRecorder extends Recorder {
             buildLog.println("General plugin problem");
             e.printStackTrace(buildLog);
             return false;
-        }
-    }
-
-    private void applyEnvVariables(EaseUpload upload, AbstractBuild build, BuildListener listener, PrintStream logger) {
-        try {
-            final EnvVars environment = build.getEnvironment(listener);
-            Formatter<String> formatter = new Formatter<String>() {
-                public String format(String value) {
-                    return environment.expand(value);
-                }
-            };
-            upload.applyFormatterToInputFields(formatter);
-        } catch (IOException e) {
-            logger.println("Environment expand error: " + e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
         }
     }
 

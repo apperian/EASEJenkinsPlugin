@@ -31,8 +31,6 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
     private static final long serialVersionUID = 1L;
 
-    private static final Logger logger = Logger.getLogger(EaseUpload.class.getName());
-
     private String prodEnv;
     private String customApperianUrl;
     private String appId;
@@ -46,6 +44,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     private boolean enableApp;
 
     private FilePath filePath;
+    private transient Formatter<String> envVariablesFormatter = null;
 
     @DataBoundConstructor
     public EaseUpload(
@@ -185,12 +184,15 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         return filePath;
     }
 
-    public void applyFormatterToInputFields(Formatter<String> formatter) {
-        appId = formatter.format(appId);
-        filename = formatter.format(filename);
-        author = formatter.format(author);
-        version = formatter.format(version);
-        versionNotes = formatter.format(versionNotes);
+    public String applyEnvVariablesFormatter(String value) {
+        if (envVariablesFormatter != null) {
+            value = envVariablesFormatter.format(value);
+        }
+        return value;
+    }
+
+    public void setEnvVariablesFormatter(Formatter<String> envVariablesFormatter) {
+        this.envVariablesFormatter = envVariablesFormatter;
     }
 
     public boolean isConfigurationValid() {
@@ -201,7 +203,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
     public boolean searchFileInWorkspace(FilePath workspacePath,
                                    PrintStream buildLog) throws IOException, InterruptedException {
-        FilePath[] paths = workspacePath.list(this.filename);
+        FilePath[] paths = workspacePath.list(applyEnvVariablesFormatter(this.filename));
         if (paths.length != 1) {
             buildLog.println("Found " + (paths.length == 0 ? "no files" : " ambiguous list " + Arrays.asList(paths)) +
                     " as candidates for pattern '" + this.filename + "'");
@@ -243,6 +245,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     @Extension
     public static final class DescriptorImpl extends Descriptor<EaseUpload> {
 
+        private static final transient Logger logger = Logger.getLogger(DescriptorImpl.class.getName());
         private transient ApperianApiFactory apperianApiFactory = new ApperianApiFactory();
         private transient CredentialsManager credentialsManager = new CredentialsManager();
 

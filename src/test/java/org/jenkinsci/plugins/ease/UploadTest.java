@@ -45,7 +45,7 @@ public class UploadTest {
             .withSignApp(true)
             .withFilename(filename)
             .withVersion("1.0.1")
-            .withVersionNotes("Built at $BUILD_TIMESTAMP")
+            .withVersionNotes("Built for integration tests")
             .withCredential(ApiTesting.ANDROID_CREDENTIALS_ID)
             .build();
 

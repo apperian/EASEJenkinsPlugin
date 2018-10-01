@@ -5,9 +5,6 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -20,7 +17,6 @@ import com.apperian.api.signing.SigningStatus;
 import org.jenkinsci.remoting.RoleChecker;
 
 import hudson.FilePath;
-import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
 
@@ -104,22 +100,17 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
         String author = null;
         if (!Utils.isEmptyString(upload.getAuthor())) {
-            author = upload.getAuthor();
+            author = upload.applyEnvVariablesFormatter(upload.getAuthor());
         }
 
         String version = null;
         if (!Utils.isEmptyString(upload.getVersion())) {
-            version = upload.getVersion();
+            version = upload.applyEnvVariablesFormatter(upload.getVersion());
         }
 
         String versionNotes = null;
         if (!Utils.isEmptyString(upload.getVersionNotes())) {
-            versionNotes = upload.getVersionNotes();
-            Map<String, String> vars = new HashMap<>();
-
-            vars.put("BUILD_TIMESTAMP", Utils.formatIso8601(new Date()));
-
-            versionNotes = Util.replaceMacro(versionNotes, vars);
+            versionNotes = upload.applyEnvVariablesFormatter(upload.getVersionNotes());
         }
 
         report("Updating application binary. Author: %s - Version: %s, Version Notes: %s", author, version, versionNotes);
