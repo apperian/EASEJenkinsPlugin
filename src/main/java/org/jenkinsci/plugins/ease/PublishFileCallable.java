@@ -163,10 +163,10 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
             details = getStatusDetails(application);
         }
 
-        if (signingStatus == SigningStatus.ERROR) {
-            fail("Error signing the application: " + details);
-        } else {
+        if (signingStatus == SigningStatus.SIGNED) {
             report(details);
+        } else {
+            fail("Error signing the application: " + details);
         }
     }
 

@@ -6,6 +6,9 @@ APPERIAN_API_URL=
 # Api Token for a user with enough privileges to upload apps.
 API_TOKEN=
 
+# Id of the user whose API token was set above
+USER_ID=
+
 # Id of an Android app to upload the binary to.
 ANDROID_APP_ID=
 
