@@ -56,8 +56,13 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
         ApperianApi apperianApi = apperianApiFactory.create(env, customApperianUrl, apiToken);
 
+        // When we publish the app we only enable it if it needs to be enabled and no signing is needed.
+        boolean enableAppOnPublishing = (!upload.isSignApp()) && upload.isEnableApp();
+        // When signing is needed we publish it as disabled and then after signing it we enable the app.
+        boolean enableAppAfterSigning = upload.isSignApp() && upload.isEnableApp();
+
         try {
-            uploadApp(f, apperianApi);
+            uploadApp(f, apperianApi, enableAppOnPublishing);
         } catch (ConnectionException ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
             report("General plugin problem : %s", ex);
@@ -77,7 +82,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         }
 
         try {
-            if (upload.isEnableApp()) {
+            if (enableAppAfterSigning) {
                 enableApp(apperianApi);
             }
         } catch (ConnectionException ex) {
@@ -94,7 +99,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         this.credentialsManager = credentialsManager;
     }
 
-    private void uploadApp(File appBinary, ApperianApi apperianApi) throws ConnectionException {
+    private void uploadApp(File appBinary, ApperianApi apperianApi, boolean enableApp) throws ConnectionException {
 
         String appId = new String(upload.getAppId());
 
@@ -114,7 +119,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         }
 
         report("Updating application binary. Author: %s - Version: %s, Version Notes: %s", author, version, versionNotes);
-        apperianApi.createNewVersion(appId, appBinary, author, version, versionNotes);
+        apperianApi.createNewVersion(appId, appBinary, author, version, versionNotes, enableApp);
     }
 
     private void signApp(ApperianApi apperianApi) throws ConnectionException {

@@ -34,7 +34,8 @@ public class ApperianApi {
                                          File appBinary,
                                          String author,
                                          String version,
-                                         String versionNotes) throws ConnectionException {
+                                         String versionNotes,
+                                         boolean enableApp) throws ConnectionException {
 
         Map<String, Object> data = new HashMap<>();
         if (author != null) {
@@ -46,6 +47,7 @@ public class ApperianApi {
         if (versionNotes != null) {
             data.put("version_note", versionNotes);
         }
+        data.put("enabled", enableApp);
 
         RequestDetails requestDetails = new RequestDetails.Builder()
             .withMethod(RequestMethod.POST)
