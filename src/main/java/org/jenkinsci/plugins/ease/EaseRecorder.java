@@ -45,37 +45,26 @@ public class EaseRecorder extends Recorder {
         }
 
         try {
-            // TODO:  Consolidate these 'for' loops.
             for (EaseUpload upload : uploads) {
-                expandUploadArgs(upload, build, listener, buildLog);
-            }
+                applyEnvVariables(upload, build, listener, buildLog);
 
-            for (Iterator<EaseUpload> iterator = uploads.iterator(); iterator.hasNext(); ) {
-                EaseUpload upload = iterator.next();
                 if (!upload.isConfigurationValid()) {
                     buildLog.println("Additional upload skipped: '" + upload.getFilename() +
-                                     "' -> appId='" + upload.getAppId() + "', specify appId, filename or url");
-                    iterator.remove();
+                                     "' -> appId='" + upload.getAppId() + "', invalid configuration");
+                    return false;
                 }
-            }
 
-            boolean ok = true;
-            for (EaseUpload upload : uploads) {
-                ok &= upload.searchWorkspace(build.getWorkspace(), buildLog);
-            }
-            if (!ok) {
-                return false;
-            }
+                if (!upload.searchFileInWorkspace(build.getWorkspace(), buildLog)) {
+                    return false;
+                }
 
-            for (EaseUpload upload : uploads) {
                 FilePath path = upload.getFilePath();
                 PublishFileCallable callable = new PublishFileCallable(upload, listener);
-
                 if (!path.act(callable)) {
-                    ok = false;
+                    return false;
                 }
             }
-            return ok;
+            return true;
         } catch (IOException e) {
             buildLog.println("Connectivity or IO problem");
             e.printStackTrace(buildLog);
@@ -90,15 +79,15 @@ public class EaseRecorder extends Recorder {
         }
     }
 
-    // TODO:  What does 'expand' do to a variable?  And why do we need it?
-    private void expandUploadArgs(EaseUpload upload, AbstractBuild build, BuildListener listener, PrintStream logger) {
+    private void applyEnvVariables(EaseUpload upload, AbstractBuild build, BuildListener listener, PrintStream logger) {
         try {
-            EnvVars environment = build.getEnvironment(listener);
-            upload.setAppId(environment.expand(upload.getAppId()));
-            upload.setFilename(environment.expand(upload.getFilename()));
-            upload.setAuthor(environment.expand(upload.getAuthor()));
-            upload.setVersion(environment.expand(upload.getVersion()));
-            upload.setVersionNotes(environment.expand(upload.getVersionNotes()));
+            final EnvVars environment = build.getEnvironment(listener);
+            Formatter<String> formatter = new Formatter<String>() {
+                public String format(String value) {
+                    return environment.expand(value);
+                }
+            };
+            upload.applyFormatterToInputFields(formatter);
         } catch (IOException e) {
             logger.println("Environment expand error: " + e);
         } catch (InterruptedException e) {

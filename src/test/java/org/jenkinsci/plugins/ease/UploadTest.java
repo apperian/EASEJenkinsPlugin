@@ -39,18 +39,15 @@ public class UploadTest {
     }
 
     private void upload(String appId, String filename) throws IOException, InterruptedException, URISyntaxException {
-        EaseUpload upload = EaseUpload.simpleUpload(
-                "CUSTOM",
-                ApiTesting.APPERIAN_API_URL,
-                FOO_API_KEY_ID);
-
-        upload.setAppId(appId);
-        upload.setEnableApp(true);
-        upload.setSignApp(true);
-        upload.setFilename(filename);
-        upload.setVersion("1.0.1");
-        upload.setVersionNotes("Built at $BUILD_TIMESTAMP");
-        upload.setCredential(ApiTesting.ANDROID_CREDENTIALS_ID);
+        EaseUpload upload = new EaseUpload.Builder("CUSTOM", ApiTesting.APPERIAN_API_URL, FOO_API_KEY_ID)
+            .withAppId(appId)
+            .withEnableApp(true)
+            .withSignApp(true)
+            .withFilename(filename)
+            .withVersion("1.0.1")
+            .withVersionNotes("Built at $BUILD_TIMESTAMP")
+            .withCredential(ApiTesting.ANDROID_CREDENTIALS_ID)
+            .build();
 
         File appBinary = new File(getClass().getResource(filename).toURI());
         assertNotNull(appBinary);

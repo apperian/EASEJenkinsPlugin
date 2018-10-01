@@ -74,12 +74,11 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         this.enableApp = enableApp;
     }
 
-    public static EaseUpload simpleUpload(
-            @QueryParameter("prodEnv") String prodEnv,
-            @QueryParameter("customApperianUrl") String customApperianUrl,
-            @QueryParameter("apiTokenId") String apiTokenId) {
+    public static class Builder {
+        private EaseUpload easeUpload;
 
-        return new EaseUpload(prodEnv,
+        public Builder(String prodEnv, String customApperianUrl, String apiTokenId) {
+            easeUpload = new EaseUpload(prodEnv,
                 customApperianUrl,
                 apiTokenId,
                 null,
@@ -90,6 +89,52 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 false,
                 null,
                 false);
+    }
+
+        public Builder withAppId(String appId) {
+            easeUpload.appId = appId;
+            return this;
+        }
+
+        public Builder withFilename(String filename) {
+            easeUpload.filename = filename;
+            return this;
+        }
+
+        public Builder withAuthor(String author) {
+            easeUpload.author = author;
+            return this;
+        }
+
+        public Builder withVersion(String version) {
+            easeUpload.version = version;
+            return this;
+        }
+
+        public Builder withVersionNotes(String versionNotes) {
+            easeUpload.versionNotes = versionNotes;
+            return this;
+        }
+
+        public Builder withEnableApp(boolean enableApp) {
+            easeUpload.enableApp = enableApp;
+            return this;
+        }
+
+        public Builder withSignApp(boolean signApp) {
+            easeUpload.signApp = signApp;
+            return this;
+        }
+
+        public Builder withCredential(String credential) {
+            easeUpload.credential = credential;
+            return this;
+        }
+
+        public EaseUpload build() {
+            return easeUpload;
+        }
+
     }
 
     public String getProdEnv() {
@@ -140,36 +185,12 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         return filePath;
     }
 
-    public void setAppId(String appId) {
-        this.appId = appId;
-    }
-
-    public void setFilename(String filename) {
-        this.filename = filename;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public void setVersionNotes(String versionNotes) {
-        this.versionNotes = versionNotes;
-    }
-
-    public void setEnableApp(boolean enableApp) {
-        this.enableApp = enableApp;
-    }
-
-    public void setSignApp(boolean signApp) {
-        this.signApp = signApp;
-    }
-
-    public void setCredential(String credential) {
-        this.credential = credential;
+    public void applyFormatterToInputFields(Formatter<String> formatter) {
+        appId = formatter.format(appId);
+        filename = formatter.format(filename);
+        author = formatter.format(author);
+        version = formatter.format(version);
+        versionNotes = formatter.format(versionNotes);
     }
 
     public boolean isConfigurationValid() {
@@ -178,7 +199,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 !Utils.isEmptyString(filename);
     }
 
-    public boolean searchWorkspace(FilePath workspacePath,
+    public boolean searchFileInWorkspace(FilePath workspacePath,
                                    PrintStream buildLog) throws IOException, InterruptedException {
         FilePath[] paths = workspacePath.list(this.filename);
         if (paths.length != 1) {
@@ -252,7 +273,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         public ListBoxModel doFillAppIdItems(@QueryParameter("prodEnv") final String prodEnv,
                                              @QueryParameter("customApperianUrl") String customApperianUrl,
                                              @QueryParameter("apiTokenId") final String apiTokenId) {
-            EaseUpload upload = EaseUpload.simpleUpload(prodEnv, customApperianUrl, apiTokenId);
+            EaseUpload upload = new EaseUpload.Builder(prodEnv, customApperianUrl, apiTokenId).build();
 
             if (!upload.validateHasAuthFields()) {
                 return new ListBoxModel().add("(credentials required)");
@@ -281,7 +302,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                                                   @QueryParameter("customApperianUrl") String customApperianUrl,
                                                   @QueryParameter("apiTokenId") final String apiTokenId,
                                                   @QueryParameter("appId") final String appId) {
-            EaseUpload upload = EaseUpload.simpleUpload(prodEnv, customApperianUrl, apiTokenId);
+            EaseUpload upload = new EaseUpload.Builder(prodEnv, customApperianUrl, apiTokenId).build();
 
             if (!upload.validateHasAuthFields()) {
                 return new ListBoxModel().add("(credentials required)");
@@ -342,7 +363,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                                                @QueryParameter("customApperianUrl") String customApperianUrl,
                                                @QueryParameter("apiTokenId") final String apiTokenId)
                 throws IOException, ServletException {
-            EaseUpload upload = EaseUpload.simpleUpload(prodEnv, customApperianUrl, apiTokenId);
+            EaseUpload upload = new EaseUpload.Builder(prodEnv, customApperianUrl, apiTokenId).build();
 
             if (!upload.validateHasAuthFields()) {
                 return FormValidation.error("Api token and production environment should be provided");
