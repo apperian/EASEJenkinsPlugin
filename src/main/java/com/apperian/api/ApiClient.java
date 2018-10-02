@@ -2,8 +2,10 @@ package com.apperian.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -75,7 +77,17 @@ public class ApiClient {
 
         public Builder withPath(String path, String... arguments) {
             if (arguments.length > 0) {
-                apiClient.path = String.format(path, (Object[]) arguments);
+                String[] encodedArguments = new String[arguments.length];
+                int i = 0;
+                for (String arg : arguments) {
+                    try {
+                        encodedArguments[i] = URLEncoder.encode(arg, "UTF-8");
+                    } catch (UnsupportedEncodingException e) {
+                        throw new RuntimeException("Error encoding parameter in path " + path);
+                    }
+                    i++;
+                }
+                apiClient.path = String.format(path, (Object[]) encodedArguments);
             } else {
                 apiClient.path = path;
             }
@@ -106,16 +118,27 @@ public class ApiClient {
             int statusCode = response.getStatusLine().getStatusCode();
 
             if (statusCode == 401) {
-                throw new ConnectionException("No access");
+                throw new ConnectionException("No access", retrieveErrorDetails(httpRequest, response));
             }
             if (statusCode != 200) {
-                throw new RuntimeException("bad API call, http status: " + response.getStatusLine() + ", request: " + httpRequest);
+                throw new ConnectionException("Error in request", retrieveErrorDetails(httpRequest, response));
             }
 
             return buildResponseObject(responseClass, response);
         } catch (IOException e) {
             throw new ConnectionException("No connection", e);
         }
+    }
+
+    private String retrieveErrorDetails(HttpUriRequest httpRequest, CloseableHttpResponse response) {
+        String errorDetails = "Bad API call.\n Http status: %d.\n Request: %s.\n Response: %s";
+        int httpStatus = response.getStatusLine().getStatusCode();
+        String responseAsString = null;
+        try {
+            responseAsString = getResponseAsString(response);
+        } catch (IOException e) {
+        }
+        return String.format(errorDetails, httpStatus, httpRequest, responseAsString);
     }
 
     private HttpUriRequest buildHttpRequest() throws ConnectionException {
@@ -199,9 +222,14 @@ public class ApiClient {
     }
 
     private <T> T buildResponseObject(Class<T> responseClass, CloseableHttpResponse response) throws IOException {
+        String responseString = getResponseAsString(response);
+        return mapper.readValue(responseString, responseClass);
+    }
+
+    private String getResponseAsString(CloseableHttpResponse response) throws IOException {
         HttpEntity entity = response.getEntity();
         String responseString = EntityUtils.toString(entity);
-        return mapper.readValue(responseString, responseClass);
+        return responseString;
     }
 
 }

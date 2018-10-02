@@ -40,13 +40,17 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
     }
 
     public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-        if (!upload.validateHasAuthFields()) {
-            report("Error: The api token is not set and no stored credentials were found");
+        try {
+            upload.checkHasAuthFields();
+        } catch (Exception e) {
+            report("Error in the fields for authentication. " + e.getMessage());
             return false;
         }
 
-        if (!upload.isConfigurationValid()) {
-            report("Error: all required upload parameters should be set: auth, appId and filename");
+        try {
+            upload.checkConfiguration();
+        } catch (Exception e) {
+            report("Error in the configuration. " + e.getMessage());
             return false;
         }
 
@@ -65,7 +69,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
             uploadApp(f, apperianApi, enableAppOnPublishing);
         } catch (ConnectionException ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
-            report("General plugin problem : %s", ex);
+            report("General plugin problem. Message: %s. Error details: %s.", ex.getMessage(), ex.getErrorDetails());
             ex.printStackTrace(getLogger());
             return false;
         }
@@ -76,7 +80,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
             }
         } catch (ConnectionException ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
-            report("Error signing application: %s", ex);
+            report("Error signing application. Message: %s. Error details: %s.", ex.getMessage(), ex.getErrorDetails());
             ex.printStackTrace(getLogger());
             return false;
         }
@@ -87,7 +91,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
             }
         } catch (ConnectionException ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
-            report("Error enabling application: %s", ex);
+            report("Error enabling application. Message: %s. Error details: %s.", ex.getMessage(), ex.getErrorDetails());
             ex.printStackTrace(getLogger());
             return false;
         }
@@ -118,7 +122,8 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
             versionNotes = upload.applyEnvVariablesFormatter(upload.getVersionNotes());
         }
 
-        report("Updating application binary. Author: %s - Version: %s, Version Notes: %s", author, version, versionNotes);
+        report("Updating application binary. Author: %s - Version: %s, Version Notes: %s, Enabled: %b",
+               author, version, versionNotes, enableApp);
         apperianApi.createNewVersion(appId, appBinary, author, version, versionNotes, enableApp);
     }
 

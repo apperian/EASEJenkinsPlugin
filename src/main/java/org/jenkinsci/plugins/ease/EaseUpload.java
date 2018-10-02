@@ -195,10 +195,16 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         this.envVariablesFormatter = envVariablesFormatter;
     }
 
-    public boolean isConfigurationValid() {
-        return !Utils.isEmptyString(appId) &&
-                validateHasAuthFields() &&
-                !Utils.isEmptyString(filename);
+    public void checkConfiguration() throws Exception{
+        if (Utils.isEmptyString(appId)) {
+            throw new Exception("The app id is empty");
+        }
+
+        checkHasAuthFields();
+
+        if (Utils.isEmptyString(filename)){
+            throw new Exception("The Filename is empty");
+        }
     }
 
     public boolean searchFileInWorkspace(FilePath workspacePath,
@@ -215,26 +221,33 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     }
 
     public boolean validateHasAuthFields() {
-        if (Utils.isEmptyString(apiTokenId)) {
+        try {
+            checkHasAuthFields();
+            return true;
+        } catch (Exception e) {
             return false;
+        }
+    }
+
+    public void checkHasAuthFields() throws Exception{
+        if (Utils.isEmptyString(apiTokenId)) {
+            throw new Exception("Api Token is empty");
         }
 
         if (Utils.isEmptyString(this.prodEnv)) {
-            return false;
+            throw new Exception("Production environment is empty");
         }
 
         ProductionEnvironment productionEnvironment = ProductionEnvironment.fromNameOrNA(this.prodEnv);
         if (productionEnvironment == null) {
-            return false;
+            throw new Exception("Production environment is invalid");
         }
 
         if (productionEnvironment == ProductionEnvironment.CUSTOM) {
             if (!Utils.isValidURL(customApperianUrl)) {
-                return false;
+                throw new Exception("API  URL is not a valid URL");
             }
         }
-
-        return true;
     }
 
     @Override
@@ -279,7 +292,9 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             EaseUpload upload = new EaseUpload.Builder(prodEnv, customApperianUrl, apiTokenId).build();
 
             if (!upload.validateHasAuthFields()) {
-                return new ListBoxModel().add("(credentials required)");
+                ListBoxModel listBoxModel = new ListBoxModel();
+                listBoxModel.add("(credentials required)", "");
+                return listBoxModel;
             }
 
             ApperianApi apperianApi = createApperianApi(upload);
@@ -294,10 +309,14 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 }
                 return listItems;
             } catch (ConnectionException e) {
-                return new ListBoxModel().add("(" + e.getMessage() + ")");
+                ListBoxModel listBoxModel = new ListBoxModel();
+                listBoxModel.add("(" + e.getMessage() + ")", "");
+                return listBoxModel;
             } catch (Exception e) {
                 logger.throwing(EaseRecorder.class.getName(), "doFillAppItems", e);
-                return new ListBoxModel().add("(error: " + e.getMessage() + ")");
+                ListBoxModel listBoxModel = new ListBoxModel();
+                listBoxModel.add("(error: " + e.getMessage() + ")", "");
+                return listBoxModel;
             }
         }
 
@@ -308,7 +327,9 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             EaseUpload upload = new EaseUpload.Builder(prodEnv, customApperianUrl, apiTokenId).build();
 
             if (!upload.validateHasAuthFields()) {
-                return new ListBoxModel().add("(credentials required)");
+                ListBoxModel listItems = new ListBoxModel();
+                listItems.add("(credentials required)", "");
+                return listItems;
             }
 
             boolean hasAppId = !Utils.isEmptyString(appId);
@@ -357,7 +378,9 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
                 return listItems;
             } catch (ConnectionException e) {
-                return new ListBoxModel().add("(" + e.getMessage() + ")");
+                ListBoxModel listBoxModel = new ListBoxModel();
+                listBoxModel.add("(" + e.getMessage() + ")", "");
+                return listBoxModel;
             }
 
         }
@@ -368,8 +391,10 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 throws IOException, ServletException {
             EaseUpload upload = new EaseUpload.Builder(prodEnv, customApperianUrl, apiTokenId).build();
 
-            if (!upload.validateHasAuthFields()) {
-                return FormValidation.error("Api token and production environment should be provided");
+            try {
+                upload.checkHasAuthFields();
+            } catch (Exception e) {
+                return FormValidation.error(e.getMessage());
             }
 
             ApperianApi apperianApi = createApperianApi(upload);

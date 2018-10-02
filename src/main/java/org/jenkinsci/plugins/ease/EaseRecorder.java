@@ -51,9 +51,10 @@ public class EaseRecorder extends Recorder {
 
         try {
             for (EaseUpload upload : uploads) {
-                if (!upload.isConfigurationValid()) {
-                    buildLog.println("Additional upload skipped: '" + upload.getFilename() +
-                                     "' -> appId='" + upload.getAppId() + "', invalid configuration");
+                try {
+                    upload.checkConfiguration();
+                } catch (Exception e) {
+                    buildLog.println("Invalid configuration. " + e.getMessage());
                     return false;
                 }
 
