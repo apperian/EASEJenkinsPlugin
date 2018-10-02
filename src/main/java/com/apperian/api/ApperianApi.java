@@ -17,17 +17,19 @@ import com.apperian.api.users.User;
 
 public class ApperianApi {
 
-    private ApiClient apiClient;
+    private String baseUrl;
+    private String sessionToken;
 
     public ApperianApi(String baseUrl, String sessionToken) {
-        this.apiClient = new ApiClient(baseUrl, sessionToken);
+        this.baseUrl = baseUrl;
+        this.sessionToken = sessionToken;
     }
 
     public List<Application> listApplications() throws ConnectionException {
-        RequestDetails requestDetails = new RequestDetails.Builder()
+        ApiClient apiClient = new ApiClient.Builder(baseUrl, sessionToken)
             .withPath(ApiConstants.LIST_APPS_URL_PATH)
             .build();
-        return apiClient.makeRequest(requestDetails, GetApplicationsResponse.class).getApplications();
+        return apiClient.makeRequest(GetApplicationsResponse.class).getApplications();
     }
 
     public Application createNewVersion(String applicationId,
@@ -49,13 +51,13 @@ public class ApperianApi {
         }
         data.put("enabled", enableApp);
 
-        RequestDetails requestDetails = new RequestDetails.Builder()
+        ApiClient apiClient = new ApiClient.Builder(baseUrl, sessionToken)
             .withMethod(RequestMethod.POST)
             .withPath(ApiConstants.CREATE_NEW_VERSION_URL_PATH, applicationId)
             .withData(data)
             .withFile("app_file", appBinary)
             .build();
-        return apiClient.makeRequest(requestDetails, UpdateApplicationResponse.class).getApplication();
+        return apiClient.makeRequest(UpdateApplicationResponse.class).getApplication();
     }
 
     public Application updateApplication(String applicationId, boolean enabled) throws ConnectionException {
@@ -63,43 +65,43 @@ public class ApperianApi {
         Map<String, Object> data = new HashMap<>();
         data.put("enabled", enabled);
 
-        RequestDetails requestDetails = new RequestDetails.Builder()
+        ApiClient apiClient = new ApiClient.Builder(baseUrl, sessionToken)
             .withMethod(RequestMethod.PUT)
             .withPath(ApiConstants.UPDATE_APP_URL_PATH, applicationId)
             .withData(data)
             .build();
-        return apiClient.makeRequest(requestDetails, UpdateApplicationResponse.class).getApplication();
+        return apiClient.makeRequest(UpdateApplicationResponse.class).getApplication();
     }
 
     public Application getApplicationInfo(String appId) throws ConnectionException {
-        RequestDetails requestDetails = new RequestDetails.Builder()
+        ApiClient apiClient = new ApiClient.Builder(baseUrl, sessionToken)
             .withPath(ApiConstants.GET_APP_URL_PATH, appId)
             .build();
-        return apiClient.makeRequest(requestDetails, GetApplicationResponse.class).getApplication();
+        return apiClient.makeRequest(GetApplicationResponse.class).getApplication();
     }
 
     public List<SigningCredential> listCredentials() throws ConnectionException {
-        RequestDetails requestDetails = new RequestDetails.Builder()
+        ApiClient apiClient = new ApiClient.Builder(baseUrl, sessionToken)
             .withPath(ApiConstants.GET_CREDENTIALS_URL_PATH)
             .build();
 
-        return apiClient.makeRequest(requestDetails, GetSigningCredentialsResponse.class).getCredentials();
+        return apiClient.makeRequest(GetSigningCredentialsResponse.class).getCredentials();
     }
 
     public SignApplicationResponse signApplication(String credentialsId, String appId) throws ConnectionException {
-        RequestDetails requestDetails = new RequestDetails.Builder()
+        ApiClient apiClient = new ApiClient.Builder(baseUrl, sessionToken)
             .withMethod(RequestMethod.PUT)
             .withPath(ApiConstants.SIGN_APP_URL_PATH, appId, credentialsId)
             .build();
-        return apiClient.makeRequest(requestDetails, SignApplicationResponse.class);
+        return apiClient.makeRequest(SignApplicationResponse.class);
     }
 
     public User getUserDetails() throws ConnectionException {
-        RequestDetails requestDetails = new RequestDetails.Builder()
+        ApiClient apiClient = new ApiClient.Builder(baseUrl, sessionToken)
             .withPath(ApiConstants.GET_USER_INFO_URL_PATH)
             .build();
 
-        return apiClient.makeRequest(requestDetails, GetUserResponse.class).getUser();
+        return apiClient.makeRequest(GetUserResponse.class).getUser();
     }
 
 }

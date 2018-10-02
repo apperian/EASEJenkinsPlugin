@@ -43,7 +43,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     private String credential;
     private boolean enableApp;
 
-    private FilePath filePath;
+    private transient FilePath filePath;
     private transient Formatter<String> envVariablesFormatter = null;
 
     @DataBoundConstructor

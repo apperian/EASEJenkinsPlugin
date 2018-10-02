@@ -41,7 +41,18 @@ public class ApiClient {
 
     private ObjectMapper mapper;
 
-    public ApiClient(String baseUrl, String sessionToken) {
+    // By default GET
+    private RequestMethod method = RequestMethod.GET;
+
+    private String path = null;
+
+    private Map<String, Object> data = null;
+
+    private String fileField = null;
+
+    private File file = null;
+
+    private ApiClient(String baseUrl, String sessionToken) {
         this.baseUrl = baseUrl;
         this.sessionToken = sessionToken;
         httpClient = Utils.configureProxy(HttpClients.custom()).build();
@@ -49,10 +60,48 @@ public class ApiClient {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    public <T> T makeRequest(RequestDetails requestDetails, Class<T> responseClass) throws ConnectionException {
+    public static class Builder {
+
+        private ApiClient apiClient;
+
+        public Builder(String baseUrl, String sessionToken) {
+            apiClient = new ApiClient(baseUrl, sessionToken);
+        }
+
+        public Builder withMethod(RequestMethod method) {
+            apiClient.method = method;
+            return this;
+        }
+
+        public Builder withPath(String path, String... arguments) {
+            if (arguments.length > 0) {
+                apiClient.path = String.format(path, (Object[]) arguments);
+            } else {
+                apiClient.path = path;
+            }
+            return this;
+        }
+
+        public Builder withData(Map<String, Object> data) {
+            apiClient.data = data;
+            return this;
+        }
+
+        public Builder withFile(String fileField, File file) {
+            apiClient.fileField = fileField;
+            apiClient.file = file;
+            return this;
+        }
+
+        public ApiClient build() {
+            return apiClient;
+        }
+    }
+
+    public <T> T makeRequest(Class<T> responseClass) throws ConnectionException {
 
         try {
-            HttpUriRequest httpRequest = buildHttpRequest(requestDetails);
+            HttpUriRequest httpRequest = buildHttpRequest();
             CloseableHttpResponse response = httpClient.execute(httpRequest);
             int statusCode = response.getStatusLine().getStatusCode();
 
@@ -69,18 +118,13 @@ public class ApiClient {
         }
     }
 
-    private HttpUriRequest buildHttpRequest(RequestDetails requestDetails) throws ConnectionException {
+    private HttpUriRequest buildHttpRequest() throws ConnectionException {
         HttpRequestBase request = null;
-        RequestMethod method = requestDetails.getMethod();
-        String urlPath = requestDetails.getPath();
-        Map<String, Object> data = requestDetails.getData();
-        String fileField = requestDetails.getFileField();
-        File file = requestDetails.getFile();
 
         String url;
         try {
             URL apiURL = new URL(baseUrl);
-            url = new URL(apiURL, urlPath).toString();
+            url = new URL(apiURL, path).toString();
 
         } catch (MalformedURLException e) {
             throw new ConnectionException("Malformed URL for the API: " + baseUrl);
