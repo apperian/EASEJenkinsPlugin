@@ -42,6 +42,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     private boolean signApp;
     private String credential;
     private boolean enableApp;
+    private boolean reapplyPolicies;
 
     private transient FilePath filePath;
     private transient Formatter<String> envVariablesFormatter = null;
@@ -58,7 +59,8 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             String versionNotes,
             boolean signApp,
             String credential,
-            boolean enableApp) {
+            boolean enableApp,
+            boolean reapplyPolicies) {
         this.prodEnv = Utils.trim(prodEnv);
         this.customApperianUrl = Utils.trim(customApperianUrl);
 
@@ -71,6 +73,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         this.signApp = signApp;
         this.credential = credential;
         this.enableApp = enableApp;
+        this.reapplyPolicies = reapplyPolicies;
     }
 
     public static class Builder {
@@ -87,6 +90,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 null,
                 false,
                 null,
+                false,
                 false);
     }
 
@@ -117,6 +121,11 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
         public Builder withEnableApp(boolean enableApp) {
             easeUpload.enableApp = enableApp;
+            return this;
+        }
+
+        public Builder withReapplyPolicies(boolean reapplyPolicies) {
+            easeUpload.reapplyPolicies = reapplyPolicies;
             return this;
         }
 
@@ -171,6 +180,8 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     public boolean isSignApp() {
         return signApp;
     }
+
+    public boolean getReapplyPolicies() { return reapplyPolicies; }
 
     public String getCredential() {
         return credential;
