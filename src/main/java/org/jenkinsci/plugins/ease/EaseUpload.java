@@ -305,7 +305,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 for (Application app : apps) {
                     if (app.isAppTypeSupportedByPlugin()){
                         Version version = app.getVersion();
-                        listItems.add(version.getAppName() + " v:" + version.getVersionNum() + " type:" + app.getTypeName(),
+                        listItems.add(version.getAppName() + " v" + version.getVersionNum() + " type:" + app.getTypeName(),
                                 app.getId());
                     }
                 }
