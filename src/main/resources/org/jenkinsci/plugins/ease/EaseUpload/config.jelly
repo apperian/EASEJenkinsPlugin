@@ -30,7 +30,7 @@
     <f:entry title="${%Author}" field="author">
       <f:textbox />
     </f:entry>
-    <f:entry title="${%Version Num}" field="version">
+    <f:entry title="${%Version Number}" field="version">
       <f:textbox />
     </f:entry>
     <f:entry title="${%Version Notes}" field="versionNotes">
