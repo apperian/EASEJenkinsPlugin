@@ -24,6 +24,9 @@ public class Application {
         @JsonProperty("signing_status_details")
         private String statusDetails;
 
+        @JsonProperty("wrap_status")
+        private WrapStatus wrapStatus;
+
         public String getAppName() {
             return appName;
         }
@@ -38,6 +41,10 @@ public class Application {
 
         public String getStatusDetails() {
             return statusDetails;
+        }
+
+        public WrapStatus getWrapStatus() {
+            return wrapStatus;
         }
     }
 

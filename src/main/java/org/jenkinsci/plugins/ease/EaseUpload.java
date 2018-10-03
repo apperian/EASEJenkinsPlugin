@@ -235,7 +235,8 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         try {
             checkHasAuthFields();
             return true;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return false;
         }
     }
