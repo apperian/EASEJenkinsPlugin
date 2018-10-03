@@ -5,7 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.apperian.api.applications.*;
+import com.apperian.api.applications.Application;
+import com.apperian.api.applications.ApplyPoliciesResponse;
+import com.apperian.api.applications.GetApplicationResponse;
+import com.apperian.api.applications.GetApplicationsResponse;
+import com.apperian.api.applications.GetPoliciesResponse;
+import com.apperian.api.applications.PolicyConfiguration;
+import com.apperian.api.applications.UpdateApplicationResponse;
 import com.apperian.api.signing.GetSigningCredentialsResponse;
 import com.apperian.api.signing.SignApplicationResponse;
 import com.apperian.api.signing.SigningCredential;
@@ -103,10 +109,18 @@ public class ApperianApi {
 
     public GetPoliciesResponse getAppliedPolicies(String applicationId) throws ConnectionException {
         ApiClient apiClient = new ApiClient.Builder(baseUrl, sessionToken)
-                .withMethod(RequestMethod.GET)
-                .withPath(ApiConstants.GET_APPLIED_POLICIES, applicationId)
-                .build();
+            .withPath(ApiConstants.GET_APPLIED_POLICIES_PATH, applicationId)
+            .build();
         return apiClient.makeRequest(GetPoliciesResponse.class);
+    }
+
+    public ApplyPoliciesResponse applyPolicies(String applicationId, List<PolicyConfiguration> policyConfigurations)
+                                            throws ConnectionException {
+        ApiClient apiClient = new ApiClient.Builder(baseUrl, sessionToken)
+            .withMethod(RequestMethod.POST)
+            .withPath(ApiConstants.APPLY_POLICIES_PATH, applicationId)
+            .build();
+        return apiClient.makeRequest(ApplyPoliciesResponse.class);
     }
 
 }
