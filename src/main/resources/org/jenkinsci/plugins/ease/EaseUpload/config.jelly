@@ -25,12 +25,12 @@
       <f:select />
     </f:entry>
     <f:entry title="${%Filename}" field="filename">
-      <f:textbox default="**/*.ipa,**/*.apk,**/*.zip,**/*.xap,**/*.appx,**/*.zip,**/*.msi,**/*.exe" />
+      <f:textbox default="**/*.ipa,**/*.apk,**/*.xap,**/*.appx,**/*.zip,**/*.msi,**/*.exe" />
     </f:entry>
     <f:entry title="${%Author}" field="author">
       <f:textbox />
     </f:entry>
-    <f:entry title="${%Version}" field="version">
+    <f:entry title="${%Version Number}" field="version">
       <f:textbox />
     </f:entry>
     <f:entry title="${%Version Notes}" field="versionNotes">

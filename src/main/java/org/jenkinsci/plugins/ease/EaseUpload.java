@@ -314,9 +314,11 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 List<Application> apps = apperianApi.listApplications();
                 ListBoxModel listItems = new ListBoxModel();
                 for (Application app : apps) {
-                    Version version = app.getVersion();
-                    listItems.add(version.getAppName() + " v:" + version.getVersionNum() + " type:" + app.getTypeName(),
-                            app.getId());
+                    if (app.isAppTypeSupportedByPlugin()){
+                        Version version = app.getVersion();
+                        listItems.add(version.getAppName() + " v" + version.getVersionNum() + " type:" + app.getTypeName(),
+                                app.getId());
+                    }
                 }
                 return listItems;
             } catch (ConnectionException e) {
