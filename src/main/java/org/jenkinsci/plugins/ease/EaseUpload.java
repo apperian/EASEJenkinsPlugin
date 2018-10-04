@@ -3,56 +3,52 @@ package org.jenkinsci.plugins.ease;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
+
 import javax.servlet.ServletException;
 
-import org.jenkinsci.plugins.api.ApiConnection;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
-
-import com.apperian.api.ApperianEaseApi;
-import com.apperian.api.ApperianEndpoint;
+import com.apperian.api.ApperianApi;
 import com.apperian.api.ConnectionException;
-import com.apperian.api.EASEEndpoint;
-import com.apperian.api.publishing.ApplicationListResponse;
-import com.apperian.api.signing.ListAllSigningCredentialsResponse;
+import com.apperian.api.applications.AppType;
+import com.apperian.api.applications.Application;
+import com.apperian.api.applications.Application.Version;
 import com.apperian.api.signing.PlatformType;
 import com.apperian.api.signing.SigningCredential;
+
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.util.FormValidation;
-import hudson.util.Function1;
 import hudson.util.ListBoxModel;
 
 public class EaseUpload implements Describable<EaseUpload>, Serializable, Cloneable {
-    private static final Logger logger = Logger.getLogger(EaseUpload.class.getName());
 
-    private final String prodEnv;
-    private final String customEaseUrl;
-    private final String customApperianUrl;
-    private final String appId;
-    private final String filename;
-    private final String apiTokenId;
-    private final String author;
-    private final String version;
-    private final String versionNotes;
-    private final boolean signApp;
-    private final String credential;
-    private final boolean enableApp;
+    private static final long serialVersionUID = 1L;
 
-    private FilePath filePath;
+    private String prodEnv;
+    private String customApperianUrl;
+    private String appId;
+    private String filename;
+    private String apiTokenId;
+    private String author;
+    private String version;
+    private String versionNotes;
+    private boolean signApp;
+    private String credential;
+    private boolean enableApp;
+
+    private transient FilePath filePath;
+    private transient Formatter<String> envVariablesFormatter = null;
 
     @DataBoundConstructor
     public EaseUpload(
             String prodEnv,
-            String customEaseUrl,
             String customApperianUrl,
             String apiTokenId,
             String appId,
@@ -64,7 +60,6 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             String credential,
             boolean enableApp) {
         this.prodEnv = Utils.trim(prodEnv);
-        this.customEaseUrl = Utils.trim(customEaseUrl);
         this.customApperianUrl = Utils.trim(customApperianUrl);
 
         this.apiTokenId = Utils.trim(apiTokenId);
@@ -78,14 +73,11 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         this.enableApp = enableApp;
     }
 
-    public static EaseUpload simpleUpload(
-            @QueryParameter("prodEnv") String prodEnv,
-            @QueryParameter("customApperianUrl") String customApperianUrl,
-            @QueryParameter("customEaseUrl") String customEaseUrl,
-            @QueryParameter("apiTokenId") String apiTokenId) {
+    public static class Builder {
+        private EaseUpload easeUpload;
 
-        return new EaseUpload(prodEnv,
-                customEaseUrl,
+        public Builder(String prodEnv, String customApperianUrl, String apiTokenId) {
+            easeUpload = new EaseUpload(prodEnv,
                 customApperianUrl,
                 apiTokenId,
                 null,
@@ -98,35 +90,58 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 false);
     }
 
-    public EaseUpload expand(Function1<String, String> expandVars) {
-        return new EaseUpload(prodEnv,
-                              customEaseUrl,
-                              customApperianUrl,
-                              apiTokenId,
-                              expandVars.call(appId),
-                              expandVars.call(filename),
-                              expandVars.call(author),
-                              expandVars.call(version),
-                              expandVars.call(versionNotes),
-                              signApp,
-                              credential,
-                              enableApp);
+        public Builder withAppId(String appId) {
+            easeUpload.appId = appId;
+            return this;
+        }
+
+        public Builder withFilename(String filename) {
+            easeUpload.filename = filename;
+            return this;
+        }
+
+        public Builder withAuthor(String author) {
+            easeUpload.author = author;
+            return this;
+        }
+
+        public Builder withVersion(String version) {
+            easeUpload.version = version;
+            return this;
+        }
+
+        public Builder withVersionNotes(String versionNotes) {
+            easeUpload.versionNotes = versionNotes;
+            return this;
+        }
+
+        public Builder withEnableApp(boolean enableApp) {
+            easeUpload.enableApp = enableApp;
+            return this;
+        }
+
+        public Builder withSignApp(boolean signApp) {
+            easeUpload.signApp = signApp;
+            return this;
+        }
+
+        public Builder withCredential(String credential) {
+            easeUpload.credential = credential;
+            return this;
+        }
+
+        public EaseUpload build() {
+            return easeUpload;
+        }
+
     }
 
     public String getProdEnv() {
         return prodEnv;
     }
 
-    public String getCustomEaseUrl() {
-        return customEaseUrl;
-    }
-
     public String getCustomApperianUrl() {
         return customApperianUrl;
-    }
-
-    public FilePath getFilePath() {
-        return filePath;
     }
 
     public String getAppId() {
@@ -165,21 +180,39 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         return enableApp;
     }
 
-    public boolean checkOk() {
-        return !Utils.isEmptyString(appId) &&
-                validateHasAuthFields() &&
-                !Utils.isEmptyString(filename);
+    public FilePath getFilePath() {
+        return filePath;
     }
 
+    public String applyEnvVariablesFormatter(String value) {
+        if (envVariablesFormatter != null) {
+            value = envVariablesFormatter.format(value);
+        }
+        return value;
+    }
 
+    public void setEnvVariablesFormatter(Formatter<String> envVariablesFormatter) {
+        this.envVariablesFormatter = envVariablesFormatter;
+    }
 
-    public boolean searchWorkspace(FilePath workspacePath,
+    public void checkConfiguration() throws Exception{
+        if (Utils.isEmptyString(appId)) {
+            throw new Exception("The app id is empty");
+        }
+
+        checkHasAuthFields();
+
+        if (Utils.isEmptyString(filename)){
+            throw new Exception("The Filename is empty");
+        }
+    }
+
+    public boolean searchFileInWorkspace(FilePath workspacePath,
                                    PrintStream buildLog) throws IOException, InterruptedException {
-        String filename = getFilename();
-        FilePath[] paths = workspacePath.list(filename);
+        FilePath[] paths = workspacePath.list(applyEnvVariablesFormatter(this.filename));
         if (paths.length != 1) {
             buildLog.println("Found " + (paths.length == 0 ? "no files" : " ambiguous list " + Arrays.asList(paths)) +
-                    " as candidates for pattern '" + filename + "'");
+                    " as candidates for pattern '" + this.filename + "'");
             return false;
         }
 
@@ -188,32 +221,34 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     }
 
     public boolean validateHasAuthFields() {
-        if (Utils.isEmptyString(apiTokenId)) {
+        try {
+            checkHasAuthFields();
+            return true;
+        } catch (Exception e) {
             return false;
+        }
+    }
+
+    public void checkHasAuthFields() throws Exception{
+        if (Utils.isEmptyString(apiTokenId)) {
+            throw new Exception("Api Token is empty");
         }
 
         if (Utils.isEmptyString(this.prodEnv)) {
-            return false;
+            throw new Exception("Production environment is empty");
         }
 
         ProductionEnvironment productionEnvironment = ProductionEnvironment.fromNameOrNA(this.prodEnv);
         if (productionEnvironment == null) {
-            return false;
+            throw new Exception("Production environment is invalid");
         }
 
         if (productionEnvironment == ProductionEnvironment.CUSTOM) {
             if (!Utils.isValidURL(customApperianUrl)) {
-                return false;
-            }
-            if (!Utils.isValidURL(customEaseUrl)) {
-                return false;
+                throw new Exception("API  URL is not a valid URL");
             }
         }
-
-        return true;
     }
-
-
 
     @Override
     public Descriptor<EaseUpload> getDescriptor() {
@@ -223,7 +258,8 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     @Extension
     public static final class DescriptorImpl extends Descriptor<EaseUpload> {
 
-        private transient ApiManager apiManager = new ApiManager();
+        private static final transient Logger logger = Logger.getLogger(DescriptorImpl.class.getName());
+        private transient ApperianApiFactory apperianApiFactory = new ApperianApiFactory();
         private transient CredentialsManager credentialsManager = new CredentialsManager();
 
         @Override
@@ -252,91 +288,84 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
         public ListBoxModel doFillAppIdItems(@QueryParameter("prodEnv") final String prodEnv,
                                              @QueryParameter("customApperianUrl") String customApperianUrl,
-                                             @QueryParameter("customEaseUrl") String customEaseUrl,
                                              @QueryParameter("apiTokenId") final String apiTokenId) {
-            EaseUpload upload = EaseUpload.simpleUpload(prodEnv, customApperianUrl, customEaseUrl, apiTokenId);
+            EaseUpload upload = new EaseUpload.Builder(prodEnv, customApperianUrl, apiTokenId).build();
 
             if (!upload.validateHasAuthFields()) {
-                return new ListBoxModel().add("(credentials required)");
+                ListBoxModel listBoxModel = new ListBoxModel();
+                listBoxModel.add("(credentials required)", "");
+                return listBoxModel;
             }
 
-            ApiConnection apiConnection = createConnection(upload);
+            ApperianApi apperianApi = createApperianApi(upload);
 
             try {
-                ApplicationListResponse response = ApperianEaseApi.PUBLISHING.list()
-                        .call(apiConnection.getEaseEndpoint());
-
-                if (response.hasError()) {
-                    return new ListBoxModel().add("(" + response.getErrorMessage() + ")");
-                }
-
-                ApplicationListResponse.Application[] apps = response.result.applications;
+                List<Application> apps = apperianApi.listApplications();
                 ListBoxModel listItems = new ListBoxModel();
-                for (ApplicationListResponse.Application app : apps) {
-                    listItems.add(app.name + " v:" + app.version + " type:" + app.type,
-                            app.ID);
+                for (Application app : apps) {
+                    if (app.isAppTypeSupportedByPlugin()){
+                        Version version = app.getVersion();
+                        listItems.add(version.getAppName() + " v" + version.getVersionNum() + " type:" + app.getTypeName(),
+                                app.getId());
+                    }
                 }
                 return listItems;
             } catch (ConnectionException e) {
-                return new ListBoxModel().add("(" + e.getMessage() + ")");
+                ListBoxModel listBoxModel = new ListBoxModel();
+                listBoxModel.add("(" + e.getMessage() + ")", "");
+                return listBoxModel;
             } catch (Exception e) {
                 logger.throwing(EaseRecorder.class.getName(), "doFillAppItems", e);
-                return new ListBoxModel().add("(error: " + e.getMessage() + ")");
+                ListBoxModel listBoxModel = new ListBoxModel();
+                listBoxModel.add("(error: " + e.getMessage() + ")", "");
+                return listBoxModel;
             }
         }
 
         public ListBoxModel doFillCredentialItems(@QueryParameter("prodEnv") final String prodEnv,
                                                   @QueryParameter("customApperianUrl") String customApperianUrl,
-                                                  @QueryParameter("customEaseUrl") String customEaseUrl,
                                                   @QueryParameter("apiTokenId") final String apiTokenId,
                                                   @QueryParameter("appId") final String appId) {
-            EaseUpload upload = EaseUpload.simpleUpload(prodEnv, customApperianUrl, customEaseUrl, apiTokenId);
+            EaseUpload upload = new EaseUpload.Builder(prodEnv, customApperianUrl, apiTokenId).build();
 
             if (!upload.validateHasAuthFields()) {
-                return new ListBoxModel().add("(credentials required)");
+                ListBoxModel listItems = new ListBoxModel();
+                listItems.add("(credentials required)", "");
+                return listItems;
             }
 
             boolean hasAppId = !Utils.isEmptyString(appId);
 
-            ApiConnection apiConnection = createConnection(upload);
+            ApperianApi apperianApi = createApperianApi(upload);
 
             try {
 
                 PlatformType typeFilter = null;
                 if (hasAppId) {
-                    ApplicationListResponse response = ApperianEaseApi.PUBLISHING.list()
-                            .call(apiConnection.getEaseEndpoint());
+                    List<Application> apps = apperianApi.listApplications();
 
-                    if (!response.hasError()) {
-                        for (ApplicationListResponse.Application application : response.result.applications) {
-                            if (appId.trim().equals(application.ID)) {
-                                if (Utils.isEmptyString(application.type)) {
-                                    continue;
-                                }
-                                if (application.type.contains("Android App")) {
-                                    typeFilter = PlatformType.ANDROID;
-                                } else if (application.type.contains("iOS App")) {
-                                    typeFilter = PlatformType.IOS;
-                                }
-                                break;
+                    for (Application application : apps) {
+                        if (appId.trim().equals(application.getId())) {
+                            if (!application.isAppTypeSupportedByPlugin()) {
+                                continue;
                             }
+                            AppType appType = application.getAppType();
+                            if (AppType.ANDROID.equals(appType)) {
+                                typeFilter = PlatformType.ANDROID;
+                            } else if (AppType.IOS.equals(appType)) {
+                                typeFilter = PlatformType.IOS;
+                            }
+                            break;
                         }
                     }
                 }
 
 
-                ListAllSigningCredentialsResponse response;
-                response = ApperianEaseApi.SIGNING.listCredentials()
-                        .call(apiConnection.getApperianEndpoint());
-
-                if (response.hasError()) {
-                    return new ListBoxModel().add("(" + response + ")");
-                }
+                List<SigningCredential> credentials = apperianApi.listCredentials();
 
                 ListBoxModel listItems = new ListBoxModel();
-                DateFormat format = SimpleDateFormat.getDateInstance(DateFormat.SHORT);
 
-                for (SigningCredential credential : response.getCredentials()) {
+                for (SigningCredential credential : credentials) {
                     if (typeFilter != null) {
                         if (!typeFilter.equals(credential.getPlatform())) {
                             continue;
@@ -346,54 +375,46 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                     listItems.add(credential.getDescription() +
                             " exp:" + Utils.transformDate(credential.getExpirationDate()) +
                             (typeFilter == null ? " platform:" + credential.getPlatform().getDisplayName() : ""),
-
-                            credential.getCredentialId().getId());
+                            credential.getCredentialId());
                 }
 
                 return listItems;
             } catch (ConnectionException e) {
-                return new ListBoxModel().add("(" + e.getMessage() + ")");
+                ListBoxModel listBoxModel = new ListBoxModel();
+                listBoxModel.add("(" + e.getMessage() + ")", "");
+                return listBoxModel;
             }
 
         }
 
         public FormValidation doTestConnection(@QueryParameter("prodEnv") final String prodEnv,
                                                @QueryParameter("customApperianUrl") String customApperianUrl,
-                                               @QueryParameter("customEaseUrl") String customEaseUrl,
                                                @QueryParameter("apiTokenId") final String apiTokenId)
                 throws IOException, ServletException {
-            EaseUpload upload = EaseUpload.simpleUpload(prodEnv, customApperianUrl, customEaseUrl, apiTokenId);
-
-            if (!upload.validateHasAuthFields()) {
-                return FormValidation.error("Api token and production environment should be provided");
-            }
-
-            ApiConnection apiConnection = createConnection(upload);
+            EaseUpload upload = new EaseUpload.Builder(prodEnv, customApperianUrl, apiTokenId).build();
 
             try {
-                EASEEndpoint easeEndpoint = apiConnection.getEaseEndpoint();
+                upload.checkHasAuthFields();
+            } catch (Exception e) {
+                return FormValidation.error(e.getMessage());
+            }
 
-                if (!apiManager.isConnectionSuccessful(easeEndpoint)) {
-                    throw new ConnectionException("The connection with EASE is not correct");
-                }
+            ApperianApi apperianApi = createApperianApi(upload);
 
-                ApperianEndpoint apperianEndpoint = apiConnection.getApperianEndpoint();
-                if (!apiManager.isConnectionSuccessful(apperianEndpoint)) {
-                    throw new ConnectionException("The connection with Apperian is not correct");
-                }
-
+            try {
+                // To check the connection we just use the endpoint to get the user details to see if it works
+                apperianApi.getUserDetails();
                 return FormValidation.ok("Connection OK");
             } catch (ConnectionException e) {
                 return FormValidation.error(e.getMessage());
             }
         }
 
-        private ApiConnection createConnection(EaseUpload upload) {
-            String environment = upload.getProdEnv();
-            String customEaseUrl = upload.getCustomEaseUrl();
-            String customApperianUrl = upload.getCustomApperianUrl();
-            String apiToken = credentialsManager.getCredentialWithId(upload.getApiTokenId());
-            return apiManager.createConnection(environment, customEaseUrl, customApperianUrl, apiToken);
+        private  ApperianApi createApperianApi(EaseUpload upload) {
+            String environment = upload.prodEnv;
+            String customApperianUrl = upload.customApperianUrl;
+            String apiToken = credentialsManager.getCredentialWithId(upload.apiTokenId);
+            return apperianApiFactory.create(environment, customApperianUrl, apiToken);
         }
     }
 }

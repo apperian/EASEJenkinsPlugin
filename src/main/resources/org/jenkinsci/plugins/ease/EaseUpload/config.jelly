@@ -10,10 +10,7 @@
     <f:entry title="${%Production Environment}" field="prodEnv" >
       <f:select clazz="prodEnv" />
     </f:entry>
-    <f:entry title="${%PHP API URL}" field="customEaseUrl" >
-      <f:textbox clazz="fieldCustomURLs" />
-    </f:entry>
-    <f:entry title="${%Python API URL}" field="customApperianUrl">
+    <f:entry title="${%API URL}" field="customApperianUrl">
       <f:textbox clazz="fieldCustomURLs" />
     </f:entry>
     <f:entry title="${%API Token}" field="apiTokenId">
@@ -22,18 +19,18 @@
 
     <f:validateButton
         title="${%Test connection}" progress="${%Testing...}"
-        method="testConnection" with="prodEnv,customEaseUrl,customApperianUrl,apiTokenId" />
+        method="testConnection" with="prodEnv,customApperianUrl,apiTokenId" />
 
-    <f:entry title="${%Application}" field="appId" with="prodEnv,customEaseUrl,customApperianUrl,apiTokenId" >
+    <f:entry title="${%Application}" field="appId" with="prodEnv,customApperianUrl,apiTokenId" >
       <f:select />
     </f:entry>
     <f:entry title="${%Filename}" field="filename">
-      <f:textbox default="**/*.ipa,**/*.apk,**/*.zip,**/*.xap,**/*.appx,**/*.zip,**/*.msi,**/*.exe" />
+      <f:textbox default="**/*.ipa,**/*.apk,**/*.xap,**/*.appx,**/*.zip,**/*.msi,**/*.exe" />
     </f:entry>
     <f:entry title="${%Author}" field="author">
       <f:textbox />
     </f:entry>
-    <f:entry title="${%Version}" field="version">
+    <f:entry title="${%Version Number}" field="version">
       <f:textbox />
     </f:entry>
     <f:entry title="${%Version Notes}" field="versionNotes">
@@ -47,7 +44,7 @@
       <f:checkbox />
        Sign application after publishing
     </f:entry>
-    <f:entry title="${%Signing Credentials}" field="credential" with="prodEnv,customEaseUrl,customApperianUrl,apiTokenId,appId" >
+    <f:entry title="${%Signing Credentials}" field="credential" with="prodEnv,customApperianUrl,apiTokenId,appId" >
       <f:select />
     </f:entry>
 

@@ -1,5 +1,8 @@
 package org.jenkinsci.plugins.ease;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.withSettings;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -13,15 +16,12 @@ import org.mockito.Mockito;
 
 import hudson.model.BuildListener;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.withSettings;
-
 public class PublishFileCallableTest {
     @ClassRule
     public static JenkinsRule j = new JenkinsRule();
 
     public static final EaseUpload EASE_UPLOAD1 =
-            new EaseUpload("NORTH_AMERICA", "url1", "url2", "api_token_id",
+            new EaseUpload("NORTH_AMERICA", "url1", "api_token_id",
                     "app1", "filename", "author", "1.0", "version", true, "cred", false);
 
     @Test

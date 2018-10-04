@@ -1,20 +1,19 @@
 package org.jenkinsci.plugins.ease;
 
 public enum ProductionEnvironment {
-    NORTH_AMERICA("North America", "https://na01ws.apperian.com", "https://easesvc.apperian.com/ease.interface.php"),
-    EUROPE("Europe", "https://eu01ws.apperian.eu", "https://easesvc.apperian.eu/ease.interface.php"),
-    CUSTOM("Custom URLs", "https://___.apperian.eu", "https://easesvc.apperian.__/ease.interface.php"),;
+    NORTH_AMERICA("North America", "https://na01ws.apperian.com"),
+    EUROPE("Europe", "https://eu01ws.apperian.eu"),
+    CUSTOM("Custom URLs", "https://___.apperian.eu"),;
 
     public static final ProductionEnvironment DEFAULT_PRODUCTION_ENVIRONMENT = NORTH_AMERICA;
 
-    String apperianUrl;
-    String easeUrl;
-    String title;
+    private String apperianUrl;
+    private String easeUrl;
+    private String title;
 
-    ProductionEnvironment(String title, String apperianUrl, String easeUrl) {
+    private ProductionEnvironment(String title, String apperianUrl) {
         this.title = title;
         this.apperianUrl = apperianUrl;
-        this.easeUrl = easeUrl;
     }
 
     public String getApperianUrl() {

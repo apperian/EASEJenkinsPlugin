@@ -1,4 +1,4 @@
-package com.apperian.api.signing;
+package com.apperian.api.applications;
 
 import static org.junit.Assume.assumeTrue;
 
@@ -11,7 +11,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class SigningTest {
+public class ApplicationsTest {
 
     @Before
     public void beforeMethod() {
@@ -20,19 +20,19 @@ public class SigningTest {
     }
 
     @Test
-    public void testListCredentials() throws Exception {
+    public void testListApps() throws Exception {
         ApperianApi apperianApi = ApiTesting.getApperianApi();
-        List<SigningCredential> credentials = apperianApi.listCredentials();
 
-        Assert.assertNotNull(credentials);
+        List<Application> apps = apperianApi.listApplications();
+
+        Assert.assertNotNull(apps);
     }
 
     @Test
-    public void testSignApplication() throws Exception {
+    public void testEnableApp() throws Exception {
         ApperianApi apperianApi = ApiTesting.getApperianApi();
-        SignApplicationResponse response = apperianApi.signApplication(ApiTesting.ANDROID_CREDENTIALS_ID, ApiTesting.ANDROID_APP_ID);
+        Application app = apperianApi.updateApplication(ApiTesting.ANDROID_APP_ID, true);
 
-        Assert.assertNotNull(response.getStatus());
+        Assert.assertEquals(app.getId(), ApiTesting.ANDROID_APP_ID);
     }
-
 }
