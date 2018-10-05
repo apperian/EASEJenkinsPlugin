@@ -18,4 +18,13 @@ public enum WrapStatus {
     public int getStatusCode() {
         return this.statusCode;
     }
+
+    public static WrapStatus fromValue(int wrapStatusCode) {
+        for (WrapStatus wrapStatus : WrapStatus.values()) {
+            if (wrapStatus.statusCode == wrapStatusCode) {
+                return wrapStatus;
+            }
+        }
+        throw new IllegalArgumentException("bad wrap status code: " + wrapStatusCode);
+    }
 }

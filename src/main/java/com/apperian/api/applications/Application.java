@@ -25,7 +25,7 @@ public class Application {
         private String statusDetails;
 
         @JsonProperty("wrap_status")
-        private WrapStatus wrapStatus;
+        private int wrapStatusCode;
 
         public String getAppName() {
             return appName;
@@ -44,7 +44,7 @@ public class Application {
         }
 
         public WrapStatus getWrapStatus() {
-            return wrapStatus;
+            return WrapStatus.fromValue(wrapStatusCode);
         }
     }
 

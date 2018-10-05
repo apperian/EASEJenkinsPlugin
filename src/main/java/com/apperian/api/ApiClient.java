@@ -120,12 +120,13 @@ public class ApiClient {
             if (statusCode == 401) {
                 throw new ConnectionException("No access", retrieveErrorDetails(httpRequest, response));
             }
-            if (statusCode != 200) {
+            if (statusCode != 200 && statusCode != 202) {
                 throw new ConnectionException("Error in request", retrieveErrorDetails(httpRequest, response));
             }
 
             return buildResponseObject(responseClass, response);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             throw new ConnectionException("No connection", e);
         }
     }
@@ -136,7 +137,8 @@ public class ApiClient {
         String responseAsString = null;
         try {
             responseAsString = getResponseAsString(response);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
         }
         return String.format(errorDetails, httpStatus, httpRequest, responseAsString);
     }
@@ -182,7 +184,8 @@ public class ApiClient {
                                                                  ApiConstants.JSON_CONTENT_TYPE);
                         headers.add(jsonHeader);
                     }
-                } else {
+                }
+                else {
                     // Multipart upload
                     String jsonData = mapper.writeValueAsString(data);
 
@@ -202,9 +205,11 @@ public class ApiClient {
 
                     if (request instanceof HttpPut) {
                         ((HttpPut) request).setEntity(multipartEntity);
-                    } else if (request instanceof HttpPost){
+                    }
+                    else if (request instanceof HttpPost){
                         ((HttpPost) request).setEntity(multipartEntity);
-                    } else {
+                    }
+                    else {
                         throw new UnsupportedOperationException("Incorrect method for uploading a file");
                     }
                 }

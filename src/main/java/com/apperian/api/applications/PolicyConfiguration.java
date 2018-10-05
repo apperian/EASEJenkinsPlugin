@@ -14,7 +14,7 @@ public class PolicyConfiguration {
     String id;
 
     @JsonProperty("auth_required")
-    String authRequired;
+    boolean authRequired;
 
     public String getPolicyId() {
         return policyId;
@@ -28,7 +28,7 @@ public class PolicyConfiguration {
         return id;
     }
 
-    public String getAuthRequired() {
+    public boolean getAuthRequired() {
         return authRequired;
     }
 }

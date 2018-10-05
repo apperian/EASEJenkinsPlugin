@@ -117,8 +117,7 @@ public class ApperianApi {
     public ApplyPoliciesResponse applyPolicies(String applicationId, List<PolicyConfiguration> policyConfigurations)
                                             throws ConnectionException {
         Map<String, Object> data = new HashMap<>();
-        data.put("configuration", policyConfigurations);
-
+        data.put("configurations", policyConfigurations);
         ApiClient apiClient = new ApiClient.Builder(baseUrl, sessionToken)
             .withMethod(RequestMethod.POST)
             .withPath(ApiConstants.APPLY_POLICIES_PATH, applicationId)
