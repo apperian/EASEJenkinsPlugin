@@ -12,7 +12,9 @@ import java.util.logging.Logger;
 
 import com.apperian.api.ApperianApi;
 import com.apperian.api.ConnectionException;
-import com.apperian.api.applications.*;
+import com.apperian.api.applications.PolicyConfiguration;
+import com.apperian.api.applications.Application;
+import com.apperian.api.applications.WrapStatus;
 import com.apperian.api.signing.SignApplicationResponse;
 import com.apperian.api.signing.SigningStatus;
 
@@ -68,13 +70,15 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         if (upload.getReapplyPolicies()) {
             try {
                 Application application = apperianApi.getApplicationInfo(upload.getAppId());
-                policiesApplied = policiesAreApplied(application);
+                policiesApplied = arePoliciesApplied(application);
                 if (policiesApplied) {
                     appliedPolicies = apperianApi.getAppliedPolicies(upload.getAppId()).getPolicyConfigurations();
                 }
             } catch (ConnectionException ex) {
                 report("Failed to get application info.  Message %s.  Error details:  %s.", ex.getMessage(),
                         ex.getErrorDetails());
+                ex.printStackTrace(getLogger());
+                return false;
             }
         }
 
@@ -99,6 +103,8 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
             logger.throwing("PublishFileCallable", "invoke", ex);
             report("Error applying policies ot the application.  Message:  %s.  Error details:  %s.", ex.getMessage(),
                     ex.getErrorDetails());
+            ex.printStackTrace(getLogger());
+            return false;
         }
 
         // Re-sign the application
@@ -237,6 +243,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
             }
             else {
                 fail("Error wrapping the application, ended with wrap status: " + wrapStatus);
+                throw new RuntimeException("Error wrapping the application, ended with wrap status: " + wrapStatus);
             }
         }
         else {
@@ -245,7 +252,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
     }
 
     // Check the wrap status to see if policies are applied to the application.
-    private boolean policiesAreApplied(Application application) {
+    private boolean arePoliciesApplied(Application application) {
         WrapStatus status = application.getVersion().getWrapStatus();
         switch(status) {
             case APPLYING_POLICIES: return true;
