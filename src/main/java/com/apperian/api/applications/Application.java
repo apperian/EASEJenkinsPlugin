@@ -81,6 +81,30 @@ public class Application {
         return true;
     }
 
+    // Check if the application can be wrapped base on it's type.
+    public boolean canBeWrapped() {
+        AppType type = this.getAppType();
+        if (type == AppType.IOS || type == AppType.ANDROID) {
+            return true;
+        }
+
+        return false;
+    }
+
+    // Check the wrap status to see if policies are applied to the application.
+    public boolean hasPoliciesApplied() {
+        WrapStatus status = this.getVersion().getWrapStatus();
+        switch(status) {
+            case APPLYING_POLICIES: return true;
+            case POLICIES_NOT_SIGNED: return true;
+            case POLICIES_AND_SIGNED: return true;
+            case NO_POLICIES: return false;
+            case POLICIES_PREVIOUSLY_APPLIED: return false;
+            case ERROR: return false;
+        }
+        return false;
+    }
+
     public Version getVersion() {
         return version;
     }

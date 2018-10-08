@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 
 import com.apperian.api.ApperianApi;
 import com.apperian.api.ConnectionException;
-import com.apperian.api.applications.AppType;
 import com.apperian.api.applications.PolicyConfiguration;
 import com.apperian.api.applications.Application;
 import com.apperian.api.applications.WrapStatus;
@@ -73,14 +72,17 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
                 Application application = apperianApi.getApplicationInfo(upload.getAppId());
 
                 // If the application is not a type that cannot have policies applied, fail immediately.
-                if (!canApplicationBeWrapped(application)) {
+                if (!application.canBeWrapped()) {
+                    report("Applications of type " + application.getAppType() + " cannot be wrapped!  Failing...");
                     fail("Applications of type " + application.getAppType() + " cannot be wrapped!  Failing...");
+                    return false;
                 }
 
-                policiesApplied = arePoliciesApplied(application);
+                policiesApplied = application.hasPoliciesApplied();
                 if (policiesApplied) {
                     appliedPolicies = apperianApi.getAppliedPolicies(upload.getAppId()).getPolicyConfigurations();
                 }
+
             } catch (ConnectionException ex) {
                 report("Failed to get application info.  Message %s.  Error details:  %s.", ex.getMessage(),
                         ex.getErrorDetails());
@@ -258,29 +260,6 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         }
     }
 
-    // Check the wrap status to see if policies are applied to the application.
-    private boolean arePoliciesApplied(Application application) {
-        WrapStatus status = application.getVersion().getWrapStatus();
-        switch(status) {
-            case APPLYING_POLICIES: return true;
-            case POLICIES_NOT_SIGNED: return true;
-            case POLICIES_AND_SIGNED: return true;
-            case NO_POLICIES: return false;
-            case POLICIES_PREVIOUSLY_APPLIED: return false;
-            case ERROR: return false;
-        }
-        return false;
-    }
-
-    // Check if the application can be wrapped base on it's type.
-    private boolean canApplicationBeWrapped(Application application) {
-        AppType type = application.getAppType();
-        if (type == AppType.IOS || type == AppType.ANDROID) {
-            return true;
-        }
-
-        return false;
-    }
 
     // Wait the specified amount of ms.
     private void poll(long interval) throws InterruptedException {
