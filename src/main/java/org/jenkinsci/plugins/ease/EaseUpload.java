@@ -300,7 +300,8 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
         public ListBoxModel doFillAppIdItems(@QueryParameter("prodEnv") final String prodEnv,
                                              @QueryParameter("customApperianUrl") String customApperianUrl,
-                                             @QueryParameter("apiTokenId") final String apiTokenId) {
+                                             @QueryParameter("apiTokenId") final String apiTokenId,
+                                             @QueryParameter("reapplyPolicies") final boolean reapplyPolicies) {
             EaseUpload upload = new EaseUpload.Builder(prodEnv, customApperianUrl, apiTokenId).build();
 
             if (!upload.validateHasAuthFields()) {
@@ -316,9 +317,11 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 ListBoxModel listItems = new ListBoxModel();
                 for (Application app : apps) {
                     if (app.isAppTypeSupportedByPlugin()){
-                        Version version = app.getVersion();
-                        listItems.add(version.getAppName() + " v" + version.getVersionNum() + " type:" + app.getTypeName(),
-                                app.getId());
+                        if ((reapplyPolicies && app.canBeWrapped()) || !reapplyPolicies) {
+                            Version version = app.getVersion();
+                            listItems.add(version.getAppName() + " v" + version.getVersionNum() + " type:" + app.getTypeName(),
+                                    app.getId());
+                        }
                     }
                 }
                 return listItems;

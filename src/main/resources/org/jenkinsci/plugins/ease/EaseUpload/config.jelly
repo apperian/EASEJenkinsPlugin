@@ -21,7 +21,7 @@
         title="${%Test connection}" progress="${%Testing...}"
         method="testConnection" with="prodEnv,customApperianUrl,apiTokenId" />
 
-    <f:entry title="${%Application}" field="appId" with="prodEnv,customApperianUrl,apiTokenId" >
+    <f:entry title="${%Application}" field="appId" with="prodEnv,customApperianUrl,apiTokenId,reapplyPolicies" >
       <f:select />
     </f:entry>
     <f:entry title="${%Filename}" field="filename">
