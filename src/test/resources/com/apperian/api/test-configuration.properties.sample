@@ -1,16 +1,16 @@
 # To execute the integration tests, clone this file (removing the .sample suffix) and populate the appropriate values.
 
 # Apperian API base URL.
-APPERIAN_API_URL=https://afinley-centos7-ws.dev.apperian.com
+APPERIAN_API_URL=
 
 # Api Token for a user with enough privileges to upload apps.
-API_TOKEN=ua_api_token_for_integration_tests
+API_TOKEN=
 
 # Id of the user whose API token was set above
-USER_ID=ua@apperian.com
+USER_ID=
 
 # Id of an Android app to upload the binary to.
-ANDROID_APP_ID=146
+ANDROID_APP_ID=
 
 # Credentials Id stored in Apperian to sign an Android application.
-ANDROID_CREDENTIALS_ID=2
+ANDROID_CREDENTIALS_ID=
