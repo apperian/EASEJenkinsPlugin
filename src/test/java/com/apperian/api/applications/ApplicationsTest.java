@@ -35,4 +35,28 @@ public class ApplicationsTest {
 
         Assert.assertEquals(app.getId(), ApiTesting.ANDROID_APP_ID);
     }
+
+    @Test
+    public void testApplyPolicies() throws Exception {
+        ApperianApi apperianApi = ApiTesting.getApperianApi();
+        Application application = apperianApi.getApplicationInfo(ApiTesting.ANDROID_APP_ID);
+
+        // Verify that the app you're testing has policies applied.
+        Assert.assertTrue(application.hasPoliciesApplied());
+
+        // Verify that the app is a type that can apply policies
+        Assert.assertTrue(application.canBeWrapped());
+
+        if (application.hasPoliciesApplied() && application.canBeWrapped()) {
+            List<PolicyConfiguration> appliedPolicies =
+                    apperianApi.getAppliedPolicies(application.getId()).getPolicyConfigurations();
+
+            // Verify that there are policies applied
+            Assert.assertFalse(appliedPolicies.isEmpty());
+
+            // Verify that the apply policies response correctly contains configurations for the policies being applied.
+            ApplyPoliciesResponse response = apperianApi.applyPolicies(application.getId(), appliedPolicies);
+            Assert.assertFalse(response.getConfigurations().isEmpty());
+        }
+    }
 }
