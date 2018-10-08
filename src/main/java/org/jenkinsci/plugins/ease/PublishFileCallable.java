@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 import com.apperian.api.ApperianApi;
 import com.apperian.api.ConnectionException;
+import com.apperian.api.applications.AppType;
 import com.apperian.api.applications.PolicyConfiguration;
 import com.apperian.api.applications.Application;
 import com.apperian.api.applications.WrapStatus;
@@ -70,6 +71,12 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         if (upload.getReapplyPolicies()) {
             try {
                 Application application = apperianApi.getApplicationInfo(upload.getAppId());
+
+                // If the application is not a type that cannot have policies applied, fail immediately.
+                if (!canApplicationBeWrapped(application)) {
+                    fail("Applications of type " + application.getAppType() + " cannot be wrapped!  Failing...");
+                }
+
                 policiesApplied = arePoliciesApplied(application);
                 if (policiesApplied) {
                     appliedPolicies = apperianApi.getAppliedPolicies(upload.getAppId()).getPolicyConfigurations();
@@ -262,6 +269,16 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
             case POLICIES_PREVIOUSLY_APPLIED: return false;
             case ERROR: return false;
         }
+        return false;
+    }
+
+    // Check if the application can be wrapped base on it's type.
+    private boolean canApplicationBeWrapped(Application application) {
+        AppType type = application.getAppType();
+        if (type == AppType.IOS || type == AppType.ANDROID) {
+            return true;
+        }
+
         return false;
     }
 
