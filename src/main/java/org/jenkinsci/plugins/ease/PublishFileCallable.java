@@ -82,6 +82,13 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
                 if (policiesApplied) {
                     appliedPolicies = apperianApi.getAppliedPolicies(upload.getAppId()).getPolicyConfigurations();
                 }
+                else {
+                    report("Application " + application.getId() + " cannot have policies re-applied, no policies are " +
+                            "currently applied.");
+                    fail("Application " + application.getId() + " cannot have policies re-applied, no policies are " +
+                            "currently applied.");
+                    return false;
+                }
 
             } catch (ConnectionException ex) {
                 report("Failed to get application info.  Message %s.  Error details:  %s.", ex.getMessage(),
