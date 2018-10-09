@@ -300,8 +300,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
         public ListBoxModel doFillAppIdItems(@QueryParameter("prodEnv") final String prodEnv,
                                              @QueryParameter("customApperianUrl") String customApperianUrl,
-                                             @QueryParameter("apiTokenId") final String apiTokenId,
-                                             @QueryParameter("reapplyPolicies") final boolean reapplyPolicies) {
+                                             @QueryParameter("apiTokenId") final String apiTokenId) {
             EaseUpload upload = new EaseUpload.Builder(prodEnv, customApperianUrl, apiTokenId).build();
 
             if (!upload.validateHasAuthFields()) {
