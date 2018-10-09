@@ -317,11 +317,9 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 ListBoxModel listItems = new ListBoxModel();
                 for (Application app : apps) {
                     if (app.isAppTypeSupportedByPlugin()){
-                        if ((reapplyPolicies && app.canBeWrapped()) || !reapplyPolicies) {
-                            Version version = app.getVersion();
-                            listItems.add(version.getAppName() + " v" + version.getVersionNum() + " type:" + app.getTypeName(),
-                                    app.getId());
-                        }
+                        Version version = app.getVersion();
+                        listItems.add(version.getAppName() + " v" + version.getVersionNum() + " type:" + app.getTypeName(),
+                                app.getId());
                     }
                 }
                 return listItems;
