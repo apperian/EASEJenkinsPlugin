@@ -378,17 +378,16 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
                 ListBoxModel listItems = new ListBoxModel();
 
-                for (SigningCredential credential : credentials) {
-                    if (typeFilter != null) {
+                if (typeFilter != null) {
+                    for (SigningCredential credential : credentials) {
                         if (!typeFilter.equals(credential.getPlatform())) {
                             continue;
                         }
-                    }
 
-                    listItems.add(credential.getDescription() +
-                            " exp:" + Utils.transformDate(credential.getExpirationDate()) +
-                            (typeFilter == null ? " platform:" + credential.getPlatform().getDisplayName() : ""),
-                            credential.getCredentialId());
+                        listItems.add(credential.getDescription() +
+                                " exp:" + Utils.transformDate(credential.getExpirationDate()),
+                                credential.getCredentialId());
+                    }
                 }
 
                 return listItems;
