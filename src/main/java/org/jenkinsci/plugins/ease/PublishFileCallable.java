@@ -5,12 +5,16 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import com.apperian.api.ApperianApi;
 import com.apperian.api.ConnectionException;
+import com.apperian.api.applications.PolicyConfiguration;
 import com.apperian.api.applications.Application;
+import com.apperian.api.applications.WrapStatus;
 import com.apperian.api.signing.SignApplicationResponse;
 import com.apperian.api.signing.SigningStatus;
 
@@ -39,17 +43,12 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
     }
 
-    public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-        try {
-            upload.checkHasAuthFields();
-        } catch (Exception e) {
-            report("Error in the fields for authentication. " + e.getMessage());
-            return false;
-        }
+    public Boolean invoke(File uploadFile, VirtualChannel channel) throws IOException, InterruptedException {
 
         try {
             upload.checkConfiguration();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             report("Error in the configuration. " + e.getMessage());
             return false;
         }
@@ -65,31 +64,82 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         // When signing is needed we publish it as disabled and then after signing it we enable the app.
         boolean enableAppAfterSigning = upload.isSignApp() && upload.isEnableApp();
 
+        // Check if policies are applied, and if so, get their configurations
+        boolean policiesApplied = false;
+        List<PolicyConfiguration> appliedPolicies = new ArrayList<PolicyConfiguration>();
+        if (upload.getReapplyPolicies()) {
+            try {
+                Application application = apperianApi.getApplicationInfo(upload.getAppId());
+
+                // If the application is not a type that cannot have policies applied, fail immediately.
+                if (!application.canBeWrapped()) {
+                    report("Applications of type " + application.getAppType() + " cannot be wrapped!  Failing...");
+                    fail("Applications of type " + application.getAppType() + " cannot be wrapped!  Failing...");
+                    return false;
+                }
+
+                policiesApplied = application.hasPoliciesApplied();
+                if (policiesApplied) {
+                    appliedPolicies = apperianApi.getAppliedPolicies(upload.getAppId()).getPolicyConfigurations();
+                }
+                else {
+                    report("Application does not have policies applied, nothing to reapply.");
+                }
+
+
+            } catch (ConnectionException ex) {
+                report("Failed to get application info.  Message %s.  Error details:  %s.", ex.getMessage(),
+                        ex.getErrorDetails());
+                ex.printStackTrace(getLogger());
+                return false;
+            }
+        }
+
+        // Upload the new application
         try {
-            uploadApp(f, apperianApi, enableAppOnPublishing);
-        } catch (ConnectionException ex) {
+            uploadApp(uploadFile, apperianApi, enableAppOnPublishing);
+        }
+        catch (ConnectionException ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
             report("General plugin problem. Message: %s. Error details: %s.", ex.getMessage(), ex.getErrorDetails());
             ex.printStackTrace(getLogger());
             return false;
         }
 
+        // Re-apply policies if necessary
+        try {
+            if (upload.getReapplyPolicies() && policiesApplied) {
+                    applyPolicies(apperianApi, appliedPolicies);
+            }
+        }
+        catch (ConnectionException ex) {
+            logger.throwing("PublishFileCallable", "invoke", ex);
+            report("Error applying policies ot the application.  Message:  %s.  Error details:  %s.", ex.getMessage(),
+                    ex.getErrorDetails());
+            ex.printStackTrace(getLogger());
+            return false;
+        }
+
+        // Re-sign the application
         try {
             if (upload.isSignApp()) {
                 signApp(apperianApi);
             }
-        } catch (ConnectionException ex) {
+        }
+        catch (ConnectionException ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
             report("Error signing application. Message: %s. Error details: %s.", ex.getMessage(), ex.getErrorDetails());
             ex.printStackTrace(getLogger());
             return false;
         }
 
+        // Re-enable the application after signing if necessary
         try {
             if (enableAppAfterSigning) {
                 enableApp(apperianApi);
             }
-        } catch (ConnectionException ex) {
+        }
+        catch (ConnectionException ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
             report("Error enabling application. Message: %s. Error details: %s.", ex.getMessage(), ex.getErrorDetails());
             ex.printStackTrace(getLogger());
@@ -105,7 +155,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
     private void uploadApp(File appBinary, ApperianApi apperianApi, boolean enableApp) throws ConnectionException {
 
-        String appId = new String(upload.getAppId());
+        String appId = upload.getAppId();
 
         String author = null;
         if (!Utils.isEmptyString(upload.getAuthor())) {
@@ -129,8 +179,8 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
     private void signApp(ApperianApi apperianApi) throws ConnectionException {
         report("Signing application with credential '%s'", upload.getCredential());
-        String appId = new String(upload.getAppId());
-        String credentialId = new String(upload.getCredential());
+        String appId = upload.getAppId();
+        String credentialId = upload.getCredential();
 
         SignApplicationResponse response = apperianApi.signApplication(credentialId, appId);
 
@@ -141,17 +191,12 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
             report("The application is being signed. Doing polling of signing status.");
         }
 
-        long interval = 5;
+        long interval = 10;
         while (signingStatus == SigningStatus.IN_PROGRESS) {
             try {
-                report("Sleeping " + interval + " seconds");
-                Thread.sleep(TimeUnit.SECONDS.toMillis(interval));
-
-                interval = interval + interval * 18 / 10;
-                if (interval > 30) {
-                    interval = 30;
-                }
-            } catch (InterruptedException e) {
+                poll(interval);
+            }
+            catch (InterruptedException e) {
                 break;
             }
 
@@ -166,9 +211,65 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
         if (signingStatus == SigningStatus.SIGNED) {
             report(details);
-        } else {
+        }
+        else {
             fail("Error signing the application: " + details);
         }
+    }
+
+    private void applyPolicies(ApperianApi apperianApi, List<PolicyConfiguration> policyConfigs) throws ConnectionException {
+        // Get the policies applied
+        String appId = upload.getAppId();
+
+        report("Attempting to apply " + policyConfigs.size() +" policies to app:  " + appId);
+
+        if (policyConfigs.size() > 0) {
+            // Apply new policies
+            report("Calling applyPolicies to apply policies....");
+            apperianApi.applyPolicies(appId, policyConfigs);
+
+            // Poll while waiting for a response...
+            report("Getting wrapStatus...");
+            Application application = apperianApi.getApplicationInfo(appId);
+            WrapStatus wrapStatus = application.getVersion().getWrapStatus();
+            report("Received wrapStatus of:  " + wrapStatus);
+
+            long interval = 10;
+            while (wrapStatus == WrapStatus.APPLYING_POLICIES) {
+                report("Waiting for policies to be applied...");
+                try {
+                    poll(interval);
+                }
+                catch (InterruptedException e) {
+                    break;
+                }
+
+                application = apperianApi.getApplicationInfo(appId);
+                if (application == null || application.getVersion() == null) {
+                    throw new RuntimeException("Failed to get application " + appId + " wrap status");
+                }
+                wrapStatus = application.getVersion().getWrapStatus();
+            }
+
+            if (wrapStatus == WrapStatus.POLICIES_NOT_SIGNED) {
+                report("Policies applied!  Application needs to be signed.");
+            }
+            else {
+                fail("Error wrapping the application, ended with wrap status: " + wrapStatus);
+                throw new RuntimeException("Error wrapping the application, ended with wrap status: " + wrapStatus);
+            }
+        }
+        else {
+            report("No policies applied to previous version, not re-wrapping...");
+        }
+    }
+
+
+    // Wait the specified amount of ms.
+    private void poll(long interval) throws InterruptedException {
+        report("Sleeping " + interval + " seconds");
+        Thread.sleep(TimeUnit.SECONDS.toMillis(interval));
+
     }
 
     private String getStatusDetails(Application application) {

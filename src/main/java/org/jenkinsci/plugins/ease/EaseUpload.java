@@ -42,6 +42,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     private boolean signApp;
     private String credential;
     private boolean enableApp;
+    private boolean reapplyPolicies;
 
     private transient FilePath filePath;
     private transient Formatter<String> envVariablesFormatter = null;
@@ -58,7 +59,8 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             String versionNotes,
             boolean signApp,
             String credential,
-            boolean enableApp) {
+            boolean enableApp,
+            boolean reapplyPolicies) {
         this.prodEnv = Utils.trim(prodEnv);
         this.customApperianUrl = Utils.trim(customApperianUrl);
 
@@ -71,6 +73,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         this.signApp = signApp;
         this.credential = credential;
         this.enableApp = enableApp;
+        this.reapplyPolicies = reapplyPolicies;
     }
 
     public static class Builder {
@@ -87,6 +90,7 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 null,
                 false,
                 null,
+                false,
                 false);
     }
 
@@ -117,6 +121,11 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
         public Builder withEnableApp(boolean enableApp) {
             easeUpload.enableApp = enableApp;
+            return this;
+        }
+
+        public Builder withReapplyPolicies(boolean reapplyPolicies) {
+            easeUpload.reapplyPolicies = reapplyPolicies;
             return this;
         }
 
@@ -172,6 +181,8 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         return signApp;
     }
 
+    public boolean getReapplyPolicies() { return reapplyPolicies; }
+
     public String getCredential() {
         return credential;
     }
@@ -224,7 +235,8 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         try {
             checkHasAuthFields();
             return true;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return false;
         }
     }
@@ -365,17 +377,16 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
                 ListBoxModel listItems = new ListBoxModel();
 
-                for (SigningCredential credential : credentials) {
-                    if (typeFilter != null) {
+                if (typeFilter != null) {
+                    for (SigningCredential credential : credentials) {
                         if (!typeFilter.equals(credential.getPlatform())) {
                             continue;
                         }
-                    }
 
-                    listItems.add(credential.getDescription() +
-                            " exp:" + Utils.transformDate(credential.getExpirationDate()) +
-                            (typeFilter == null ? " platform:" + credential.getPlatform().getDisplayName() : ""),
-                            credential.getCredentialId());
+                        listItems.add(credential.getDescription() +
+                                " exp:" + Utils.transformDate(credential.getExpirationDate()),
+                                credential.getCredentialId());
+                    }
                 }
 
                 return listItems;

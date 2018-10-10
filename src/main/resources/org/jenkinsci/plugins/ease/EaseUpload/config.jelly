@@ -36,6 +36,10 @@
     <f:entry title="${%Version Notes}" field="versionNotes">
       <f:textbox default="Built at $BUILD_TIMESTAMP" />
     </f:entry>
+    <f:entry title="${%Reapply Policies}" field="reapplyPolicies">
+      <f:checkbox />
+       Apply any previously applied policies, if they exist
+    </f:entry>
     <f:entry title="${%Enable}" field="enableApp">
       <f:checkbox />
        Enable application after publishing

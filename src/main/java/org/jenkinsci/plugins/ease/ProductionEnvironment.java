@@ -8,7 +8,6 @@ public enum ProductionEnvironment {
     public static final ProductionEnvironment DEFAULT_PRODUCTION_ENVIRONMENT = NORTH_AMERICA;
 
     private String apperianUrl;
-    private String easeUrl;
     private String title;
 
     private ProductionEnvironment(String title, String apperianUrl) {
@@ -18,10 +17,6 @@ public enum ProductionEnvironment {
 
     public String getApperianUrl() {
         return apperianUrl;
-    }
-
-    public String getEaseUrl() {
-        return easeUrl;
     }
 
     public static ProductionEnvironment fromNameOrNA(String accountRegion) {

@@ -23,4 +23,8 @@ public class ApiConstants {
     public static final String SIGN_APP_URL_PATH = "/v1/applications/%s/credentials/%s";
 
     public static final String GET_USER_INFO_URL_PATH = "/v2/users/info";
+
+    public static final String GET_APPLIED_POLICIES_PATH = "/v2/applications/%s/policies/";
+
+    public static final String APPLY_POLICIES_PATH = "/v2/applications/%s/policies/";
 }
