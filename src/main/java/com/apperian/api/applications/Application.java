@@ -15,6 +15,12 @@ public class Application {
         @JsonProperty("app_name")
         private String appName;
 
+        @JsonProperty("short_description")
+        private String shortDescription;
+
+        @JsonProperty("long_description")
+        private String longDescription;
+
         @JsonProperty("version_num")
         private String versionNum;
 
@@ -29,6 +35,14 @@ public class Application {
 
         public String getAppName() {
             return appName;
+        }
+
+        public String getShortDescription() {
+            return shortDescription;
+        }
+
+        public String getLongDescription() {
+            return longDescription;
         }
 
         public String getVersionNum() {
@@ -87,7 +101,6 @@ public class Application {
         if (type == AppType.IOS || type == AppType.ANDROID) {
             return true;
         }
-
         return false;
     }
 

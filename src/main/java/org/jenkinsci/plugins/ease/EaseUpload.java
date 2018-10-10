@@ -36,6 +36,9 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
     private String appId;
     private String filename;
     private String apiTokenId;
+    private String appName;
+    private String shortDescription;
+    private String longDescription;
     private String author;
     private String version;
     private String versionNotes;
@@ -54,6 +57,9 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
             String apiTokenId,
             String appId,
             String filename,
+            String appName,
+            String shortDescription,
+            String longDescription,
             String author,
             String version,
             String versionNotes,
@@ -67,6 +73,12 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
         this.apiTokenId = Utils.trim(apiTokenId);
         this.appId = Utils.trim(appId);
         this.filename = Utils.trim(filename);
+
+        //TODO:  Trim really necessary here?
+        this.appName = Utils.trim(appName);
+        this.shortDescription = Utils.trim(shortDescription);
+        this.longDescription = Utils.trim(longDescription);
+
         this.author = Utils.trim(author);
         this.version = Utils.trim(version);
         this.versionNotes = Utils.trim(versionNotes);
@@ -88,6 +100,9 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
                 false,
                 null,
                 false,
@@ -101,6 +116,21 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
         public Builder withFilename(String filename) {
             easeUpload.filename = filename;
+            return this;
+        }
+
+        public Builder withAppName(String appName) {
+            easeUpload.appName = appName;
+            return this;
+        }
+
+        public Builder withShortDescription(String shortDescription) {
+            easeUpload.shortDescription = shortDescription;
+            return this;
+        }
+
+        public Builder withLongDescription(String longDescription) {
+            easeUpload.longDescription = longDescription;
             return this;
         }
 
@@ -163,6 +193,18 @@ public class EaseUpload implements Describable<EaseUpload>, Serializable, Clonea
 
     public String getApiTokenId() {
         return apiTokenId;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public String getShortDescription() {
+        return shortDescription;
+    }
+
+    public String getLongDescription() {
+        return longDescription;
     }
 
     public String getAuthor() {

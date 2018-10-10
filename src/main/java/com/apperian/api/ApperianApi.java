@@ -37,14 +37,26 @@ public class ApperianApi {
 
     public Application createNewVersion(String applicationId,
                                          File appBinary,
+                                         String appName,
                                          String author,
+                                         String shortDescription,
+                                         String longDescription,
                                          String version,
                                          String versionNotes,
                                          boolean enableApp) throws ConnectionException {
 
         Map<String, Object> data = new HashMap<>();
         if (author != null) {
+            data.put("app_name", appName);
+        }
+        if (author != null) {
             data.put("author", author);
+        }
+        if (shortDescription != null) {
+            data.put("short_description", shortDescription);
+        }
+        if (longDescription != null) {
+            data.put("long_description", longDescription);
         }
         if (version != null) {
             data.put("version_num", version);
