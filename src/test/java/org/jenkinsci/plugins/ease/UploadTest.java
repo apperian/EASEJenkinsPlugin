@@ -1,79 +1,57 @@
 package org.jenkinsci.plugins.ease;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
-import org.apache.commons.fileupload.util.Streams;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+import com.apperian.api.ApiTesting;
+
 import org.easymock.EasyMock;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.mockito.Mockito;
 
 import hudson.model.BuildListener;
 
 public class UploadTest {
-    public static final String URL = "https://easesvc.apperian.eu/ease.interface.php";
-    public static final String USER = "oleksiyp@railsreactor.com";
-    public static final String PWD = "";
+
+    private static final String FOO_API_KEY_ID = "foo_api_key_id";
+
+    @Before
+    public void beforeMethod() {
+        // Skip tests if the properties file has not been configured.
+        assumeTrue(ApiTesting.PROPERTIES_FILE_EXISTS);
+    }
 
     @ClassRule
     public static JenkinsRule j = new JenkinsRule();
 
     @Test
     public void testAndroid() throws Exception {
-        if (PWD.isEmpty()) {
-            return;
-        }
-
-        upload("1EhXFWxikr6erSk1RVHMlw", "android.apk");
+        upload(ApiTesting.ANDROID_APP_ID, "android.apk");
     }
 
-    @Test
-    public void testIOS() throws Exception {
-        if (PWD.isEmpty()) {
-            return;
-        }
+    private void upload(String appId, String filename) throws IOException, InterruptedException, URISyntaxException {
+        EaseUpload upload = new EaseUpload.Builder("CUSTOM", ApiTesting.APPERIAN_API_URL, FOO_API_KEY_ID)
+            .withAppId(appId)
+            .withEnableApp(true)
+            .withSignApp(true)
+            .withFilename(filename)
+            .withVersion("1.0.1")
+            .withVersionNotes("Built for integration tests")
+            .withCredential(ApiTesting.ANDROID_CREDENTIALS_ID)
+            .build();
 
-        upload("1EhXFWxikr6erSk1RVHMlw", "ios.ipa");
-    }
-
-    @Test
-    public void testWinPhoneAppx() throws Exception {
-        if (PWD.isEmpty()) {
-            return;
-        }
-
-        upload("1EhXFWxikr6erSk1RVHMlw", "winphone.appx");
-    }
-
-    @Test
-    public void testBlackberry() throws Exception {
-        if (PWD.isEmpty()) {
-            return;
-        }
-
-        upload("1EhXFWxikr6erSk1RVHMlw", "blackberry.zip");
-    }
-
-    private void upload(String appId, String filename) throws IOException, InterruptedException {
-        EaseUpload upload = EaseUpload.simpleUpload(
-                "EUROPE",
-                null,
-                null,
-                USER,
-                PWD);
-
-        InputStream res = getClass().getResourceAsStream(filename);
-        File tmpFile = new File(filename);
-        if (res != null) {
-            try (FileOutputStream out = new FileOutputStream(tmpFile);
-                        InputStream in = res) {
-                Streams.copy(in, out, false);
-            }
-        }
+        File appBinary = new File(getClass().getResource(filename).toURI());
+        assertNotNull(appBinary);
+        assertTrue(appBinary.exists());
 
         BuildListener listener = EasyMock.createMock(BuildListener.class);
         EasyMock.expect(listener.getLogger()).andReturn(System.out).anyTimes();
@@ -81,9 +59,11 @@ public class UploadTest {
 
         PublishFileCallable callable = new PublishFileCallable(upload,
                                                                listener);
-        Assert.assertTrue("upload succeeds", callable.invoke(tmpFile, null));
-        if (res != null) {
-            tmpFile.delete();
-        }
+
+
+        CredentialsManager credentialsManagerMock = Mockito.mock(CredentialsManager.class);
+        Mockito.when(credentialsManagerMock.getCredentialWithId(FOO_API_KEY_ID)).thenReturn(ApiTesting.API_TOKEN);
+        callable.setCredentialsManager(credentialsManagerMock);
+        Assert.assertTrue("Upload Failed!", callable.invoke(appBinary, null));
     }
 }

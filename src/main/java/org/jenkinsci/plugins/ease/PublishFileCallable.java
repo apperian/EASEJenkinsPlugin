@@ -1,102 +1,147 @@
 package org.jenkinsci.plugins.ease;
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import org.jenkinsci.plugins.api.ApperianEaseEndpoint;
-
-import com.apperian.api.ApperianEaseApi;
-import com.apperian.api.ApperianEndpoint;
-import com.apperian.api.ApperianResourceID;
-import com.apperian.api.EASEEndpoint;
-import com.apperian.api.application.Application;
-import com.apperian.api.application.GetApplicationInfoResponse;
-import com.apperian.api.application.UpdateApplicationMetadataResponse;
-import com.apperian.api.metadata.Metadata;
-import com.apperian.api.metadata.MetadataExtractor;
-import com.apperian.api.publishing.PublishApplicationResponse;
-import com.apperian.api.publishing.UpdateApplicationResponse;
-import com.apperian.api.publishing.UploadResult;
+import com.apperian.api.ApperianApi;
+import com.apperian.api.ConnectionException;
+import com.apperian.api.applications.PolicyConfiguration;
+import com.apperian.api.applications.Application;
+import com.apperian.api.applications.WrapStatus;
 import com.apperian.api.signing.SignApplicationResponse;
 import com.apperian.api.signing.SigningStatus;
 
+import org.jenkinsci.remoting.RoleChecker;
+
 import hudson.FilePath;
-import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
 
-public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Serializable {
+public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
+    private static final long serialVersionUID = 1L;
+
     private final static Logger logger = Logger.getLogger(PublishFileCallable.class.getName());
 
     private EaseUpload upload;
     private final BuildListener listener;
+    private transient ApperianApiFactory apperianApiFactory = new ApperianApiFactory();
+    private transient CredentialsManager credentialsManager = new CredentialsManager();
 
     public PublishFileCallable(EaseUpload upload, BuildListener listener) {
         this.upload = upload;
         this.listener = listener;
     }
 
-    public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-        if (!upload.validateHasAuthFields()) {
-            report("Error: username/password are not set and there is no stored credentials found");
+    public void checkRoles(RoleChecker var1) throws SecurityException {
+
+    }
+
+    public Boolean invoke(File uploadFile, VirtualChannel channel) throws IOException, InterruptedException {
+
+        try {
+            upload.checkConfiguration();
+        }
+        catch (Exception e) {
+            report("Error in the configuration. " + e.getMessage());
             return false;
         }
 
-        if (!upload.checkOk()) {
-            report("Error: all required upload parameters should be set: auth, appId and filename");
-            return false;
-        }
+        String env = upload.getProdEnv();
+        String customApperianUrl = upload.getCustomApperianUrl();
+        String apiToken = credentialsManager.getCredentialWithId(upload.getApiTokenId());
 
-        boolean shouldAuthApperian = upload.isEnableApp() || upload.isSignApp();
+        ApperianApi apperianApi = apperianApiFactory.create(env, customApperianUrl, apiToken);
 
-        StringBuilder errorMessage = new StringBuilder();
-        ApperianEaseEndpoint endpoint = upload.tryAuthenticate(true,
-                                                               shouldAuthApperian,
-                                                               errorMessage);
+        // When we publish the app we only enable it if it needs to be enabled and no signing is needed.
+        boolean enableAppOnPublishing = (!upload.isSignApp()) && upload.isEnableApp();
+        // When signing is needed we publish it as disabled and then after signing it we enable the app.
+        boolean enableAppAfterSigning = upload.isSignApp() && upload.isEnableApp();
 
-        if (endpoint == null) {
-            report("Error: %s, endpoint=%s", errorMessage, upload.createEndpoint());
-            return false;
-        }
+        // Check if policies are applied, and if so, get their configurations
+        boolean policiesApplied = false;
+        List<PolicyConfiguration> appliedPolicies = new ArrayList<PolicyConfiguration>();
+        if (upload.getReapplyPolicies()) {
+            try {
+                Application application = apperianApi.getApplicationInfo(upload.getAppId());
 
-        try (EASEEndpoint easeEndpoint = endpoint.getEaseEndpoint()) {
-            if (!uploadApp(f, easeEndpoint)) {
+                // If the application is not a type that cannot have policies applied, fail immediately.
+                if (!application.canBeWrapped()) {
+                    report("Applications of type " + application.getAppType() + " cannot be wrapped!  Failing...");
+                    fail("Applications of type " + application.getAppType() + " cannot be wrapped!  Failing...");
+                    return false;
+                }
+
+                policiesApplied = application.hasPoliciesApplied();
+                if (policiesApplied) {
+                    appliedPolicies = apperianApi.getAppliedPolicies(upload.getAppId()).getPolicyConfigurations();
+                }
+                else {
+                    report("Application does not have policies applied, nothing to reapply.");
+                }
+
+
+            } catch (ConnectionException ex) {
+                report("Failed to get application info.  Message %s.  Error details:  %s.", ex.getMessage(),
+                        ex.getErrorDetails());
+                ex.printStackTrace(getLogger());
                 return false;
             }
-        } catch (Exception ex) {
+        }
+
+        // Upload the new application
+        try {
+            uploadApp(uploadFile, apperianApi, enableAppOnPublishing);
+        }
+        catch (ConnectionException ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
-            report("General plugin problem : %s", ex);
+            report("General plugin problem. Message: %s. Error details: %s.", ex.getMessage(), ex.getErrorDetails());
             ex.printStackTrace(getLogger());
             return false;
         }
 
-        ApperianEndpoint apperianEndpoint = endpoint.getApperianEndpoint();
+        // Re-apply policies if necessary
+        try {
+            if (upload.getReapplyPolicies() && policiesApplied) {
+                    applyPolicies(apperianApi, appliedPolicies);
+            }
+        }
+        catch (ConnectionException ex) {
+            logger.throwing("PublishFileCallable", "invoke", ex);
+            report("Error applying policies ot the application.  Message:  %s.  Error details:  %s.", ex.getMessage(),
+                    ex.getErrorDetails());
+            ex.printStackTrace(getLogger());
+            return false;
+        }
 
+        // Re-sign the application
         try {
             if (upload.isSignApp()) {
-                signApp(f, apperianEndpoint);
+                signApp(apperianApi);
             }
-        } catch (Exception ex) {
+        }
+        catch (ConnectionException ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
-            report("Error signing application: %s", ex);
+            report("Error signing application. Message: %s. Error details: %s.", ex.getMessage(), ex.getErrorDetails());
             ex.printStackTrace(getLogger());
             return false;
         }
 
+        // Re-enable the application after signing if necessary
         try {
-            if (upload.isEnableApp()) {
-                enableApp(f, apperianEndpoint);
+            if (enableAppAfterSigning) {
+                enableApp(apperianApi);
             }
-        } catch (Exception ex) {
+        }
+        catch (ConnectionException ex) {
             logger.throwing("PublishFileCallable", "invoke", ex);
-            report("Error enabling application: %s", ex);
+            report("Error enabling application. Message: %s. Error details: %s.", ex.getMessage(), ex.getErrorDetails());
             ex.printStackTrace(getLogger());
             return false;
         }
@@ -104,100 +149,57 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         return true;
     }
 
-    private boolean uploadApp(File applicationPackage,
-                              EASEEndpoint endpoint) throws IOException {
+    public void setCredentialsManager(CredentialsManager credentialsManager) {
+        this.credentialsManager = credentialsManager;
+    }
+
+    private void uploadApp(File appBinary, ApperianApi apperianApi, boolean enableApp) throws ConnectionException {
 
         String appId = upload.getAppId();
 
-        UpdateApplicationResponse update = ApperianEaseApi.PUBLISHING.update(appId)
-                .call(endpoint);
-
-        if (update.hasError()) {
-            String errorMessage = update.getErrorMessage();
-            report("Error: %s, appId=%s", errorMessage, appId);
-            return false;
+        String appName = null;
+        if (!Utils.isEmptyString(upload.getAppName())) {
+            appName = upload.applyEnvVariablesFormatter(upload.getAppName());
         }
 
-        Metadata metadata = update.result.EASEmetadata;
-        report("Metadata from server: %s", metadata);
-
-        Metadata metadataUpdate = new Metadata(new HashMap<String, String>());
-
-        metadataUpdate.setName(metadata.getName());
-
+        String author = null;
         if (!Utils.isEmptyString(upload.getAuthor())) {
-            metadataUpdate.setAuthor(upload.getAuthor());
+            author = upload.applyEnvVariablesFormatter(upload.getAuthor());
         }
 
+        String shortDescription = null;
+        if (!Utils.isEmptyString(upload.getShortDescription())) {
+            shortDescription = upload.applyEnvVariablesFormatter(upload.getShortDescription());
+        }
+
+        String longDescription = null;
+        if (!Utils.isEmptyString(upload.getLongDescription())) {
+            longDescription = upload.applyEnvVariablesFormatter(upload.getLongDescription());
+        }
+
+        String version = null;
         if (!Utils.isEmptyString(upload.getVersion())) {
-            metadataUpdate.setVersion(upload.getVersion());
+            version = upload.applyEnvVariablesFormatter(upload.getVersion());
         }
 
-        String versionNotes = upload.getVersionNotes();
-        if (!Utils.isEmptyString(versionNotes)) {
-            Map<String, String> vars = new HashMap<>();
-
-            vars.put("BUILD_TIMESTAMP", Utils.formatIso8601(
-                    new Date()));
-
-            versionNotes = Util.replaceMacro(versionNotes, vars);
-
-            metadataUpdate.setVersionNotes(versionNotes);
+        String versionNotes = null;
+        if (!Utils.isEmptyString(upload.getVersionNotes())) {
+            versionNotes = upload.applyEnvVariablesFormatter(upload.getVersionNotes());
         }
 
-        report("Metadata update: %s", metadataUpdate);
-
-        report("Publishing %s to Apperian", applicationPackage);
-        UploadResult uploadResult = endpoint.uploadFile(update.result.fileUploadURL, applicationPackage);
-        if (uploadResult.hasError()) {
-            report("Error: %s", uploadResult.errorMessage);
-            return false;
-        }
-
-        if (uploadResult.fileID == null) {
-            report("Error: Upload file ID is null. Publish transaction not finished");
-            return false;
-        }
-
-
-        PublishApplicationResponse publish = ApperianEaseApi.PUBLISHING.publish(update.result.transactionID, metadataUpdate, uploadResult.fileID)
-                .call(endpoint);
-        if (publish.hasError()) {
-            String errorMessage = publish.getErrorMessage();
-            report(errorMessage);
-            return false;
-        }
-
-        if (!appId.equals(publish.result.appID)) {
-            report("Error: File uploaded but confirmational appId is wrong");
-            return false;
-        }
-
-        report("DONE! Uploaded %s to %s for appId=%s", applicationPackage.getName(), endpoint, appId);
-        return true;
+        report("Updating application binary. App Name: %s - Author: %s - Short Description: %s - Long Description: " +
+                "%s - Version: %s, Version Notes: %s, Enabled: %b", appName, author, shortDescription, longDescription,
+                version, versionNotes, enableApp);
+        apperianApi.createNewVersion(appId, appBinary, appName, author, shortDescription, longDescription, version,
+                versionNotes, enableApp);
     }
 
-    private void assignMetadata(Metadata metadata, Metadata metadataUpdate) {
-        for (String key : metadataUpdate.getValues().keySet()) {
-            String value = metadataUpdate.getValues().get(key);
-            report("Setting %s metadata to '%s'", key, value);
-            metadata.getValues().put(key, value);
-        }
-    }
-
-    private void signApp(File applicationPackage,
-                         ApperianEndpoint apperianEndpoint) throws IOException {
+    private void signApp(ApperianApi apperianApi) throws ConnectionException {
         report("Signing application with credential '%s'", upload.getCredential());
-        ApperianResourceID appId = new ApperianResourceID(upload.getAppId());
-        ApperianResourceID credentialId = new ApperianResourceID(upload.getCredential());
+        String appId = upload.getAppId();
+        String credentialId = upload.getCredential();
 
-
-        SignApplicationResponse response = ApperianEaseApi.SIGNING.signApplication(credentialId, appId)
-                                          .call(apperianEndpoint);
-
-        if (response.hasError()) {
-            throw new RuntimeException(response.getErrorMessage());
-        }
+        SignApplicationResponse response = apperianApi.signApplication(credentialId, appId);
 
         SigningStatus signingStatus = response.getStatus();
         String details = response.getStatusDetails();
@@ -206,37 +208,85 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
             report("The application is being signed. Doing polling of signing status.");
         }
 
-        long interval = 5;
+        long interval = 10;
         while (signingStatus == SigningStatus.IN_PROGRESS) {
             try {
-                report("Sleeping " + interval + " seconds");
-                Thread.sleep(TimeUnit.SECONDS.toMillis(interval));
-
-                interval = interval + interval * 18 / 10;
-                if (interval > 30) {
-                    interval = 30;
-                }
-            } catch (InterruptedException e) {
+                poll(interval);
+            }
+            catch (InterruptedException e) {
                 break;
             }
 
-            GetApplicationInfoResponse appInfoResponse;
-            appInfoResponse = ApperianEaseApi.APPLICATIONS.getApplicationInfo(appId)
-                                                          .call(apperianEndpoint);
-
-            if (appInfoResponse.hasError()) {
-                throw new RuntimeException(appInfoResponse.getErrorMessage());
-            }
-
-            Application application = appInfoResponse.getApplication();
+            Application application = apperianApi.getApplicationInfo(appId);
             if (application == null || application.getVersion() == null) {
                 throw new RuntimeException("Failed to get application " + appId + " signigng status");
             }
 
             signingStatus = application.getVersion().getStatus();
             details = getStatusDetails(application);
+        }
+
+        if (signingStatus == SigningStatus.SIGNED) {
             report(details);
         }
+        else {
+            fail("Error signing the application: " + details);
+        }
+    }
+
+    private void applyPolicies(ApperianApi apperianApi, List<PolicyConfiguration> policyConfigs) throws ConnectionException {
+        // Get the policies applied
+        String appId = upload.getAppId();
+
+        report("Attempting to apply " + policyConfigs.size() +" policies to app:  " + appId);
+
+        if (policyConfigs.size() > 0) {
+            // Apply new policies
+            report("Calling applyPolicies to apply policies....");
+            apperianApi.applyPolicies(appId, policyConfigs);
+
+            // Poll while waiting for a response...
+            report("Getting wrapStatus...");
+            Application application = apperianApi.getApplicationInfo(appId);
+            WrapStatus wrapStatus = application.getVersion().getWrapStatus();
+            report("Received wrapStatus of:  " + wrapStatus);
+
+            long interval = 10;
+            while (wrapStatus == WrapStatus.APPLYING_POLICIES) {
+                report("Waiting for policies to be applied...");
+                try {
+                    poll(interval);
+                }
+                catch (InterruptedException e) {
+                    break;
+                }
+
+                application = apperianApi.getApplicationInfo(appId);
+                if (application == null || application.getVersion() == null) {
+                    throw new RuntimeException("Failed to get application " + appId + " wrap status");
+                }
+                wrapStatus = application.getVersion().getWrapStatus();
+            }
+
+            if (wrapStatus == WrapStatus.POLICIES_NOT_SIGNED) {
+                report("Policies applied!  Application needs to be signed.");
+            }
+            else {
+                fail("Error wrapping the application, ended with wrap status: " + wrapStatus);
+                throw new RuntimeException("Error wrapping the application, ended with wrap status: " + wrapStatus);
+            }
+        }
+        else {
+            report("No policies applied to previous version, not re-wrapping...");
+        }
+    }
+
+
+    // Wait the specified amount of ms.
+    private void poll(long interval) throws InterruptedException {
+        report("Sleeping " + interval + " seconds");
+        Thread.sleep(TimeUnit.SECONDS.toMillis(interval));
+
     }
 
     private String getStatusDetails(Application application) {
@@ -257,38 +307,11 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean>, Seri
         return details;
     }
 
-    private void enableApp(File applicationPackage,
-                           ApperianEndpoint apperianEndpoint) throws IOException {
+    private void enableApp(ApperianApi apperianApi) throws ConnectionException {
         report("Enabling application with ID '%s'", upload.getAppId());
-        ApperianResourceID appId = new ApperianResourceID(upload.getAppId());
+        String appId = new String(upload.getAppId());
 
-        UpdateApplicationMetadataResponse response;
-        response = ApperianEaseApi.APPLICATIONS.updateApplicationMetadata(appId)
-                .setEnabled(true)
-                .call(apperianEndpoint);
-
-        if (response.hasError()) {
-            throw new RuntimeException(response.getErrorMessage());
-        }
-    }
-
-    private Metadata extractMetadataFromFile(File file) {
-        report("Extracting from dist archive '%s'", file.getName());
-
-        Metadata metadata = new Metadata(new HashMap<String, String>());
-
-        boolean extracted = false;
-        for (MetadataExtractor extractor : MetadataExtractor.allExtractors(file)) {
-            if (extractor.extractTo(metadata, file, getLogger())) {
-                extracted = true;
-                break;
-            }
-        }
-        if (!extracted) {
-            report("Couldn't find metadata extractor for '%s'", file.getName());
-        }
-
-        return metadata;
+        apperianApi.updateApplication(appId, true);
     }
 
     public EaseUpload getUpload() {
