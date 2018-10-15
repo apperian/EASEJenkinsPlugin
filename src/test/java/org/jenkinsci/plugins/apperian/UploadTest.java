@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.ease;
+package org.jenkinsci.plugins.apperian;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -39,7 +39,7 @@ public class UploadTest {
     }
 
     private void upload(String appId, String filename) throws IOException, InterruptedException, URISyntaxException {
-        EaseUpload upload = new EaseUpload.Builder("CUSTOM", ApiTesting.APPERIAN_API_URL, FOO_API_KEY_ID)
+        ApperianUpload upload = new ApperianUpload.Builder("CUSTOM", ApiTesting.APPERIAN_API_URL, FOO_API_KEY_ID)
             .withAppId(appId)
             .withEnableApp(true)
             .withSignApp(true)

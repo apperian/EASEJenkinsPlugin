@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.ease;
+package org.jenkinsci.plugins.apperian;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -21,17 +21,17 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import net.sf.json.JSONObject;
 
-public class EaseRecorder extends Recorder implements SimpleBuildStep {
+public class ApperianRecorder extends Recorder implements SimpleBuildStep {
     public static final String PLUGIN_NAME = "Apperian Plugin";
 
-    private final List<EaseUpload> uploads;
+    private final List<ApperianUpload> uploads;
 
     @DataBoundConstructor
-    public EaseRecorder(List<EaseUpload> uploads) {
+    public ApperianRecorder(List<ApperianUpload> uploads) {
         this.uploads = uploads;
     }
 
-    public List<EaseUpload> getUploads() {
+    public List<ApperianUpload> getUploads() {
         return uploads;
     }
 
@@ -52,7 +52,7 @@ public class EaseRecorder extends Recorder implements SimpleBuildStep {
         }
 
         try {
-            for (EaseUpload upload : uploads) {
+            for (ApperianUpload upload : uploads) {
                 try {
                     upload.checkConfiguration();
                 } catch (Exception e) {

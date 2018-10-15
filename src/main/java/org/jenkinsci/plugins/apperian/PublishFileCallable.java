@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.ease;
+package org.jenkinsci.plugins.apperian;
 
 import static org.junit.Assert.fail;
 
@@ -29,12 +29,12 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
     private final static Logger logger = Logger.getLogger(PublishFileCallable.class.getName());
 
-    private EaseUpload upload;
+    private ApperianUpload upload;
     private final TaskListener listener;
     private transient ApperianApiFactory apperianApiFactory = new ApperianApiFactory();
     private transient CredentialsManager credentialsManager = new CredentialsManager();
 
-    public PublishFileCallable(EaseUpload upload, TaskListener listener) {
+    public PublishFileCallable(ApperianUpload upload, TaskListener listener) {
         this.upload = upload;
         this.listener = listener;
     }
@@ -297,7 +297,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         apperianApi.updateApplication(appId, true);
     }
 
-    public EaseUpload getUpload() {
+    public ApperianUpload getUpload() {
         return upload;
     }
 
