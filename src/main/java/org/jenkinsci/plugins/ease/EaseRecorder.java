@@ -4,6 +4,11 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 
+import hudson.model.AbstractProject;
+import hudson.model.Run;
+import hudson.model.TaskListener;
+import hudson.tasks.Recorder;
+import jenkins.tasks.SimpleBuildStep;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -11,16 +16,12 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
-import hudson.tasks.Recorder;
 import net.sf.json.JSONObject;
 
-public class EaseRecorder extends Recorder {
+public class EaseRecorder extends Recorder implements SimpleBuildStep {
     public static final String PLUGIN_NAME = "Apperian Plugin";
 
     private final List<EaseUpload> uploads;
@@ -34,8 +35,9 @@ public class EaseRecorder extends Recorder {
         return uploads;
     }
 
+
     @Override
-    public boolean perform(final AbstractBuild build, Launcher launcher, final BuildListener listener) {
+    public void perform(final Run build, FilePath workspace, Launcher launcher, final TaskListener listener) {
         final PrintStream buildLog = listener.getLogger();
         final EnvVars environment;
         try {
@@ -46,7 +48,7 @@ public class EaseRecorder extends Recorder {
 
         if (uploads == null || uploads.isEmpty()) {
             buildLog.println("One of required configuration options is not set");
-            return false;
+            throw new RuntimeException("One of required configuration options is not set");
         }
 
         try {
@@ -55,7 +57,7 @@ public class EaseRecorder extends Recorder {
                     upload.checkConfiguration();
                 } catch (Exception e) {
                     buildLog.println("Invalid configuration. " + e.getMessage());
-                    return false;
+                    throw new RuntimeException("Invalid configuration. " + e.getMessage(), e);
                 }
 
                 Formatter<String> envVariablesFormatter = new Formatter<String>() {
@@ -65,28 +67,28 @@ public class EaseRecorder extends Recorder {
                 };
                 upload.setEnvVariablesFormatter(envVariablesFormatter);
 
-                if (!upload.searchFileInWorkspace(build.getWorkspace(), buildLog)) {
-                    return false;
+                if (!upload.searchFileInWorkspace(workspace, buildLog)) {
+                    throw new RuntimeException("Could not find file in workspace");
                 }
 
                 FilePath path = upload.getFilePath();
                 PublishFileCallable callable = new PublishFileCallable(upload, listener);
                 if (!path.act(callable)) {
-                    return false;
+                    //TODO:  Update this message
+                    throw new RuntimeException("Could not execute PublishFileCallable");
                 }
             }
-            return true;
         } catch (IOException e) {
             buildLog.println("Connectivity or IO problem");
             e.printStackTrace(buildLog);
-            return false;
+            throw new RuntimeException("Connectivity or IO problem", e);
         } catch (InterruptedException e) {
             buildLog.println("Execution stopped");
-            return false;
+            throw new RuntimeException("Execution stopped", e);
         } catch (Exception e) {
             buildLog.println("General plugin problem");
             e.printStackTrace(buildLog);
-            return false;
+            throw new RuntimeException("General plugin problem", e);
         }
     }
 
@@ -100,7 +102,7 @@ public class EaseRecorder extends Recorder {
     }
 
     @Extension
-    public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+    public static final class DescriptorImpl extends BuildStepDescriptor<Publisher>  {
         public DescriptorImpl() {
             load();
         }
