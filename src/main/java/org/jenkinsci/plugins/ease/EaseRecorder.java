@@ -74,8 +74,7 @@ public class EaseRecorder extends Recorder implements SimpleBuildStep {
                 FilePath path = upload.getFilePath();
                 PublishFileCallable callable = new PublishFileCallable(upload, listener);
                 if (!path.act(callable)) {
-                    //TODO:  Update this message
-                    throw new RuntimeException("Could not execute PublishFileCallable");
+                    throw new RuntimeException("Error publishing the given file");
                 }
             }
         } catch (IOException e) {
