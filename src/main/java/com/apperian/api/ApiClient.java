@@ -31,7 +31,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
-import org.jenkinsci.plugins.ease.Utils;
+import org.jenkinsci.plugins.apperian.Utils;
 
 public class ApiClient {
 

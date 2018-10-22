@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.ease;
+package org.jenkinsci.plugins.apperian;
 
 public interface Formatter<T> {
 
