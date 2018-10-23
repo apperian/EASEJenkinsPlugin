@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public class ApiTesting {
-    private static final String PROPERTIES_FILE_NAME = "com/apperian/api/test-configuration.properties";
+    private static final String PROPERTIES_FILE_NAME = "com/apperian/api/test-configuration.properties.test";
 
     public static final boolean PROPERTIES_FILE_EXISTS;
     public static final String API_TOKEN;
