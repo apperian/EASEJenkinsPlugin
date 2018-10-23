@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.ease;
+package org.jenkinsci.plugins.apperian;
 
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;

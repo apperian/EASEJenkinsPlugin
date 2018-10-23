@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.ease;
+package org.jenkinsci.plugins.apperian;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.withSettings;
@@ -20,8 +20,8 @@ public class PublishFileCallableTest {
     @ClassRule
     public static JenkinsRule j = new JenkinsRule();
 
-    public static final EaseUpload EASE_UPLOAD1 =
-            new EaseUpload("NORTH_AMERICA", "url1", "api_token_id",
+    public static final ApperianUpload APPERIAN_UPLOAD1 =
+            new ApperianUpload("NORTH_AMERICA", "url1", "api_token_id",
                     "app1", "filename", "app name", "short description", "long description", "author",  "1.0", "version", true,
                     "cred", false, false);
 
@@ -32,7 +32,7 @@ public class PublishFileCallableTest {
 
         Mockito.when(listener.getLogger()).thenReturn(null);
 
-        PublishFileCallable callable = new PublishFileCallable(EASE_UPLOAD1, listener);
+        PublishFileCallable callable = new PublishFileCallable(APPERIAN_UPLOAD1, listener);
 
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
         ObjectOutputStream objOut = new ObjectOutputStream(byteOut);
