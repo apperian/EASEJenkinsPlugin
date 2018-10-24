@@ -46,7 +46,7 @@ public class ApperianApi {
                                          boolean enableApp) throws ConnectionException {
 
         Map<String, Object> data = new HashMap<>();
-        if (author != null) {
+        if (appName != null) {
             data.put("app_name", appName);
         }
         if (author != null) {
