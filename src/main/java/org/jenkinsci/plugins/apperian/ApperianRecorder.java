@@ -22,7 +22,7 @@ import hudson.tasks.Publisher;
 import net.sf.json.JSONObject;
 
 public class ApperianRecorder extends Recorder implements SimpleBuildStep {
-    public static final String PLUGIN_NAME = "Apperian Plugin";
+    public static final String PLUGIN_NAME = "Arxan MAM Publisher";
 
     private final List<ApperianUpload> uploads;
 
