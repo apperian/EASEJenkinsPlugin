@@ -157,9 +157,24 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
         String appId = upload.getAppId();
 
+        String appName = null;
+        if (!Utils.isEmptyString(upload.getAppName())) {
+            appName = upload.applyEnvVariablesFormatter(upload.getAppName());
+        }
+
         String author = null;
         if (!Utils.isEmptyString(upload.getAuthor())) {
             author = upload.applyEnvVariablesFormatter(upload.getAuthor());
+        }
+
+        String shortDescription = null;
+        if (!Utils.isEmptyString(upload.getShortDescription())) {
+            shortDescription = upload.applyEnvVariablesFormatter(upload.getShortDescription());
+        }
+
+        String longDescription = null;
+        if (!Utils.isEmptyString(upload.getLongDescription())) {
+            longDescription = upload.applyEnvVariablesFormatter(upload.getLongDescription());
         }
 
         String version = null;
@@ -172,9 +187,11 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
             versionNotes = upload.applyEnvVariablesFormatter(upload.getVersionNotes());
         }
 
-        report("Updating application binary. Author: %s - Version: %s, Version Notes: %s, Enabled: %b",
-               author, version, versionNotes, enableApp);
-        apperianApi.createNewVersion(appId, appBinary, author, version, versionNotes, enableApp);
+        report("Updating application binary. App Name: %s - Author: %s - Short Description: %s - Long Description: " +
+                "%s - Version: %s, Version Notes: %s, Enabled: %b", appName, author, shortDescription, longDescription,
+                version, versionNotes, enableApp);
+        apperianApi.createNewVersion(appId, appBinary, appName, author, shortDescription, longDescription, version,
+                versionNotes, enableApp);
     }
 
     private void signApp(ApperianApi apperianApi) throws ConnectionException {

@@ -22,7 +22,8 @@ public class PublishFileCallableTest {
 
     public static final ApperianUpload APPERIAN_UPLOAD1 =
             new ApperianUpload("NORTH_AMERICA", "url1", "api_token_id",
-                    "app1", "filename", "author", "1.0", "version", true, "cred", false, false);
+                    "app1", "filename", "app name", "short description", "long description", "author",  "1.0", "version", true,
+                    "cred", false, false);
 
     @Test
     public void testSerialization() throws Exception {
@@ -46,6 +47,9 @@ public class PublishFileCallableTest {
         Assert.assertNull(deserializedCallable.getLogger());
         Assert.assertEquals("api_token_id", deserializedCallable.getUpload().getApiTokenId());
         Assert.assertEquals("app1", deserializedCallable.getUpload().getAppId());
+        Assert.assertEquals("app name", deserializedCallable.getUpload().getAppName());
+        Assert.assertEquals("short description", deserializedCallable.getUpload().getShortDescription());
+        Assert.assertEquals("long description", deserializedCallable.getUpload().getLongDescription());
         Assert.assertEquals("author", deserializedCallable.getUpload().getAuthor());
         Assert.assertEquals("version", deserializedCallable.getUpload().getVersionNotes());
 
