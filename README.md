@@ -1,4 +1,4 @@
-EASE plugin
+Arxan MAM Publisher
 -----------
 
 This plugin adds the ability to upload Android, iOS, and Windows apps
