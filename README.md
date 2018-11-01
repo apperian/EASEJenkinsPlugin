@@ -4,7 +4,7 @@ Arxan MAM Publisher
 This plugin adds the ability to upload Android, iOS, and Windows apps
  to [Apperian®](https://www.arxan.com/apperian/) App catalogs.
 
-More on Jenkins wiki: https://wiki.jenkins.io/display/JENKINS/Apperian+%28EASE%29+Plugin
+More on Jenkins wiki: https://wiki.jenkins.io/display/JENKINS/Arxan+MAM+Publisher
 
 Version 2.0 Changelog:
  - Plugin renamed from 'ease-plugin' to 'Arxan MAM Publisher'.
