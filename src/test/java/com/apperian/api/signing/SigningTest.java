@@ -1,41 +1,37 @@
 package com.apperian.api.signing;
 
-import com.apperian.api.ApperianEaseApi;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.Assume.assumeTrue;
+
+import java.util.List;
 
 import com.apperian.api.ApiTesting;
-import com.apperian.api.TestUtil;
+import com.apperian.api.ApperianApi;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class SigningTest {
+
+    @Before
+    public void beforeMethod() {
+        // Skip tests if the properties file has not been configured.
+        assumeTrue(ApiTesting.PROPERTIES_FILE_EXISTS);
+    }
+
     @Test
     public void testListCredentials() throws Exception {
-        if (TestUtil.shouldSkipIntegrationTests()) {
-            return;
-        }
+        ApperianApi apperianApi = ApiTesting.getApperianApi();
+        List<SigningCredential> credentials = apperianApi.listCredentials();
 
-        ListAllSigningCredentialsResponse response;
-
-        response = ApperianEaseApi.SIGNING.listCredentials()
-                .call(ApiTesting.APERIAN_ENDPOINT);
-
-        TestUtil.assertNoError(response);
-
-        Assert.assertNotNull(response.getCredentials());
+        Assert.assertNotNull(credentials);
     }
 
     @Test
     public void testSignApplication() throws Exception {
-        if (TestUtil.shouldSkipIntegrationTests()) {
-            return;
-        }
+        ApperianApi apperianApi = ApiTesting.getApperianApi();
+        SignApplicationResponse response = apperianApi.signApplication(ApiTesting.ANDROID_CREDENTIALS_ID, ApiTesting.ANDROID_APP_ID);
 
-        SignApplicationResponse response;
-
-        response = ApperianEaseApi.SIGNING.signApplication(ApiTesting.CREDENTIALS_PSK, ApiTesting.APP_ID)
-                .call(ApiTesting.APERIAN_ENDPOINT);
-
-        TestUtil.assertNoError(response);
         Assert.assertNotNull(response.getStatus());
     }
 

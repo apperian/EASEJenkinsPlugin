@@ -1,0 +1,68 @@
+<?jelly escape-by-default='true'?>
+
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler"
+         xmlns:f="/lib/form">
+
+    <f:invisibleEntry>
+        <input type="hidden" name="id" value="${descriptor.getId(instance)}"/>
+    </f:invisibleEntry>
+
+    <f:entry title="${%Production Environment}" field="prodEnv" >
+        <f:select clazz="prodEnv" />
+    </f:entry>
+    <f:entry title="${%API URL}" field="customApperianUrl">
+        <f:textbox clazz="fieldCustomURLs" />
+    </f:entry>
+    <f:entry title="${%API Token}" field="apiTokenId">
+        <f:select />
+    </f:entry>
+    <f:validateButton
+        title="${%Test connection}" progress="${%Testing...}"
+        method="testConnection" with="prodEnv,customApperianUrl,apiTokenId" />
+    <f:entry title="${%Application}" field="appId" with="prodEnv,customApperianUrl,apiTokenId" >
+        <f:select />
+    </f:entry>
+    <f:entry title="${%Filename}" field="filename">
+      <f:textbox default="**/*.ipa,**/*.apk,**/*.msi,**/*.exe,**/*.appx" />
+    </f:entry>
+    <f:entry title="${%App Name}" field="appName">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Short Description}" field="shortDescription">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Long Description}" field="longDescription">
+        <f:expandableTextbox />
+    </f:entry>
+    <f:entry title="${%Author}" field="author">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Version Number}" field="version">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Version Notes}" field="versionNotes">
+        <f:textbox default="Built at $BUILD_TIMESTAMP" />
+    </f:entry>
+    <f:entry title="${%Reapply Policies}" field="reapplyPolicies">
+        <f:checkbox />
+        Apply any previously applied policies, if they exist
+    </f:entry>
+    <f:entry title="${%Enable}" field="enableApp">
+        <f:checkbox />
+        Enable application after publishing
+    </f:entry>
+    <f:entry title="${%Sign}" field="signApp">
+        <f:checkbox />
+        Sign application after publishing
+    </f:entry>
+    <f:entry title="${%Signing Credentials}" field="credential" with="prodEnv,customApperianUrl,apiTokenId,appId" >
+        <f:select />
+    </f:entry>
+
+    <f:entry>
+        <div align="right">
+            <input type="button" value="${%Add an upload}..." class="repeatable-add show-if-last"/>
+            <input type="button" value="${%Delete}" class="repeatable-delete show-if-not-only" style="margin-left: 1em;"/>
+        </div>
+    </f:entry>
+</j:jelly>

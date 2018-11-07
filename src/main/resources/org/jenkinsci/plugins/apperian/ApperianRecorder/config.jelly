@@ -1,0 +1,26 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler"
+         xmlns:f="/lib/form">
+
+    <f:entry field="uploads">
+        <f:repeatableProperty field="uploads" noAddButton="true" minimum="1"/>
+    </f:entry>
+
+    <script>
+      function hideShowUrls(selectEl) {
+        var tr = selectEl.parentNode.parentNode.parentNode;
+        var isCustom = selectEl.value === 'CUSTOM';
+        findElementsBySelector(tr, ".fieldCustomURLs").each(function (el) {
+            el.parentNode.parentNode.style.display = isCustom ? '' : 'none';
+        });
+      }
+
+      Behaviour.register({
+        ".prodEnv" : function(el) {
+            el.onchange = function () { hideShowUrls(el); };
+            hideShowUrls(el);
+        },
+      });
+    </script>
+
+</j:jelly>

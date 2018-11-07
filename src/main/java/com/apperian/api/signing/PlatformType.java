@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum PlatformType {
     IOS(1, "iOS"),
-    ANDROID(2, "Android");
+    ANDROID(2, "Android"),
+    WINDOWS_PHONE(4, "Windows Phone"),
+    WINDOWS(5, "Windows");
 
     final int ordValue;
     final String displayName;
