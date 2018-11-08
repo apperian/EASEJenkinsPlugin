@@ -4,10 +4,14 @@ import com.apperian.api.signing.SigningStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Application {
+
+    @JsonProperty("id")
     private String id;
 
+    @JsonProperty("type")
     private int type;
 
+    @JsonProperty("version")
     private Version version;
 
     public static class Version {
