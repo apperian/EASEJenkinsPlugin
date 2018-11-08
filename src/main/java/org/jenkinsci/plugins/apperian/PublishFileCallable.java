@@ -309,7 +309,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
     private void enableApp(ApperianApi apperianApi) throws ConnectionException {
         report("Enabling application with ID '%s'", upload.getAppId());
-        String appId = new String(upload.getAppId());
+        String appId = upload.getAppId();
 
         apperianApi.updateApplication(appId, true);
     }

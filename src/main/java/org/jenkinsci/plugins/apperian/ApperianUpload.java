@@ -27,7 +27,7 @@ import hudson.model.Descriptor;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 
-public class ApperianUpload implements Describable<ApperianUpload>, Serializable, Cloneable {
+public class ApperianUpload implements Describable<ApperianUpload>, Serializable {
 
     private static final long serialVersionUID = 1L;
 

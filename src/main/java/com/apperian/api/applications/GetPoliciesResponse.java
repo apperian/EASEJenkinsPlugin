@@ -28,7 +28,7 @@ public class GetPoliciesResponse {
 
     // NOTE:  Even though the 'PolicyStatus' class is only used internally here, we need it to be public so that the
     //        mapper can map the JSON to it.
-    public class PolicyStatus {
+    public static class PolicyStatus {
         @JsonProperty("code")
         int code;
 
