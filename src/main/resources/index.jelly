@@ -1,8 +1,9 @@
+<?jelly escape-by-default='true'?>
 <!--
   Description of a plugin in installed plugins page.
 -->
 <div>
-    This plugin adds the ability to upload Android, Blackberry and iOS apps.
+    This plugin adds the ability to upload Android, iOS, and Windows apps.
 
     <a href="https://www.arxan.com/apperian/">Apperian platform info</a>
 </div>
