@@ -6,11 +6,13 @@ public class SigningCredential {
     @JsonProperty("psk")
     String credentialId;
 
+    @JsonProperty("description")
     String description;
 
     @JsonProperty("expiration_date")
     String expirationDate;
 
+    @JsonProperty("platform")
     PlatformType platform;
 
     public String getCredentialId() {

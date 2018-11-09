@@ -132,7 +132,7 @@ public class ApiClient {
     }
 
     private String retrieveErrorDetails(HttpUriRequest httpRequest, CloseableHttpResponse response) {
-        String errorDetails = "Bad API call.\n Http status: %d.\n Request: %s.\n Response: %s";
+        String errorDetails = "Bad API call.%n Http status: %d.%n Request: %s.%n Response: %s";
         int httpStatus = response.getStatusLine().getStatusCode();
         String responseAsString = null;
         try {
