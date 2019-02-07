@@ -13,13 +13,13 @@
     <f:entry title="${%API URL}" field="customApperianUrl">
         <f:textbox clazz="fieldCustomURLs" />
     </f:entry>
-    <f:entry title="${%API Token}" field="apiTokenId">
+    <f:entry title="${%API Token}" field="apiTokenValue">
         <f:select />
     </f:entry>
     <f:validateButton
         title="${%Test connection}" progress="${%Testing...}"
-        method="testConnection" with="prodEnv,customApperianUrl,apiTokenId" />
-    <f:entry title="${%Application}" field="appId" with="prodEnv,customApperianUrl,apiTokenId" >
+        method="testConnection" with="prodEnv,customApperianUrl,apiTokenValue" />
+    <f:entry title="${%Application}" field="appId" with="prodEnv,customApperianUrl,apiTokenValue" >
         <f:select />
     </f:entry>
     <f:entry title="${%Filename}" field="filename">
@@ -55,7 +55,7 @@
         <f:checkbox />
         Sign application after publishing
     </f:entry>
-    <f:entry title="${%Signing Credentials}" field="credential" with="prodEnv,customApperianUrl,apiTokenId,appId" >
+    <f:entry title="${%Signing Credentials}" field="credential" with="prodEnv,customApperianUrl,apiTokenValue,appId" >
         <f:select />
     </f:entry>
 

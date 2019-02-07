@@ -45,7 +45,7 @@ public class PublishFileCallableTest {
         PublishFileCallable deserializedCallable = (PublishFileCallable) objIn.readObject();
 
         Assert.assertNull(deserializedCallable.getLogger());
-        Assert.assertEquals("api_token_id", deserializedCallable.getUpload().getApiTokenId());
+        Assert.assertEquals("api_token_id", deserializedCallable.getUpload().getApiTokenValue());
         Assert.assertEquals("app1", deserializedCallable.getUpload().getAppId());
         Assert.assertEquals("app name", deserializedCallable.getUpload().getAppName());
         Assert.assertEquals("short description", deserializedCallable.getUpload().getShortDescription());

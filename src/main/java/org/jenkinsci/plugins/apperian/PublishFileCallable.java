@@ -31,8 +31,6 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
     private ApperianUpload upload;
     private final TaskListener listener;
-    private transient ApperianApiFactory apperianApiFactory = new ApperianApiFactory();
-    private transient CredentialsManager credentialsManager = new CredentialsManager();
 
     public PublishFileCallable(ApperianUpload upload, TaskListener listener) {
         this.upload = upload;
@@ -55,8 +53,9 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
         String env = upload.getProdEnv();
         String customApperianUrl = upload.getCustomApperianUrl();
-        String apiToken = credentialsManager.getCredentialWithId(upload.getApiTokenId());
+        String apiToken = upload.getApiTokenValue();
 
+        ApperianApiFactory apperianApiFactory = new ApperianApiFactory();
         ApperianApi apperianApi = apperianApiFactory.create(env, customApperianUrl, apiToken);
 
         // When we publish the app we only enable it if it needs to be enabled and no signing is needed.
@@ -147,10 +146,6 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         }
 
         return true;
-    }
-
-    public void setCredentialsManager(CredentialsManager credentialsManager) {
-        this.credentialsManager = credentialsManager;
     }
 
     private void uploadApp(File appBinary, ApperianApi apperianApi, boolean enableApp) throws ConnectionException {

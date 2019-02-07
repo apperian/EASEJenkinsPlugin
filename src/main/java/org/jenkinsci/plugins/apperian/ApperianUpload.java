@@ -35,7 +35,7 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
     private String customApperianUrl;
     private String appId;
     private String filename;
-    private String apiTokenId;
+    private String apiTokenValue;
     private String appName;
     private String shortDescription;
     private String longDescription;
@@ -54,7 +54,7 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
     public ApperianUpload(
             String prodEnv,
             String customApperianUrl,
-            String apiTokenId,
+            String apiTokenValue,
             String appId,
             String filename,
             String appName,
@@ -70,7 +70,7 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
         this.prodEnv = Utils.trim(prodEnv);
         this.customApperianUrl = Utils.trim(customApperianUrl);
 
-        this.apiTokenId = Utils.trim(apiTokenId);
+        this.apiTokenValue = apiTokenValue;
         this.appId = Utils.trim(appId);
         this.filename = Utils.trim(filename);
 
@@ -91,10 +91,10 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
     public static class Builder {
         private ApperianUpload apperianUpload;
 
-        public Builder(String prodEnv, String customApperianUrl, String apiTokenId) {
+        public Builder(String prodEnv, String customApperianUrl, String apiTokenValue) {
             apperianUpload = new ApperianUpload(prodEnv,
                 customApperianUrl,
-                apiTokenId,
+                apiTokenValue,
                 null,
                 null,
                 null,
@@ -191,8 +191,8 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
         return filename;
     }
 
-    public String getApiTokenId() {
-        return apiTokenId;
+    public String getApiTokenValue() {
+        return apiTokenValue;
     }
 
     public String getAppName() {
@@ -284,7 +284,7 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
     }
 
     public void checkHasAuthFields() throws Exception{
-        if (Utils.isEmptyString(apiTokenId)) {
+        if (Utils.isEmptyString(apiTokenValue)) {
             throw new Exception("Api Token is empty");
         }
 
@@ -329,21 +329,21 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
             return resultListBox;
         }
 
-        public ListBoxModel doFillApiTokenIdItems() {
+        public ListBoxModel doFillApiTokenValueItems() {
             ListBoxModel resultListBox = new ListBoxModel();
             CredentialsManager credentialsManager = new CredentialsManager();
             List<ApiToken> credentials = credentialsManager.getCredentials();
             resultListBox.add("<Select an API token>", "");
             for (ApiToken apperianUser : credentials) {
-                resultListBox.add(apperianUser.getDescription(), apperianUser.getApiTokenId());
+                resultListBox.add(apperianUser.getDescription(), apperianUser.getApiTokenValue());
             }
             return resultListBox;
         }
 
         public ListBoxModel doFillAppIdItems(@QueryParameter("prodEnv") final String prodEnv,
                                              @QueryParameter("customApperianUrl") String customApperianUrl,
-                                             @QueryParameter("apiTokenId") final String apiTokenId) {
-            ApperianUpload upload = new ApperianUpload.Builder(prodEnv, customApperianUrl, apiTokenId).build();
+                                             @QueryParameter("apiTokenValue") final String apiTokenValue) {
+            ApperianUpload upload = new ApperianUpload.Builder(prodEnv, customApperianUrl, apiTokenValue).build();
 
             if (!upload.validateHasAuthFields()) {
                 ListBoxModel listBoxModel = new ListBoxModel();
@@ -378,9 +378,9 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
 
         public ListBoxModel doFillCredentialItems(@QueryParameter("prodEnv") final String prodEnv,
                                                   @QueryParameter("customApperianUrl") String customApperianUrl,
-                                                  @QueryParameter("apiTokenId") final String apiTokenId,
+                                                  @QueryParameter("apiTokenValue") final String apiTokenValue,
                                                   @QueryParameter("appId") final String appId) {
-            ApperianUpload upload = new ApperianUpload.Builder(prodEnv, customApperianUrl, apiTokenId).build();
+            ApperianUpload upload = new ApperianUpload.Builder(prodEnv, customApperianUrl, apiTokenValue).build();
 
             if (!upload.validateHasAuthFields()) {
                 ListBoxModel listItems = new ListBoxModel();
@@ -442,9 +442,9 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
 
         public FormValidation doTestConnection(@QueryParameter("prodEnv") final String prodEnv,
                                                @QueryParameter("customApperianUrl") String customApperianUrl,
-                                               @QueryParameter("apiTokenId") final String apiTokenId)
+                                               @QueryParameter("apiTokenValue") final String apiTokenValue)
                 throws IOException, ServletException {
-            ApperianUpload upload = new ApperianUpload.Builder(prodEnv, customApperianUrl, apiTokenId).build();
+            ApperianUpload upload = new ApperianUpload.Builder(prodEnv, customApperianUrl, apiTokenValue).build();
 
             try {
                 upload.checkHasAuthFields();
@@ -466,7 +466,7 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
         private  ApperianApi createApperianApi(ApperianUpload upload) {
             String environment = upload.prodEnv;
             String customApperianUrl = upload.customApperianUrl;
-            String apiToken = credentialsManager.getCredentialWithId(upload.apiTokenId);
+            String apiToken = upload.apiTokenValue;
             return apperianApiFactory.create(environment, customApperianUrl, apiToken);
         }
     }

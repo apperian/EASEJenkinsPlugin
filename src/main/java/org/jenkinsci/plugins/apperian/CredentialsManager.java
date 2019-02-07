@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
-import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsNameProvider;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.domains.DomainRequirement;
@@ -25,22 +24,10 @@ public class CredentialsManager {
 
         for (StringCredentials storedCredential : stringCredentials) {
             apiTokens.add(new ApiToken(
-                    storedCredential.getId(),
+                    storedCredential.getSecret().getPlainText(),
                     CredentialsNameProvider.name(storedCredential)));
         }
         return apiTokens;
-    }
-
-    public String getCredentialWithId(String credentialId) {
-        List<StringCredentials> stringCredentials = fetchStringCredentials();
-
-        StringCredentials credential = CredentialsMatchers.firstOrNull(stringCredentials,
-                                                                       CredentialsMatchers.withId(credentialId));
-        String secret = null;
-        if (credential != null) {
-            secret = credential.getSecret().getPlainText();
-        }
-        return secret;
     }
 
     private List<StringCredentials> fetchStringCredentials() {

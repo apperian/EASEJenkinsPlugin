@@ -1,16 +1,16 @@
 package org.jenkinsci.plugins.apperian;
 
 public class ApiToken {
-    final String apiTokenId;
+    final String apiTokenValue;
     final String description;
 
-    public ApiToken(String apiTokenId, String description) {
-        this.apiTokenId = apiTokenId;
+    public ApiToken(String apiTokenValue, String description) {
+        this.apiTokenValue = apiTokenValue;
         this.description = description;
     }
 
-    public String getApiTokenId() {
-        return apiTokenId;
+    public String getApiTokenValue() {
+        return apiTokenValue;
     }
 
     public String getDescription() {

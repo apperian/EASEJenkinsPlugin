@@ -22,8 +22,6 @@ import hudson.model.BuildListener;
 
 public class UploadTest {
 
-    private static final String FOO_API_KEY_ID = "foo_api_key_id";
-
     @Before
     public void beforeMethod() {
         // Skip tests if the properties file has not been configured.
@@ -39,7 +37,7 @@ public class UploadTest {
     }
 
     private void upload(String appId, String filename) throws IOException, InterruptedException, URISyntaxException {
-        ApperianUpload upload = new ApperianUpload.Builder("CUSTOM", ApiTesting.APPERIAN_API_URL, FOO_API_KEY_ID)
+        ApperianUpload upload = new ApperianUpload.Builder("CUSTOM", ApiTesting.APPERIAN_API_URL, ApiTesting.API_TOKEN)
             .withAppId(appId)
             .withEnableApp(true)
             .withSignApp(true)
@@ -60,10 +58,6 @@ public class UploadTest {
         PublishFileCallable callable = new PublishFileCallable(upload,
                                                                listener);
 
-
-        CredentialsManager credentialsManagerMock = Mockito.mock(CredentialsManager.class);
-        Mockito.when(credentialsManagerMock.getCredentialWithId(FOO_API_KEY_ID)).thenReturn(ApiTesting.API_TOKEN);
-        callable.setCredentialsManager(credentialsManagerMock);
         Assert.assertTrue("Upload Failed!", callable.invoke(appBinary, null));
     }
 }
