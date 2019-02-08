@@ -19,6 +19,7 @@ import com.apperian.api.signing.SignApplicationResponse;
 import com.apperian.api.signing.SigningStatus;
 
 import hudson.model.TaskListener;
+import hudson.util.Secret;
 import org.jenkinsci.remoting.RoleChecker;
 
 import hudson.FilePath;
@@ -53,7 +54,7 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
         String env = upload.getProdEnv();
         String customApperianUrl = upload.getCustomApperianUrl();
-        String apiToken = upload.getApiTokenValue();
+        String apiToken = CredentialsManager.decrypt(upload.getApiTokenValue());
 
         ApperianApiFactory apperianApiFactory = new ApperianApiFactory();
         ApperianApi apperianApi = apperianApiFactory.create(env, customApperianUrl, apiToken);

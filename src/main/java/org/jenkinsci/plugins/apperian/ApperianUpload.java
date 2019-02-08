@@ -466,7 +466,7 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
         private  ApperianApi createApperianApi(ApperianUpload upload) {
             String environment = upload.prodEnv;
             String customApperianUrl = upload.customApperianUrl;
-            String apiToken = upload.apiTokenValue;
+            String apiToken = CredentialsManager.decrypt(upload.apiTokenValue);
             return apperianApiFactory.create(environment, customApperianUrl, apiToken);
         }
     }
