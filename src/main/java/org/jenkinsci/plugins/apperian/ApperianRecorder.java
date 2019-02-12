@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 
+import com.cloudbees.plugins.credentials.CredentialsProvider;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -72,7 +73,16 @@ public class ApperianRecorder extends Recorder implements SimpleBuildStep {
                 }
 
                 FilePath path = upload.getFilePath();
-                PublishFileCallable callable = new PublishFileCallable(upload, listener);
+
+                // NOTE:  We need to pass the actual API Token in to the 'PublishFileCallable' object.  Because the
+                //        PublishFileCallable is a 'MasterToSlaveFileCallable', it will be run on the Master node, and
+                //        the entire object will passed down to the slave node.  We need to get the API token while
+                //        on the Master node because any calls to the 'CrendentialsProvider' class will fail from the
+                //        slave node.
+                PublishFileCallable callable = new PublishFileCallable(upload,
+                        listener,
+                        CredentialsManager.getCredentialWithId(upload.getApiTokenId()));
+
                 if (!path.act(callable)) {
                     throw new RuntimeException("Error publishing the given file");
                 }

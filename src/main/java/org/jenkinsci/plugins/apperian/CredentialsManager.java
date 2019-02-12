@@ -31,7 +31,7 @@ public class CredentialsManager {
         return apiTokens;
     }
 
-    public String getCredentialWithId(String credentialId) {
+    public static String getCredentialWithId(String credentialId) {
         List<StringCredentials> stringCredentials = fetchStringCredentials();
 
         StringCredentials credential = CredentialsMatchers.firstOrNull(stringCredentials,
@@ -43,7 +43,7 @@ public class CredentialsManager {
         return secret;
     }
 
-    private List<StringCredentials> fetchStringCredentials() {
+    private static List<StringCredentials> fetchStringCredentials() {
         return CredentialsProvider.lookupCredentials(
             StringCredentials.class,
             Jenkins.getInstance(),
