@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 
-import com.cloudbees.plugins.credentials.CredentialsProvider;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
