@@ -58,12 +58,9 @@ public class UploadTest {
         EasyMock.replay(listener);
 
         PublishFileCallable callable = new PublishFileCallable(upload,
-                                                               listener);
+                                                               listener,
+                                                               ApiTesting.API_TOKEN);
 
-
-        CredentialsManager credentialsManagerMock = Mockito.mock(CredentialsManager.class);
-        Mockito.when(credentialsManagerMock.getCredentialWithId(FOO_API_KEY_ID)).thenReturn(ApiTesting.API_TOKEN);
-        callable.setCredentialsManager(credentialsManagerMock);
         Assert.assertTrue("Upload Failed!", callable.invoke(appBinary, null));
     }
 }
