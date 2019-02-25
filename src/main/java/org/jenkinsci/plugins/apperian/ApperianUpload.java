@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -17,8 +18,21 @@ import com.apperian.api.applications.Application.Version;
 import com.apperian.api.signing.PlatformType;
 import com.apperian.api.signing.SigningCredential;
 
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
+import com.cloudbees.plugins.credentials.domains.DomainRequirement;
+import hudson.model.Item;
+import hudson.model.Queue;
+import hudson.model.queue.Tasks;
+import hudson.security.ACL;
+import jenkins.model.Jenkins;
+import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.AncestorInPath;
+import org.acegisecurity.Authentication;
 
 import hudson.Extension;
 import hudson.FilePath;
@@ -314,7 +328,6 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
 
         private static final transient Logger logger = Logger.getLogger(DescriptorImpl.class.getName());
         private transient ApperianApiFactory apperianApiFactory = new ApperianApiFactory();
-        private transient CredentialsManager credentialsManager = new CredentialsManager();
 
         @Override
         public String getDisplayName() {
@@ -329,15 +342,67 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
             return resultListBox;
         }
 
-        public ListBoxModel doFillApiTokenIdItems() {
-            ListBoxModel resultListBox = new ListBoxModel();
-            CredentialsManager credentialsManager = new CredentialsManager();
-            List<ApiToken> credentials = credentialsManager.getCredentials();
-            resultListBox.add("<Select an API token>", "");
-            for (ApiToken apperianUser : credentials) {
-                resultListBox.add(apperianUser.getDescription(), apperianUser.getApiTokenId());
+        public ListBoxModel doFillApiTokenIdItems(
+                @AncestorInPath Item job,
+                @QueryParameter("apiTokenId") final String apiTokenId
+        ) {
+            StandardListBoxModel result = new StandardListBoxModel();
+            if (job == null) {
+                if (!Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER)) {
+                    return result.includeCurrentValue(apiTokenId);
+                }
+            } else {
+                if (!job.hasPermission(Item.EXTENDED_READ)
+                        && !job.hasPermission(CredentialsProvider.USE_ITEM)) {
+                    return result.includeCurrentValue(apiTokenId);
+                }
             }
-            return resultListBox;
+            Authentication authType = ACL.SYSTEM;
+            if (job instanceof Queue.Task) {
+                authType = Tasks.getAuthenticationOf((Queue.Task)job);
+            }
+            return result.includeMatchingAs(authType,
+                    job,
+                    StringCredentials.class,
+                    Collections.<DomainRequirement>emptyList(),
+                    CredentialsMatchers.always())
+                    .includeCurrentValue(apiTokenId);
+        }
+
+        public FormValidation doCheckApiTokenId(
+                @AncestorInPath Item job,
+                @QueryParameter("apiTokenId") final String apiTokenId
+        ) {
+            if (job == null) {
+                if (!Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER)) {
+                    return FormValidation.ok();
+                }
+            } else {
+                if (!job.hasPermission(Item.EXTENDED_READ)
+                        && !job.hasPermission(CredentialsProvider.USE_ITEM)) {
+                    return FormValidation.ok();
+                }
+            }
+            if (StringUtils.isBlank(apiTokenId)) {
+                return FormValidation.ok();
+            }
+            if (apiTokenId.startsWith("${") && apiTokenId.endsWith("}")) {
+                return FormValidation.warning("Cannot validate expression based credentials");
+            }
+
+            Authentication authType = ACL.SYSTEM;
+            if (job instanceof Queue.Task) {
+                authType = Tasks.getAuthenticationOf((Queue.Task)job);
+            }
+
+            if (CredentialsProvider.listCredentials(StringCredentials.class,
+                    job,
+                    authType,
+                    Collections.<DomainRequirement>emptyList(),
+                    CredentialsMatchers.withId(apiTokenId)).isEmpty()) {
+                return FormValidation.error("Cannot find currently selected credentials");
+            }
+            return FormValidation.ok();
         }
 
         public ListBoxModel doFillAppIdItems(@QueryParameter("prodEnv") final String prodEnv,
@@ -466,7 +531,7 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
         private  ApperianApi createApperianApi(ApperianUpload upload) {
             String environment = upload.prodEnv;
             String customApperianUrl = upload.customApperianUrl;
-            String apiToken = credentialsManager.getCredentialWithId(upload.apiTokenId);
+            String apiToken = CredentialsManager.getCredentialWithId(upload.apiTokenId);
             return apperianApiFactory.create(environment, customApperianUrl, apiToken);
         }
     }

@@ -1,6 +1,6 @@
 <?jelly escape-by-default='true'?>
 
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler"
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:c="/lib/credentials"
          xmlns:f="/lib/form">
 
     <f:invisibleEntry>
@@ -14,7 +14,7 @@
         <f:textbox clazz="fieldCustomURLs" />
     </f:entry>
     <f:entry title="${%API Token}" field="apiTokenId">
-        <f:select />
+        <c:select />
     </f:entry>
     <f:validateButton
         title="${%Test connection}" progress="${%Testing...}"
