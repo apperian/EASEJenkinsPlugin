@@ -237,7 +237,9 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
         return signApp;
     }
 
-    public boolean getReapplyPolicies() { return reapplyPolicies; }
+    public boolean getReapplyPolicies() {
+        return reapplyPolicies;
+    }
 
     public String getCredential() {
         return credential;
@@ -342,25 +344,29 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
             return resultListBox;
         }
 
-        public ListBoxModel doFillApiTokenIdItems(
-                @AncestorInPath Item job,
-                @QueryParameter("apiTokenId") final String apiTokenId
-        ) {
+        public ListBoxModel doFillApiTokenIdItems(@AncestorInPath Item job,
+                                                  @QueryParameter("apiTokenId") final String apiTokenId) {
             StandardListBoxModel result = new StandardListBoxModel();
+
+            // Verify that the user has permissions to access the Credentials
             if (job == null) {
                 if (!Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER)) {
                     return result.includeCurrentValue(apiTokenId);
                 }
-            } else {
-                if (!job.hasPermission(Item.EXTENDED_READ)
-                        && !job.hasPermission(CredentialsProvider.USE_ITEM)) {
+            }
+            else {
+                if (!job.hasPermission(Item.EXTENDED_READ) && !job.hasPermission(CredentialsProvider.USE_ITEM)) {
                     return result.includeCurrentValue(apiTokenId);
                 }
             }
+
+            // We want to restrict the Credentials lookup to Credentials that the Job can access, since the job is what
+            // will be accessing those Credentials.
             Authentication authType = ACL.SYSTEM;
             if (job instanceof Queue.Task) {
                 authType = Tasks.getAuthenticationOf((Queue.Task)job);
             }
+
             return result.includeMatchingAs(authType,
                     job,
                     StringCredentials.class,
@@ -369,20 +375,20 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
                     .includeCurrentValue(apiTokenId);
         }
 
-        public FormValidation doCheckApiTokenId(
-                @AncestorInPath Item job,
-                @QueryParameter("apiTokenId") final String apiTokenId
-        ) {
+        public FormValidation doCheckApiTokenId(@AncestorInPath Item job,
+                                                @QueryParameter("apiTokenId") final String apiTokenId) {
+            // Verify that the user has permissions to access the Credentials
             if (job == null) {
                 if (!Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER)) {
                     return FormValidation.ok();
                 }
-            } else {
-                if (!job.hasPermission(Item.EXTENDED_READ)
-                        && !job.hasPermission(CredentialsProvider.USE_ITEM)) {
+            }
+            else {
+                if (!job.hasPermission(Item.EXTENDED_READ) && !job.hasPermission(CredentialsProvider.USE_ITEM)) {
                     return FormValidation.ok();
                 }
             }
+
             if (StringUtils.isBlank(apiTokenId)) {
                 return FormValidation.ok();
             }
@@ -390,6 +396,8 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
                 return FormValidation.warning("Cannot validate expression based credentials");
             }
 
+            // We want to restrict the Credentials lookup to Credentials that the Job can access, since the job is what
+            // will be accessing those Credentials.
             Authentication authType = ACL.SYSTEM;
             if (job instanceof Queue.Task) {
                 authType = Tasks.getAuthenticationOf((Queue.Task)job);
