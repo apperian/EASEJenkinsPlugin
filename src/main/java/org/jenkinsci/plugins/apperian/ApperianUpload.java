@@ -23,8 +23,6 @@ import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
 import com.cloudbees.plugins.credentials.domains.DomainRequirement;
 import hudson.model.Item;
-import hudson.model.Queue;
-import hudson.model.queue.Tasks;
 import hudson.security.ACL;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
@@ -32,7 +30,6 @@ import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.AncestorInPath;
-import org.acegisecurity.Authentication;
 
 import hudson.Extension;
 import hudson.FilePath;
@@ -360,14 +357,7 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
                 }
             }
 
-            // We want to restrict the Credentials lookup to Credentials that the Job can access, since the job is what
-            // will be accessing those Credentials.
-            Authentication authType = ACL.SYSTEM;
-            if (job instanceof Queue.Task) {
-                authType = Tasks.getAuthenticationOf((Queue.Task)job);
-            }
-
-            return result.includeMatchingAs(authType,
+            return result.includeMatchingAs(ACL.SYSTEM,
                     job,
                     StringCredentials.class,
                     Collections.<DomainRequirement>emptyList(),
@@ -396,16 +386,9 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
                 return FormValidation.warning("Cannot validate expression based credentials");
             }
 
-            // We want to restrict the Credentials lookup to Credentials that the Job can access, since the job is what
-            // will be accessing those Credentials.
-            Authentication authType = ACL.SYSTEM;
-            if (job instanceof Queue.Task) {
-                authType = Tasks.getAuthenticationOf((Queue.Task)job);
-            }
-
             if (CredentialsProvider.listCredentials(StringCredentials.class,
                     job,
-                    authType,
+                    ACL.SYSTEM,
                     Collections.<DomainRequirement>emptyList(),
                     CredentialsMatchers.withId(apiTokenId)).isEmpty()) {
                 return FormValidation.error("Cannot find currently selected credentials");
