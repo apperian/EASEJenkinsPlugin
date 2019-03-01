@@ -7,6 +7,7 @@ import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.domains.DomainRequirement;
 
+import hudson.model.Run;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 
 import hudson.security.ACL;
@@ -19,6 +20,19 @@ public class CredentialsManager {
 
         StringCredentials credential = CredentialsMatchers.firstOrNull(stringCredentials,
                                                                        CredentialsMatchers.withId(credentialId));
+        String secret = null;
+        if (credential != null) {
+            secret = credential.getSecret().getPlainText();
+        }
+        return secret;
+    }
+
+    public static String getCredentialWithIdFromRun(Run build, String credentialId) {
+
+        StringCredentials credential = CredentialsProvider.findCredentialById(credentialId,
+                StringCredentials.class,
+                build,
+                Collections.<DomainRequirement>emptyList());
         String secret = null;
         if (credential != null) {
             secret = credential.getSecret().getPlainText();

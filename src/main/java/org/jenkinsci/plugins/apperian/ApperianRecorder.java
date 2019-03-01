@@ -80,7 +80,7 @@ public class ApperianRecorder extends Recorder implements SimpleBuildStep {
                 //        slave node.
                 PublishFileCallable callable = new PublishFileCallable(upload,
                         listener,
-                        CredentialsManager.getCredentialWithId(upload.getApiTokenId()));
+                        CredentialsManager.getCredentialWithIdFromRun(build, upload.getApiTokenId()));
 
                 if (!path.act(callable)) {
                     throw new RuntimeException("Error publishing the given file");
