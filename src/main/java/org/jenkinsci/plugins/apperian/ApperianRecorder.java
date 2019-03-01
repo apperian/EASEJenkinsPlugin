@@ -78,9 +78,14 @@ public class ApperianRecorder extends Recorder implements SimpleBuildStep {
                 //        the entire object will passed down to the slave node.  We need to get the API token while
                 //        on the Master node because any calls to the 'CredentialsProvider' class will fail from the
                 //        slave node.
+                String apiToken = CredentialsManager.getCredentialWithIdFromRun(build, upload.getApiTokenId());
+                if (apiToken == null) {
+                    throw new RuntimeException("Could not retrieve credential matching the given Credential ID");
+                }
+
                 PublishFileCallable callable = new PublishFileCallable(upload,
                         listener,
-                        CredentialsManager.getCredentialWithIdFromRun(build, upload.getApiTokenId()));
+                        apiToken);
 
                 if (!path.act(callable)) {
                     throw new RuntimeException("Error publishing the given file");
