@@ -14,6 +14,10 @@
         <f:textbox clazz="fieldCustomURLs" />
     </f:entry>
     <f:entry title="${%API Token}" field="apiTokenId">
+        <!--NOTE:  There is an issue where the 'Add' button created by the Credentials select has an arrow rendered on
+                   top of the 'Add' text.  A fix has been merged into their master branch (JENKINS-52936), but is not
+                   yet in their latest release (2.1.18).  We should update to 2.1.19 when possible to address the
+                   issue.-->
         <c:select />
     </f:entry>
     <f:validateButton
