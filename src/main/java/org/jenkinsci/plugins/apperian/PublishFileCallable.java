@@ -19,24 +19,25 @@ import com.apperian.api.signing.SignApplicationResponse;
 import com.apperian.api.signing.SigningStatus;
 
 import hudson.model.TaskListener;
+import jenkins.MasterToSlaveFileCallable;
 import org.jenkinsci.remoting.RoleChecker;
 
 import hudson.FilePath;
 import hudson.remoting.VirtualChannel;
 
-public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
+public class PublishFileCallable extends MasterToSlaveFileCallable<Boolean> implements FilePath.FileCallable<Boolean> {
     private static final long serialVersionUID = 1L;
 
     private final static Logger logger = Logger.getLogger(PublishFileCallable.class.getName());
 
     private ApperianUpload upload;
     private final TaskListener listener;
-    private transient ApperianApiFactory apperianApiFactory = new ApperianApiFactory();
-    private transient CredentialsManager credentialsManager = new CredentialsManager();
+    private String apiTokenValue;
 
-    public PublishFileCallable(ApperianUpload upload, TaskListener listener) {
+    public PublishFileCallable(ApperianUpload upload, TaskListener listener, String apiTokenValue) {
         this.upload = upload;
         this.listener = listener;
+        this.apiTokenValue = apiTokenValue;
     }
 
     public void checkRoles(RoleChecker var1) throws SecurityException {
@@ -55,8 +56,9 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
 
         String env = upload.getProdEnv();
         String customApperianUrl = upload.getCustomApperianUrl();
-        String apiToken = credentialsManager.getCredentialWithId(upload.getApiTokenId());
+        String apiToken = this.apiTokenValue;
 
+        ApperianApiFactory apperianApiFactory = new ApperianApiFactory();
         ApperianApi apperianApi = apperianApiFactory.create(env, customApperianUrl, apiToken);
 
         // When we publish the app we only enable it if it needs to be enabled and no signing is needed.
@@ -147,10 +149,6 @@ public class PublishFileCallable implements FilePath.FileCallable<Boolean> {
         }
 
         return true;
-    }
-
-    public void setCredentialsManager(CredentialsManager credentialsManager) {
-        this.credentialsManager = credentialsManager;
     }
 
     private void uploadApp(File appBinary, ApperianApi apperianApi, boolean enableApp) throws ConnectionException {

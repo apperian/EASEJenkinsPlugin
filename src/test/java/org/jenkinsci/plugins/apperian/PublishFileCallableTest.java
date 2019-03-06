@@ -32,7 +32,7 @@ public class PublishFileCallableTest {
 
         Mockito.when(listener.getLogger()).thenReturn(null);
 
-        PublishFileCallable callable = new PublishFileCallable(APPERIAN_UPLOAD1, listener);
+        PublishFileCallable callable = new PublishFileCallable(APPERIAN_UPLOAD1, listener, "api_token_id");
 
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
         ObjectOutputStream objOut = new ObjectOutputStream(byteOut);
