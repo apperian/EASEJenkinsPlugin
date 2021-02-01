@@ -10,8 +10,8 @@
     <!-- Unique ID for the plugin.  Do not change this. -->
     <artifactId>ease-plugin</artifactId>
     <!-- Name that displays on the 'Manage Plugins' page of Jenkins. -->
-    <name>Arxan MAM Publisher</name>
-    <version>2.1-SNAPSHOT</version>
+    <name>Digital.ai App Management Publisher</name>
+    <version>2.3</version>
     <packaging>hpi</packaging>
 
     <url>https://wiki.jenkins.io/display/JENKINS/Arxan+MAM+Publisher</url>
