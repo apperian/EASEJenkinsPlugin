@@ -1,4 +1,4 @@
-NOTE: This plugin was previously called: EASE Plugin or Arxan MAM Publisher.
+NOTE: This plugin was previously called EASE Plugin and Arxan MAM Publisher.
 
 
 
