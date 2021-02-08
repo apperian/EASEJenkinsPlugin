@@ -11,10 +11,10 @@
     <artifactId>ease-plugin</artifactId>
     <!-- Name that displays on the 'Manage Plugins' page of Jenkins. -->
     <name>Digital.ai App Management Publisher</name>
-    <version>2.5-SNAPSHOT</version>
+    <version>2.6-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
-    <url>https://wiki.jenkins.io/display/JENKINS/Arxan+MAM+Publisher</url>
+    <url>https://github.com/jenkinsci/ease-plugin</url>
 
     <developers>
         <developer>
