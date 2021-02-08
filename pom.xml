@@ -40,7 +40,7 @@
         <connection>scm:git:ssh://github.com/jenkinsci/ease-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/ease-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/ease-plugin</url>
-      <tag>HEAD</tag>
+      <tag>ease-plugin-2.4</tag>
     </scm>
 
     <!-- get every artifact through repo.jenkins-ci.org, which proxies all the artifacts that we need -->
