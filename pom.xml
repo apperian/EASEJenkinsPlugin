@@ -14,7 +14,7 @@
     <version>2.5-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
-    <url>https://wiki.jenkins.io/display/JENKINS/Arxan+MAM+Publisher</url>
+    <url>https://github.com/jenkinsci/ease-plugin</url>
 
     <developers>
         <developer>
