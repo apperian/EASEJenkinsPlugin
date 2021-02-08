@@ -1,4 +1,4 @@
-NOTE: This plugin was previously called: EASE Plugin (ease-plugin).
+NOTE: This plugin was previously called: EASE Plugin or Arxan MAM Publisher.
 
 
 
@@ -19,7 +19,7 @@ Jenkins build process.
 # Usage
 
 When you install this plugin, you will have the ability to add the
-"Arxan MAM Publisher" as a post-build action on a project's Configure
+"Digital.ai App Management Publisher" as a post-build action on a project's Configure
 page.
 
 After adding the action to your project, configure it to specify the
@@ -28,6 +28,12 @@ build process. For more information, see [Jenkins
 Integration](https://help.apperian.com/x/DQBT).
 
 # Version History
+
+Version 2.6 (2020-02-08)
+-   Documentation now pulls from the README in the Github repository.
+
+Version 2.5 (2020-02-08)
+-   Plugin renamed from Arxan MAM Publisher to Digital.ai App Management Publisher.
 
 Version 2.2 (2019-03-6)
 
