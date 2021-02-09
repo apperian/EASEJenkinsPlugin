@@ -29,10 +29,10 @@ Integration](https://help.apperian.com/x/DQBT).
 
 # Version History
 
-Version 2.6 (2020-02-08)
+Version 2.6 (2021-02-08)
 -   Documentation now pulls from the README in the Github repository.
 
-Version 2.5 (2020-02-08)
+Version 2.5 (2021-02-08)
 -   Plugin renamed from Arxan MAM Publisher to Digital.ai App Management Publisher.
 
 Version 2.2 (2019-03-6)
