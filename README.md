@@ -13,7 +13,7 @@ following warnings before using an older version:
     text](https://jenkins.io/security/advisory/2019-02-19/#SECURITY-1070)
 
 This plugin adds the ability to publish updates of mobile apps to
-[Apperian](https://www.arxan.com/apperian) App Management as part of the
+[Digital.ai App Management](https://digital.ai/app-management) as part of the
 Jenkins build process.
 
 # Usage
@@ -23,16 +23,16 @@ When you install this plugin, you will have the ability to add the
 page.
 
 After adding the action to your project, configure it to specify the
-values that Jenkins will use to publish the app to Apperian during the
+values that Jenkins will use to publish the app to Digital.ai App Management during the
 build process. For more information, see [Jenkins
 Integration](https://help.apperian.com/x/DQBT).
 
 # Version History
 
-Version 2.6 (2020-02-08)
+Version 2.6 (2021-02-08)
 -   Documentation now pulls from the README in the Github repository.
 
-Version 2.5 (2020-02-08)
+Version 2.5 (2021-02-08)
 -   Plugin renamed from Arxan MAM Publisher to Digital.ai App Management Publisher.
 
 Version 2.2 (2019-03-6)
