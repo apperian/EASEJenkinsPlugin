@@ -18,14 +18,19 @@
 
     <developers>
         <developer>
-            <id>oleksiyp</id>
-            <name>Oleksiy Pylypenko</name>
-            <email>oleksiy.pylypenko@gmail.com</email>
+            <id>jrodriguez</id>
+            <name>Javier Rodriguez</name>
+            <email>javier.rodriguez@digital.ai</email>
         </developer>
         <developer>
-            <id>kwilson6744</id>
-            <name>Kevin Wilson</name>
-            <email>kwilson@apperian.com</email>
+            <id>puri</id>
+            <name>Puri Garcia</name>
+            <email>puri.garcia@digital.ai</email>
+        </developer>
+        <developer>
+            <id>matt_pelaggi</id>
+            <name>Matt Pelaggi</name>
+            <email>matt.pelaggi@digital.ai</email>
         </developer>
     </developers>
 
