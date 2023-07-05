@@ -30,6 +30,7 @@ import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import hudson.Extension;
 import hudson.FilePath;
@@ -333,6 +334,20 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
             return "Apperian Upload";
         }
 
+        private boolean hasEnoughPermissions(Item job) {
+            if (job == null) {
+                if (!Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER)) {
+                    return false;
+                }
+            }
+            else {
+                if (!job.hasPermission(Item.EXTENDED_READ) && !job.hasPermission(CredentialsProvider.USE_ITEM)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         public ListBoxModel doFillProdEnvItems() {
             ListBoxModel resultListBox = new ListBoxModel();
             for (ProductionEnvironment prodEnv : ProductionEnvironment.values()) {
@@ -341,20 +356,14 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
             return resultListBox;
         }
 
+        @RequirePOST
         public ListBoxModel doFillApiTokenIdItems(@AncestorInPath Item job,
                                                   @QueryParameter("apiTokenId") final String apiTokenId) {
             StandardListBoxModel result = new StandardListBoxModel();
 
             // Verify that the user has permissions to access the Credentials
-            if (job == null) {
-                if (!Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER)) {
-                    return result.includeCurrentValue(apiTokenId);
-                }
-            }
-            else {
-                if (!job.hasPermission(Item.EXTENDED_READ) && !job.hasPermission(CredentialsProvider.USE_ITEM)) {
-                    return result.includeCurrentValue(apiTokenId);
-                }
+            if (!hasEnoughPermissions(job)) {
+                return result.includeCurrentValue(apiTokenId);
             }
 
             return result.includeMatchingAs(ACL.SYSTEM,
@@ -365,18 +374,12 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
                     .includeCurrentValue(apiTokenId);
         }
 
+        @RequirePOST
         public FormValidation doCheckApiTokenId(@AncestorInPath Item job,
                                                 @QueryParameter("apiTokenId") final String apiTokenId) {
             // Verify that the user has permissions to access the Credentials
-            if (job == null) {
-                if (!Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER)) {
-                    return FormValidation.ok();
-                }
-            }
-            else {
-                if (!job.hasPermission(Item.EXTENDED_READ) && !job.hasPermission(CredentialsProvider.USE_ITEM)) {
-                    return FormValidation.ok();
-                }
+            if (!hasEnoughPermissions(job)) {
+                return FormValidation.error("missing permissions");
             }
 
             if (StringUtils.isBlank(apiTokenId)) {
@@ -396,9 +399,17 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
             return FormValidation.ok();
         }
 
-        public ListBoxModel doFillAppIdItems(@QueryParameter("prodEnv") final String prodEnv,
+        @RequirePOST
+        public ListBoxModel doFillAppIdItems(@AncestorInPath Item job,
+                                             @QueryParameter("prodEnv") final String prodEnv,
                                              @QueryParameter("customApperianUrl") String customApperianUrl,
                                              @QueryParameter("apiTokenId") final String apiTokenId) {
+            if (!hasEnoughPermissions(job)) {
+                ListBoxModel listBoxModel = new ListBoxModel();
+                listBoxModel.add("(missing permissions)", "");
+                return listBoxModel;
+            }
+
             ApperianUpload upload = new ApperianUpload.Builder(prodEnv, customApperianUrl, apiTokenId).build();
 
             if (!upload.validateHasAuthFields()) {
@@ -407,9 +418,8 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
                 return listBoxModel;
             }
 
-            ApperianApi apperianApi = createApperianApi(upload);
-
             try {
+                ApperianApi apperianApi = createApperianApi(upload, job);
                 List<Application> apps = apperianApi.listApplications();
                 ListBoxModel listItems = new ListBoxModel();
                 for (Application app : apps) {
@@ -432,10 +442,19 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
             }
         }
 
-        public ListBoxModel doFillCredentialItems(@QueryParameter("prodEnv") final String prodEnv,
+        @RequirePOST
+        public ListBoxModel doFillCredentialItems(@AncestorInPath Item job,
+                                                  @QueryParameter("prodEnv") final String prodEnv,
                                                   @QueryParameter("customApperianUrl") String customApperianUrl,
                                                   @QueryParameter("apiTokenId") final String apiTokenId,
                                                   @QueryParameter("appId") final String appId) {
+
+            if (!hasEnoughPermissions(job)) {
+                ListBoxModel listBoxModel = new ListBoxModel();
+                listBoxModel.add("(missing permissions)", "");
+                return listBoxModel;
+            }
+
             ApperianUpload upload = new ApperianUpload.Builder(prodEnv, customApperianUrl, apiTokenId).build();
 
             if (!upload.validateHasAuthFields()) {
@@ -446,10 +465,8 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
 
             boolean hasAppId = !Utils.isEmptyString(appId);
 
-            ApperianApi apperianApi = createApperianApi(upload);
-
             try {
-
+                ApperianApi apperianApi = createApperianApi(upload, job);
                 PlatformType typeFilter = null;
                 if (hasAppId) {
                     List<Application> apps = apperianApi.listApplications();
@@ -496,10 +513,17 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
 
         }
 
-        public FormValidation doTestConnection(@QueryParameter("prodEnv") final String prodEnv,
+        @RequirePOST
+        public FormValidation doTestConnection(@AncestorInPath Item job,
+                                               @QueryParameter("prodEnv") final String prodEnv,
                                                @QueryParameter("customApperianUrl") String customApperianUrl,
                                                @QueryParameter("apiTokenId") final String apiTokenId)
                 throws IOException, ServletException {
+
+            if (!hasEnoughPermissions(job)) {
+                return FormValidation.error("missing permissions");
+            }
+
             ApperianUpload upload = new ApperianUpload.Builder(prodEnv, customApperianUrl, apiTokenId).build();
 
             try {
@@ -508,9 +532,8 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
                 return FormValidation.error(e.getMessage());
             }
 
-            ApperianApi apperianApi = createApperianApi(upload);
-
             try {
+                ApperianApi apperianApi = createApperianApi(upload, job);
                 // To check the connection we just use the endpoint to get the user details to see if it works
                 apperianApi.getUserDetails();
                 return FormValidation.ok("Connection OK");
@@ -519,10 +542,13 @@ public class ApperianUpload implements Describable<ApperianUpload>, Serializable
             }
         }
 
-        private  ApperianApi createApperianApi(ApperianUpload upload) {
+        private  ApperianApi createApperianApi(ApperianUpload upload, Item job) {
             String environment = upload.prodEnv;
             String customApperianUrl = upload.customApperianUrl;
-            String apiToken = CredentialsManager.getCredentialWithId(upload.apiTokenId);
+            String apiToken = CredentialsManager.getCredentialWithId(upload.apiTokenId, job);
+            if (apiToken == null) {
+                throw new RuntimeException("Could not retrieve credential matching the given Credential ID");
+            }
             return apperianApiFactory.create(environment, customApperianUrl, apiToken);
         }
     }

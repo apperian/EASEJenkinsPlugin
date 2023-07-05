@@ -18,7 +18,7 @@
                    top of the 'Add' text.  A fix has been merged into their master branch (JENKINS-52936), but is not
                    yet in their latest release (2.1.18).  We should update to 2.1.19 when possible to address the
                    issue.-->
-        <c:select />
+        <c:select checkMethod="post" />
     </f:entry>
     <f:validateButton
         title="${%Test connection}" progress="${%Testing...}"
