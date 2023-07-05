@@ -29,6 +29,9 @@ Integration](https://help.apperian.com/x/DQBT).
 
 # Version History
 
+Version 2.7 (2023-06-05)
+-   Addressing the plugin does not perform permission checks in several form validation methods (https://issues.jenkins.io/browse/SECURITY-2911).
+
 Version 2.6 (2021-02-08)
 -   Documentation now pulls from the README in the Github repository.
 
